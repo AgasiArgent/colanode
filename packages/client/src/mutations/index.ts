@@ -14,6 +14,7 @@ export * from './documents/document-update';
 export * from './files/file-create';
 export * from './files/file-download';
 export * from './messages/message-create';
+export * from './messages/message-task-set';
 export * from './nodes/node-collaborator-create';
 export * from './nodes/node-collaborator-delete';
 export * from './nodes/node-collaborator-update';
