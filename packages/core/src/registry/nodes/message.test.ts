@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
 import { Node } from '@colanode/core/registry/nodes';
-import { messageModel } from '@colanode/core/registry/nodes/message';
+import {
+  messageAttributesSchema,
+  messageModel,
+} from '@colanode/core/registry/nodes/message';
 
 const user = { id: 'user1', role: 'admin' } as never;
 
@@ -51,5 +54,31 @@ describe('messageModel.canCreate thread depth', () => {
         attributes: attrs,
       } as never)
     ).toBe(false);
+  });
+});
+
+describe('messageAttributesSchema.taskId', () => {
+  it('accepts taskId', () => {
+    const r = messageAttributesSchema.safeParse({
+      type: 'message',
+      subtype: 'standard',
+      parentId: 'chan1',
+      taskId: 'rec1',
+    });
+
+    expect(r.success).toBe(true);
+    if (r.success) {
+      expect(r.data.taskId).toBe('rec1');
+    }
+  });
+
+  it('accepts absence of taskId', () => {
+    expect(
+      messageAttributesSchema.safeParse({
+        type: 'message',
+        subtype: 'standard',
+        parentId: 'chan1',
+      }).success
+    ).toBe(true);
   });
 });

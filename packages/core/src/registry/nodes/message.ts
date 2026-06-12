@@ -13,6 +13,7 @@ export const messageAttributesSchema = z.object({
   name: z.string().optional(),
   parentId: z.string(),
   referenceId: z.string().nullable().optional(),
+  taskId: z.string().nullable().optional(),
   content: z.record(z.string(), blockSchema).optional().nullable(),
   selectedContextNodeIds: z.array(z.string()).optional().nullable(),
 });
