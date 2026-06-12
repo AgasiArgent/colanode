@@ -27,6 +27,14 @@ export const messageModel: NodeModel = {
       return false;
     }
 
+    const parent = context.tree[context.tree.length - 1];
+    if (parent && parent.type === 'message') {
+      const grandparent = context.tree[context.tree.length - 2];
+      if (grandparent && grandparent.type === 'message') {
+        return false;
+      }
+    }
+
     const role = extractNodeRole(context.tree, context.user.id);
     if (!role) {
       return false;
