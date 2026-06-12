@@ -1,4 +1,4 @@
-import { MessagesSquare, Reply, Trash2 } from 'lucide-react';
+import { MessagesSquare, Quote, Reply, Trash2 } from 'lucide-react';
 import { useCallback } from 'react';
 
 import { MessageQuickReaction } from '@colanode/ui/components/messages/message-quick-reaction';
@@ -47,32 +47,38 @@ export const MessageActions = () => {
   return (
     <ul className="invisible absolute -top-5 right-1 z-10 flex flex-row items-center rounded-md bg-muted p-0.5 text-muted-foreground shadow-md group-hover:visible">
       <MessageAction>
-        <MessageQuickReaction
-          emoji={defaultEmojis.like}
-          onClick={handleReactionClick}
-        />
+        <MessageQuickReaction emoji={defaultEmojis.like} onClick={handleReactionClick} />
       </MessageAction>
       <MessageAction>
-        <MessageQuickReaction
-          emoji={defaultEmojis.heart}
-          onClick={handleReactionClick}
-        />
+        <MessageQuickReaction emoji={defaultEmojis.heart} onClick={handleReactionClick} />
       </MessageAction>
       <MessageAction>
-        <MessageQuickReaction
-          emoji={defaultEmojis.check}
-          onClick={handleReactionClick}
-        />
+        <MessageQuickReaction emoji={defaultEmojis.check} onClick={handleReactionClick} />
       </MessageAction>
       <div className="mx-1 h-6 w-px bg-border" />
       {message.canReplyInThread && (
         <MessageAction>
-          <MessagesSquare className="size-4 cursor-pointer" />
+          <MessagesSquare
+            className="size-4 cursor-pointer"
+            onClick={() => {
+              conversation.onOpenThread(message.id);
+            }}
+          />
         </MessageAction>
       )}
       <MessageAction>
         <MessageReactionCreatePopover onReactionClick={handleReactionClick} />
       </MessageAction>
+      {conversation.canCreateMessage && (
+        <MessageAction>
+          <Quote
+            className="size-4 cursor-pointer"
+            onClick={() => {
+              conversation.onQuoteReply(message);
+            }}
+          />
+        </MessageAction>
+      )}
       {conversation.canCreateMessage && (
         <MessageAction>
           <Reply
