@@ -1,8 +1,9 @@
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
-import { Quote, Reply, Trash2 } from 'lucide-react';
-import { useCallback } from 'react';
+import { Quote, Reply, SquareCheckBig, Trash2 } from 'lucide-react';
+import { Fragment, useCallback, useState } from 'react';
 
 import { LocalMessageNode } from '@colanode/client/types';
+import { MessageCreateTaskDialog } from '@colanode/ui/components/messages/message-create-task-dialog';
 import { MessageQuickReaction } from '@colanode/ui/components/messages/message-quick-reaction';
 import { MessageReactionCreatePopover } from '@colanode/ui/components/messages/message-reaction-create-popover';
 import {
@@ -53,6 +54,7 @@ export const MessageMenuMobile = ({
   const workspace = useWorkspace();
   const conversation = useConversation();
   const message = useMessage();
+  const [openCreateTask, setOpenCreateTask] = useState(false);
 
   const handleReactionClick = useCallback(
     (reaction: string) => {
@@ -89,6 +91,7 @@ export const MessageMenuMobile = ({
   };
 
   return (
+    <Fragment>
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <VisuallyHidden>
         <SheetTitle>Message Actions</SheetTitle>
@@ -147,6 +150,18 @@ export const MessageMenuMobile = ({
               </MenuAction>
             )}
 
+            {message.createdBy === workspace.userId && !message.taskId && (
+              <MenuAction
+                onClick={() => {
+                  onOpenChange(false);
+                  setOpenCreateTask(true);
+                }}
+              >
+                <SquareCheckBig className="size-5 text-muted-foreground" />
+                <span>Create task</span>
+              </MenuAction>
+            )}
+
             {message.canDelete && (
               <MenuAction
                 onClick={() => {
@@ -162,5 +177,12 @@ export const MessageMenuMobile = ({
         </div>
       </SheetContent>
     </Sheet>
+    {openCreateTask && (
+      <MessageCreateTaskDialog
+        open={openCreateTask}
+        onOpenChange={setOpenCreateTask}
+      />
+    )}
+    </Fragment>
   );
 };

@@ -1,6 +1,7 @@
-import { MessagesSquare, Quote, Reply, Trash2 } from 'lucide-react';
-import { useCallback } from 'react';
+import { MessagesSquare, Quote, Reply, SquareCheckBig, Trash2 } from 'lucide-react';
+import { Fragment, useCallback, useState } from 'react';
 
+import { MessageCreateTaskDialog } from '@colanode/ui/components/messages/message-create-task-dialog';
 import { MessageQuickReaction } from '@colanode/ui/components/messages/message-quick-reaction';
 import { MessageReactionCreatePopover } from '@colanode/ui/components/messages/message-reaction-create-popover';
 import { useConversation } from '@colanode/ui/contexts/conversation';
@@ -21,6 +22,7 @@ export const MessageActions = () => {
   const message = useMessage();
   const workspace = useWorkspace();
   const conversation = useConversation();
+  const [openCreateTask, setOpenCreateTask] = useState(false);
 
   const handleReactionClick = useCallback(
     (reaction: string) => {
@@ -45,6 +47,7 @@ export const MessageActions = () => {
   );
 
   return (
+    <Fragment>
     <ul className="invisible absolute -top-5 right-1 z-10 flex flex-row items-center rounded-md bg-muted p-0.5 text-muted-foreground shadow-md group-hover:visible">
       <MessageAction>
         <MessageQuickReaction emoji={defaultEmojis.like} onClick={handleReactionClick} />
@@ -89,6 +92,16 @@ export const MessageActions = () => {
           />
         </MessageAction>
       )}
+      {message.createdBy === workspace.userId && !message.taskId && (
+        <MessageAction>
+          <SquareCheckBig
+            className="size-4 cursor-pointer"
+            onClick={() => {
+              setOpenCreateTask(true);
+            }}
+          />
+        </MessageAction>
+      )}
       {message.canDelete && (
         <MessageAction>
           <Trash2
@@ -100,5 +113,12 @@ export const MessageActions = () => {
         </MessageAction>
       )}
     </ul>
+    {openCreateTask && (
+      <MessageCreateTaskDialog
+        open={openCreateTask}
+        onOpenChange={setOpenCreateTask}
+      />
+    )}
+    </Fragment>
   );
 };
