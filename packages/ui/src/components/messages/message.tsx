@@ -11,6 +11,7 @@ import { MessageContent } from '@colanode/ui/components/messages/message-content
 import { MessageMenuMobile } from '@colanode/ui/components/messages/message-menu-mobile';
 import { MessageReactionCounts } from '@colanode/ui/components/messages/message-reaction-counts';
 import { MessageReference } from '@colanode/ui/components/messages/message-reference';
+import { MessageTaskBadge } from '@colanode/ui/components/messages/message-task-badge';
 import { MessageThreadIndicator } from '@colanode/ui/components/messages/message-thread-indicator';
 import { MessageTime } from '@colanode/ui/components/messages/message-time';
 import { NodeDeleteDialog } from '@colanode/ui/components/nodes/node-delete-dialog';
@@ -140,6 +141,7 @@ export const Message = ({ message, previousMessage }: MessageProps) => {
             <MessageContent message={message} />
             <MessageReactionCounts message={message} />
             <MessageThreadIndicator message={message} />
+            {message.taskId && <MessageTaskBadge taskId={message.taskId} />}
           </InView>
         </div>
 
