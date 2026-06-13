@@ -52,6 +52,7 @@ export const MessageThreadIndicator = ({
       )}
     >
       <MessagesSquare className="size-3.5" />
+      {/* TODO(threads-unseen): highlight requires a nodeInteractions TanStack collection; plumbing ~260 LOC — tracked in README */}
       <span>{replies.length} replies</span>
       <span aria-hidden="true">·</span>
       <span>{timeAgo(latestReply.createdAt)}</span>

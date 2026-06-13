@@ -155,6 +155,12 @@ From `apps/web`:
 npm run test
 ```
 
+## Fork follow-ups (feat/threads-and-tasks)
+
+The following items are intentionally deferred and tracked here:
+
+- **threads-unseen**: Highlight unseen thread replies (bold count in `MessageThreadIndicator`) requires a `nodeInteractions` TanStack DB collection (`WorkspaceCollections`) backed by a `node.interaction.list` query handler + registration — approximately 260 LOC of plumbing mirroring `node-reaction-list`. Skipped in Task 6 to stay within scope; implement after a Threads inbox exists so the counter has a surface to clear it. See comment in `packages/ui/src/components/messages/message-thread-indicator.tsx`.
+
 ## License
 
 Colanode is released under the [Apache 2.0 License](LICENSE).

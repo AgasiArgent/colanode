@@ -1,5 +1,5 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { extractNodeRole } from '@colanode/core';
 import { Conversation } from '@colanode/ui/components/messages/conversation';
@@ -7,6 +7,7 @@ import { Message } from '@colanode/ui/components/messages/message';
 import { ScrollArea, ScrollViewport } from '@colanode/ui/components/ui/scroll-area';
 import { ContainerContext } from '@colanode/ui/contexts/container';
 import { ConversationContext } from '@colanode/ui/contexts/conversation';
+import { useRadar } from '@colanode/ui/contexts/radar';
 import { useWorkspace } from '@colanode/ui/contexts/workspace';
 
 interface ThreadPanelContentProps {
@@ -15,6 +16,7 @@ interface ThreadPanelContentProps {
 
 export const ThreadPanelContent = ({ threadRootId }: ThreadPanelContentProps) => {
   const workspace = useWorkspace();
+  const radar = useRadar();
   const scrollAreaRef = useRef<HTMLDivElement>(null!);
   const scrollViewportRef = useRef<HTMLDivElement>(null!);
 
@@ -39,6 +41,12 @@ export const ThreadPanelContent = ({ threadRootId }: ThreadPanelContentProps) =>
   const rootNode = rootNodeQuery.data;
 
   const role = rootNode ? extractNodeRole(rootNode, workspace.userId) : null;
+
+  // Mark the thread root as seen when the panel opens or the thread changes,
+  // so the workspace unread badge clears immediately (mirrors message.tsx InView pattern).
+  useEffect(() => {
+    radar.markNodeAsSeen(workspace.userId, threadRootId);
+  }, [workspace.userId, threadRootId]);
 
   if (!root || root.type !== 'message' || !role) {
     return <p className="p-4 text-sm text-muted-foreground">Message not found.</p>;
