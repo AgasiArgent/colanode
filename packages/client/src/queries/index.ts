@@ -15,6 +15,7 @@ export * from './files/file-download-request-get';
 export * from './icons/icon-category-list';
 export * from './icons/icon-list';
 export * from './icons/icon-search';
+export * from './interactions/node-interaction-get';
 export * from './interactions/radar-data-get';
 export * from './nodes/node-reaction-list';
 export * from './records/record-search';
