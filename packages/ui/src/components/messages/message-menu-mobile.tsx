@@ -1,5 +1,5 @@
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
-import { Quote, Reply, SquareCheckBig, Trash2 } from 'lucide-react';
+import { MessagesSquare, Quote, Reply, SquareCheckBig, Trash2 } from 'lucide-react';
 import { Fragment, useCallback, useState } from 'react';
 
 import { LocalMessageNode } from '@colanode/client/types';
@@ -85,6 +85,11 @@ export const MessageMenuMobile = ({
     onOpenChange(false);
   };
 
+  const handleOpenThread = () => {
+    conversation.onOpenThread(message.id);
+    onOpenChange(false);
+  };
+
   const handleQuoteReply = () => {
     conversation.onQuoteReply(message);
     onOpenChange(false);
@@ -136,6 +141,13 @@ export const MessageMenuMobile = ({
 
           {/* Actions Section */}
           <div className="space-y-1">
+            {message.canReplyInThread && (
+              <MenuAction onClick={handleOpenThread}>
+                <MessagesSquare className="size-5 text-muted-foreground" />
+                <span>Reply in thread</span>
+              </MenuAction>
+            )}
+
             {conversation.canCreateMessage && (
               <MenuAction onClick={handleQuoteReply}>
                 <Quote className="size-5 text-muted-foreground" />

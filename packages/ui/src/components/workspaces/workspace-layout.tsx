@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { SidebarDesktop } from '@colanode/ui/components/layouts/sidebars/sidebar-desktop';
 import { ThreadPanel } from '@colanode/ui/components/layouts/thread-panel';
+import { ThreadSheet } from '@colanode/ui/components/layouts/thread-sheet';
 import { ThreadPanelContext } from '@colanode/ui/contexts/thread-panel';
 import { useIsMobile } from '@colanode/ui/hooks/use-is-mobile';
 
@@ -31,6 +32,7 @@ export const WorkspaceLayout = () => {
           <Outlet />
         </section>
         {!isMobile && <ThreadPanel />}
+        {isMobile && <ThreadSheet />}
       </div>
     </ThreadPanelContext.Provider>
   );
