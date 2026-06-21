@@ -186,7 +186,10 @@ clients are unaffected.
 
 ### MVP limits (intentional)
 
-- **Desktop/web only** — the thread panel is not wired into the mobile layout.
+- **Mobile is preview** — threads are wired into the mobile bottom-sheet layout
+  (a `ThreadSheet` reusing the shared thread view, plus a "Reply in thread" menu
+  entry), and message→task works there too. Colanode's mobile app is itself
+  experimental, so treat mobile thread support as preview.
 - **Channels only** — no threads in DMs; DM reply behavior is unchanged.
 - **Author-only task attach** — only a message's author can convert it, and only
   once (`taskId` gate hides the action afterwards).
