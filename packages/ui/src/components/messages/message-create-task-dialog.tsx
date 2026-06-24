@@ -1,5 +1,5 @@
 import { eq, inArray, useLiveQuery } from '@tanstack/react-db';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { LocalDatabaseNode, LocalRecordNode } from '@colanode/client/types';
@@ -12,6 +12,7 @@ import {
   hasNodeRole,
   IdType,
   SelectFieldAttributes,
+  TextFieldAttributes,
 } from '@colanode/core';
 import { Avatar } from '@colanode/ui/components/avatars/avatar';
 import { SelectOptionBadge } from '@colanode/ui/components/databases/fields/select-option-badge';
@@ -56,10 +57,9 @@ export const MessageCreateTaskDialog = ({
     `task.database.${conversation.id}`
   );
 
-  const rawText = extractBlockTexts(message.id, message.content ?? null);
-  const prefillName = (rawText ?? '').slice(0, 120);
+  const rawText = extractBlockTexts(message.id, message.content ?? null) ?? '';
 
-  const [name, setName] = useState(prefillName);
+  const [name, setName] = useState('');
   const [selectedStatusOptionId, setSelectedStatusOptionId] = useState<
     string | null
   >(null);
@@ -67,6 +67,7 @@ export const MessageCreateTaskDialog = ({
     null
   );
   const [assigneePickerOpen, setAssigneePickerOpen] = useState(false);
+  const [messageFieldId, setMessageFieldId] = useState<string | null>(null);
 
   // Query all database nodes
   const databaseListQuery = useLiveQuery(
@@ -126,6 +127,25 @@ export const MessageCreateTaskDialog = ({
         | undefined) ?? null
     : null;
 
+  // Text fields the message body can be written into (user picks the column).
+  const textFields: TextFieldAttributes[] = selectedDatabase
+    ? (Object.values(selectedDatabase.fields)
+        .filter((f) => f.type === 'text')
+        .sort((a, b) => a.index.localeCompare(b.index)) as TextFieldAttributes[])
+    : [];
+
+  const defaultMessageFieldId = textFields[0]?.id ?? null;
+
+  // Default the message target to the first text field whenever the database
+  // (and therefore its text fields) changes; the user's manual choice sticks.
+  useEffect(() => {
+    setMessageFieldId(defaultMessageFieldId);
+  }, [taskDatabaseId, defaultMessageFieldId]);
+
+  const selectedMessageField = messageFieldId
+    ? textFields.find((f) => f.id === messageFieldId) ?? null
+    : null;
+
   const statusOptions = statusField
     ? Object.values(statusField.options ?? {}).sort((a, b) =>
         a.index.localeCompare(b.index)
@@ -172,6 +192,9 @@ export const MessageCreateTaskDialog = ({
         type: 'string_array',
         value: [selectedAssigneeId],
       };
+    }
+    if (messageFieldId && rawText) {
+      fields[messageFieldId] = { type: 'text', value: rawText };
     }
 
     const record: LocalRecordNode = {
@@ -284,14 +307,70 @@ export const MessageCreateTaskDialog = ({
 
           {/* Task name */}
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="task-name">Name</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="task-name">Name</Label>
+              {rawText && (
+                <button
+                  type="button"
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                  onClick={() => setName(rawText.slice(0, 120))}
+                >
+                  Use message text
+                </button>
+              )}
+            </div>
             <Input
               id="task-name"
+              autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Task name..."
             />
           </div>
+
+          {/* Where the message body goes (text-field picker) */}
+          {selectedDatabase && textFields.length > 0 && (
+            <div className="flex flex-col gap-1.5">
+              <Label>Add message to</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm hover:bg-accent"
+                  >
+                    {selectedMessageField ? (
+                      <span>{selectedMessageField.name}</span>
+                    ) : (
+                      <span className="text-muted-foreground">
+                        Don&apos;t add the message
+                      </span>
+                    )}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-1">
+                  <div className="flex flex-col gap-0.5">
+                    <button
+                      type="button"
+                      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent"
+                      onClick={() => setMessageFieldId(null)}
+                    >
+                      Don&apos;t add the message
+                    </button>
+                    {textFields.map((field) => (
+                      <button
+                        key={field.id}
+                        type="button"
+                        className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent"
+                        onClick={() => setMessageFieldId(field.id)}
+                      >
+                        {field.name}
+                      </button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
 
           {/* Status picker (optional - only if DB has a select field) */}
           {statusField && statusOptions.length > 0 && (
