@@ -7,10 +7,15 @@ import { Config } from '@colanode/mcp/config';
 import { createChannelTool } from '@colanode/mcp/tools/create-channel';
 import { createPageTool } from '@colanode/mcp/tools/create-page';
 import { createRecordTool } from '@colanode/mcp/tools/create-record';
+import { deleteNodeTool } from '@colanode/mcp/tools/delete-node';
 import { getDocumentTool } from '@colanode/mcp/tools/get-document';
 import { listNodesTool } from '@colanode/mcp/tools/list-nodes';
 import { listWorkspacesTool } from '@colanode/mcp/tools/list-workspaces';
 import { postMessageTool } from '@colanode/mcp/tools/post-message';
+import {
+  addReactionTool,
+  removeReactionTool,
+} from '@colanode/mcp/tools/reactions';
 import { searchRecordsTool } from '@colanode/mcp/tools/search-records';
 import { updatePageTool } from '@colanode/mcp/tools/update-page';
 
@@ -49,4 +54,7 @@ export const tools: Tool[] = [
   createChannelTool,
   createRecordTool,
   postMessageTool,
+  deleteNodeTool,
+  addReactionTool,
+  removeReactionTool,
 ];
