@@ -5,13 +5,17 @@ import { LocalSpaceNode } from '@colanode/client/types';
 import { Avatar } from '@colanode/ui/components/avatars/avatar';
 import { SidebarItem } from '@colanode/ui/components/layouts/sidebars/sidebar-item';
 import { SpaceSidebarDropdown } from '@colanode/ui/components/spaces/space-sidebar-dropdown';
+import { SpaceSidebarGroup } from '@colanode/ui/components/spaces/space-sidebar-group';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@colanode/ui/components/ui/collapsible';
 import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { sortSpaceChildren } from '@colanode/ui/lib/spaces';
+import {
+  groupSpaceChildrenByType,
+  sortSpaceChildren,
+} from '@colanode/ui/lib/spaces';
 
 interface SpaceSidebarItemProps {
   space: LocalSpaceNode;
@@ -29,6 +33,7 @@ export const SpaceSidebarItem = ({ space }: SpaceSidebarItemProps) => {
   );
 
   const children = sortSpaceChildren(space, nodeChildrenGetQuery.data);
+  const groups = groupSpaceChildrenByType(children);
 
   return (
     <Collapsible
@@ -52,13 +57,21 @@ export const SpaceSidebarItem = ({ space }: SpaceSidebarItemProps) => {
         <SpaceSidebarDropdown space={space} />
       </div>
       <CollapsibleContent>
-        <ul className="ml-3 flex min-w-0 flex-col gap-0.5 py-0.5">
-          {children.map((child) => (
-            <li key={child.id}>
-              <SidebarItem node={child} />
-            </li>
-          ))}
-        </ul>
+        {groups.length <= 1 ? (
+          <ul className="ml-3 flex min-w-0 flex-col gap-0.5 py-0.5">
+            {children.map((child) => (
+              <li key={child.id}>
+                <SidebarItem node={child} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="ml-3 flex min-w-0 flex-col gap-0.5 py-0.5">
+            {groups.map((group) => (
+              <SpaceSidebarGroup key={group.type} space={space} group={group} />
+            ))}
+          </div>
+        )}
       </CollapsibleContent>
     </Collapsible>
   );
