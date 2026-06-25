@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import { buildChannelAttributes } from '@colanode/mcp/tools/create-channel';
 import { buildPageAttributes } from '@colanode/mcp/tools/create-page';
+import { buildRecordAttributes } from '@colanode/mcp/tools/create-record';
 import { buildNodeListInput } from '@colanode/mcp/tools/list-nodes';
+import { textToContent } from '@colanode/mcp/tools/post-message';
 
 describe('buildNodeListInput', () => {
   it('filters by parentId when given', () => {
@@ -48,6 +50,29 @@ describe('buildChannelAttributes', () => {
       name: 'general',
       parentId: 'sp-1',
       avatar: null,
+    });
+  });
+});
+
+describe('buildRecordAttributes', () => {
+  it('sets parentId to the databaseId and includes fields', () => {
+    const attrs = buildRecordAttributes('db-1', 'Acme', {});
+    expect(attrs).toEqual({
+      type: 'record',
+      parentId: 'db-1',
+      databaseId: 'db-1',
+      name: 'Acme',
+      avatar: null,
+      fields: {},
+    });
+  });
+});
+
+describe('textToContent', () => {
+  it('wraps a plain string into a tiptap doc paragraph', () => {
+    expect(textToContent('hi')).toEqual({
+      type: 'doc',
+      content: [{ type: 'paragraph', content: [{ type: 'text', text: 'hi' }] }],
     });
   });
 });
