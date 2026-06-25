@@ -14,8 +14,6 @@
     "baseUrl": ".",
     "paths": {
       "@colanode/mcp/*": ["src/*"],
-      "@colanode/client-node": ["../../packages/client-node/src/index.ts"],
-      "@colanode/client-node/*": ["../../packages/client-node/src/*"],
       "@colanode/core/*": ["../../packages/core/src/*"],
       "@colanode/crdt/*": ["../../packages/crdt/src/*"],
       "@colanode/client/*": ["../../packages/client/src/*"]
@@ -24,7 +22,8 @@
   "references": [
     { "path": "../../packages/core/tsconfig.json" },
     { "path": "../../packages/crdt/tsconfig.json" },
-    { "path": "../../packages/client/tsconfig.json" }
+    { "path": "../../packages/client/tsconfig.json" },
+    { "path": "../../packages/client-node/tsconfig.json" }
   ],
   "include": ["src/**/*.ts"]
 }

@@ -6,6 +6,10 @@
   "description": "Headless @colanode/client substrate for Node (services + bootEngine)",
   "type": "module",
   "main": "src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
     "lint": "eslint --ext .ts src",
     "test": "vitest run"

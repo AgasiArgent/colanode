@@ -11,6 +11,10 @@
     "sourceMap": true,
     "outDir": "dist",
     "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "composite": true,
+    "rootDir": "src",
     "baseUrl": ".",
     "paths": {
       "@colanode/core/*": ["../../packages/core/src/*"],
