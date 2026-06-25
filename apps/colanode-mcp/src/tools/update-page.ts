@@ -26,7 +26,7 @@ export const updatePageTool: Tool = {
     const nodes = await ctx.app.mediator.executeQuery({
       type: 'node.list',
       userId,
-      filters: [{ field: 'id', operator: '=', value: pageId }] as never,
+      filters: [{ field: ['id'], operator: 'eq', value: pageId }] as never,
       sorts: [],
       limit: 1,
     });

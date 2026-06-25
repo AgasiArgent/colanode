@@ -7,9 +7,9 @@ export const buildNodeListInput = (
 ): NodeListQueryInput => {
   const filters = [];
   if (opts.parentId) {
-    filters.push({ field: 'parentId', operator: '=', value: opts.parentId });
+    filters.push({ field: ['parentId'], operator: 'eq', value: opts.parentId });
   } else if (opts.rootId) {
-    filters.push({ field: 'rootId', operator: '=', value: opts.rootId });
+    filters.push({ field: ['rootId'], operator: 'eq', value: opts.rootId });
   }
   return {
     type: 'node.list',

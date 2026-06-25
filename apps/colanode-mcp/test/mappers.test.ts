@@ -12,7 +12,7 @@ describe('buildNodeListInput', () => {
     expect(input).toEqual({
       type: 'node.list',
       userId: 'us-1',
-      filters: [{ field: 'parentId', operator: '=', value: 'sp-1' }],
+      filters: [{ field: ['parentId'], operator: 'eq', value: 'sp-1' }],
       sorts: [],
       limit: 100,
     });
@@ -21,7 +21,7 @@ describe('buildNodeListInput', () => {
   it('filters by rootId and respects an explicit limit', () => {
     const input = buildNodeListInput('us-1', { rootId: 'sp-9', limit: 10 });
     expect(input.filters).toEqual([
-      { field: 'rootId', operator: '=', value: 'sp-9' },
+      { field: ['rootId'], operator: 'eq', value: 'sp-9' },
     ]);
     expect(input.limit).toBe(10);
   });
