@@ -39,7 +39,11 @@ export const bootEngine = async (
 
   // Register the server + log in if no account is present on this data dir yet.
   if (app.getAccounts().length === 0) {
-    const created = await app.createServer(new URL(opts.serverUrl));
+    // createServer expects the server's /config URL (the desktop/web callers
+    // pass `.../config`); accept a bare base URL here and append it.
+    const base = opts.serverUrl.replace(/\/+$/, '');
+    const configUrl = new URL(base.endsWith('/config') ? base : `${base}/config`);
+    const created = await app.createServer(configUrl);
     if (!created) {
       throw new Error(`Could not reach Colanode server at ${opts.serverUrl}`);
     }
