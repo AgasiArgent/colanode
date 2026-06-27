@@ -1,3 +1,6 @@
+import { tools, ToolContext } from '@colanode/agent-tools';
+import { runAgentLoop } from '@colanode/bot/agent/loop';
+import { formatReport } from '@colanode/bot/agent/report';
 import { BotConfig, loadConfig } from '@colanode/bot/config';
 import { buildDialog, DialogEntry } from '@colanode/bot/dialog';
 import { findBotMention } from '@colanode/bot/mention';
@@ -56,7 +59,18 @@ const handleMessage = async (
       }));
 
     const dialog = buildDialog(entries, workspaceUserId);
-    const reply = await provider.generateReply(dialog, config.systemPrompt);
+    const ctx: ToolContext = {
+      app,
+      resolveUserId: async () => workspaceUserId,
+    };
+    const result = await runAgentLoop({
+      provider,
+      tools,
+      systemPrompt: config.systemPrompt,
+      dialog,
+      ctx,
+    });
+    const reply = formatReport(result.text, result.actions);
     await app.mediator.executeMutation({
       type: 'message.create',
       userId: workspaceUserId,
