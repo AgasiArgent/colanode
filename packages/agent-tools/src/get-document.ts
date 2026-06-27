@@ -1,4 +1,4 @@
-import { Tool } from '@colanode/mcp/tools/registry';
+import { Tool } from '@colanode/agent-tools/registry';
 
 export const getDocumentTool: Tool = {
   name: 'colanode_get_document',

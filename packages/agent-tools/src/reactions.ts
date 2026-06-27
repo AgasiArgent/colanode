@@ -1,4 +1,4 @@
-import { runMutation, Tool } from '@colanode/mcp/tools/registry';
+import { runMutation, Tool } from '@colanode/agent-tools/registry';
 
 export const addReactionTool: Tool = {
   name: 'colanode_add_reaction',

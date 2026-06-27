@@ -1,28 +1,27 @@
-import { ChannelAttributes, generateId, IdType } from '@colanode/core';
-import { runMutation, Tool } from '@colanode/mcp/tools/registry';
+import { runMutation, Tool } from '@colanode/agent-tools/registry';
+import { generateId, IdType, PageAttributes } from '@colanode/core';
 
-export const buildChannelAttributes = (
+export const buildPageAttributes = (
   name: string,
   parentId: string,
   avatar?: string
-): ChannelAttributes => ({
-  type: 'channel',
+): PageAttributes => ({
+  type: 'page',
   name,
   parentId,
   avatar: avatar ?? null,
 });
 
-export const createChannelTool: Tool = {
-  name: 'colanode_create_channel',
-  description: 'Create a channel under a space. Returns the new channel id.',
+export const createPageTool: Tool = {
+  name: 'colanode_create_page',
+  description:
+    'Create a page under a parent node (a space, or another page). Returns the ' +
+    'new page id.',
   inputSchema: {
     type: 'object',
     properties: {
       workspace_id: { type: 'string' },
-      parent_id: {
-        type: 'string',
-        description: 'Space to nest the channel under',
-      },
+      parent_id: { type: 'string', description: 'Space or page to nest under' },
       name: { type: 'string' },
       avatar: { type: 'string' },
     },
@@ -32,17 +31,17 @@ export const createChannelTool: Tool = {
     const userId = await ctx.resolveUserId(
       args.workspace_id as string | undefined
     );
-    const nodeId = generateId(IdType.Channel);
+    const nodeId = generateId(IdType.Page);
     await runMutation(ctx, {
       type: 'node.create',
       userId,
       nodeId,
-      attributes: buildChannelAttributes(
+      attributes: buildPageAttributes(
         args.name as string,
         args.parent_id as string,
         args.avatar as string | undefined
       ),
     });
-    return `Created channel ${nodeId}`;
+    return `Created page ${nodeId}`;
   },
 };

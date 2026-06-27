@@ -1,6 +1,6 @@
 import { JSONContent } from '@tiptap/core';
 
-import { runMutation, Tool } from '@colanode/mcp/tools/registry';
+import { runMutation, Tool } from '@colanode/agent-tools/registry';
 
 export const textToContent = (text: string): JSONContent => ({
   type: 'doc',

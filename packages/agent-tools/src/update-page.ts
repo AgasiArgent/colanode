@@ -1,5 +1,5 @@
+import { runMutation, Tool } from '@colanode/agent-tools/registry';
 import { PageAttributes } from '@colanode/core';
-import { runMutation, Tool } from '@colanode/mcp/tools/registry';
 
 export const updatePageTool: Tool = {
   name: 'colanode_update_page',

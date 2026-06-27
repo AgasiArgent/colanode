@@ -12,6 +12,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@colanode/agent-tools": "*",
     "@colanode/client": "*",
     "@colanode/client-node": "*",
     "@colanode/core": "*",

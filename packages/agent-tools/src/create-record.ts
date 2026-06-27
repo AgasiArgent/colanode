@@ -1,5 +1,5 @@
+import { runMutation, Tool } from '@colanode/agent-tools/registry';
 import { generateId, IdType, RecordAttributes } from '@colanode/core';
-import { runMutation, Tool } from '@colanode/mcp/tools/registry';
 
 export const buildRecordAttributes = (
   databaseId: string,

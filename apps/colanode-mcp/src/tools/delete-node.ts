@@ -1,4 +1,4 @@
-import { runMutation, Tool } from '@colanode/mcp/tools/registry';
+import { runMutation, Tool } from '@colanode/agent-tools';
 
 export const deleteNodeTool: Tool = {
   name: 'colanode_delete_node',

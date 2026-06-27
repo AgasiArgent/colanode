@@ -1,5 +1,5 @@
+import { Tool } from '@colanode/agent-tools/registry';
 import { NodeListQueryInput } from '@colanode/client/queries/nodes/node-list';
-import { Tool } from '@colanode/mcp/tools/registry';
 
 export const buildNodeListInput = (
   userId: string,

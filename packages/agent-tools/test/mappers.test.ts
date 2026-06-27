@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildChannelAttributes } from '@colanode/mcp/tools/create-channel';
-import { buildPageAttributes } from '@colanode/mcp/tools/create-page';
-import { buildRecordAttributes } from '@colanode/mcp/tools/create-record';
-import { buildNodeListInput } from '@colanode/mcp/tools/list-nodes';
-import { textToContent } from '@colanode/mcp/tools/post-message';
+import { buildChannelAttributes } from '@colanode/agent-tools/create-channel';
+import { buildPageAttributes } from '@colanode/agent-tools/create-page';
+import { buildRecordAttributes } from '@colanode/agent-tools/create-record';
+import { buildNodeListInput } from '@colanode/agent-tools/list-nodes';
+import { textToContent } from '@colanode/agent-tools/post-message';
 
 describe('buildNodeListInput', () => {
   it('filters by parentId when given', () => {
