@@ -14,6 +14,7 @@
     "baseUrl": ".",
     "paths": {
       "@colanode/bot/*": ["src/*"],
+      "@colanode/agent-tools/*": ["../../packages/agent-tools/src/*"],
       "@colanode/client-node": ["../../packages/client-node/src/index.ts"],
       "@colanode/client-node/*": ["../../packages/client-node/src/*"],
       "@colanode/core/*": ["../../packages/core/src/*"],
@@ -22,6 +23,7 @@
     }
   },
   "references": [
+    { "path": "../../packages/agent-tools/tsconfig.json" },
     { "path": "../../packages/core/tsconfig.json" },
     { "path": "../../packages/crdt/tsconfig.json" },
     { "path": "../../packages/client/tsconfig.json" },
