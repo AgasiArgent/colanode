@@ -13,6 +13,7 @@ import {
   markNodeAsOpened,
   markNodeAsSeen,
 } from '@colanode/server/lib/node-interactions';
+import { markNotificationRead } from '@colanode/server/lib/notifications';
 import {
   createNodeReaction,
   deleteNodeReaction,
@@ -89,6 +90,8 @@ const handleMutation = async (
     return await markNodeAsOpened(workspace, mutation);
   } else if (mutation.type === 'document.update') {
     return await updateDocumentFromMutation(workspace, mutation.data);
+  } else if (mutation.type === 'notification.read') {
+    return await markNotificationRead(workspace, mutation);
   } else {
     return MutationStatus.METHOD_NOT_ALLOWED;
   }
