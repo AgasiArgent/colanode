@@ -18,6 +18,8 @@ import {
   SyncCollaborationData,
   SyncDocumentUpdatesInput,
   SyncDocumentUpdateData,
+  SyncNotificationsInput,
+  SyncNotificationData,
 } from '@colanode/core';
 
 interface RootSynchronizers {
@@ -36,6 +38,7 @@ type SyncHandlers = {
   nodeReactions: (data: SyncNodeReactionData) => Promise<void>;
   nodeTombstones: (data: SyncNodeTombstoneData) => Promise<void>;
   documentUpdates: (data: SyncDocumentUpdateData) => Promise<void>;
+  notifications: (data: SyncNotificationData) => Promise<void>;
 };
 
 const debug = createDebugger('desktop:service:sync');
@@ -51,6 +54,9 @@ export class SyncService {
   private userSynchronizer: Synchronizer<SyncUsersInput> | undefined;
   private collaborationSynchronizer:
     | Synchronizer<SyncCollaborationsInput>
+    | undefined;
+  private notificationSynchronizer:
+    | Synchronizer<SyncNotificationsInput>
     | undefined;
 
   constructor(workspaceService: WorkspaceService) {
@@ -77,6 +83,10 @@ export class SyncService {
       documentUpdates: this.workspace.documents.syncServerDocumentUpdate.bind(
         this.workspace.documents
       ),
+      notifications:
+        this.workspace.notifications.syncServerNotification.bind(
+          this.workspace.notifications
+        ),
     };
     eventBus.subscribe(this.handleEvent.bind(this));
   }
@@ -122,6 +132,17 @@ export class SyncService {
       await this.collaborationSynchronizer.init();
     }
 
+    if (!this.notificationSynchronizer) {
+      this.notificationSynchronizer = new Synchronizer(
+        this.workspace,
+        { type: 'notifications' },
+        'notifications',
+        this.syncHandlers.notifications
+      );
+
+      await this.notificationSynchronizer.init();
+    }
+
     const collaborations =
       this.workspace.collaborations.getActiveCollaborations();
 
@@ -133,6 +154,7 @@ export class SyncService {
   public destroy(): void {
     this.userSynchronizer?.destroy();
     this.collaborationSynchronizer?.destroy();
+    this.notificationSynchronizer?.destroy();
 
     for (const rootSynchronizers of this.rootSynchronizers.values()) {
       this.destroyRootSynchronizers(rootSynchronizers);
