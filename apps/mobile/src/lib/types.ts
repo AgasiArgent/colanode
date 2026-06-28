@@ -1,6 +1,6 @@
 import { MutationInput, MutationResult } from '@colanode/client/mutations';
 import { QueryInput, QueryMap } from '@colanode/client/queries';
-import { Event } from '@colanode/client/types';
+import { AppInitOutput, Event } from '@colanode/client/types';
 
 declare global {
   interface Window {
@@ -16,6 +16,7 @@ export type InitMessage = {
 
 export type InitResultMessage = {
   type: 'init_result';
+  output: AppInitOutput;
 };
 
 export type MutationMessage = {
@@ -92,7 +93,7 @@ export type Message =
 
 export type PendingInit = {
   type: 'init';
-  resolve: () => void;
+  resolve: (result: AppInitOutput) => void;
   reject: (error: string) => void;
 };
 

@@ -26,6 +26,7 @@ import {
 
 import { eventBus } from '@colanode/client/lib';
 import { AppMeta, AppService } from '@colanode/client/services';
+import { AppInitOutput } from '@colanode/client/types';
 import { generateId, IdType } from '@colanode/core';
 import { copyAssets, indexHtmlAsset } from '@colanode/mobile/lib/assets';
 import { Message } from '@colanode/mobile/lib/types';
@@ -178,6 +179,7 @@ export const App = () => {
   const webViewRef = useRef<WebView>(null);
   const app = useRef<AppService | null>(null);
   const appInitialized = useRef<boolean>(false);
+  const initOutput = useRef<AppInitOutput | null>(null);
 
   const [uri, setUri] = useState<string | null>(null);
   const [baseDir, setBaseDir] = useState<string | null>(null);
@@ -214,8 +216,10 @@ export const App = () => {
         await app.current.migrate();
         await app.current.init();
         appInitialized.current = true;
+        initOutput.current = 'success';
       } catch (error) {
         console.error(error);
+        initOutput.current = 'error';
       }
     })();
   }, []);
@@ -254,14 +258,14 @@ export const App = () => {
       }
     } else if (message.type === 'init') {
       let count = 0;
-      while (!appInitialized.current) {
+      while (initOutput.current === null) {
         await new Promise((resolve) => setTimeout(resolve, 50));
         count++;
         if (count > 100) {
           throw new Error('App initialization timed out');
         }
       }
-      sendMessage({ type: 'init_result' });
+      sendMessage({ type: 'init_result', output: initOutput.current });
     } else if (message.type === 'mutation') {
       if (!app.current) {
         return;

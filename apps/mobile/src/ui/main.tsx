@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 
 import { eventBus } from '@colanode/client/lib';
 import { MutationInput, MutationResult } from '@colanode/client/mutations';
+import { AppInitOutput } from '@colanode/client/types';
 import { QueryInput, QueryMap } from '@colanode/client/queries';
 import { generateId, IdType } from '@colanode/core/lib/id';
 import {
@@ -29,7 +30,7 @@ window.colanode = {
       type: 'init',
     };
 
-    const promise = new Promise<void>((resolve, reject) => {
+    const promise = new Promise<AppInitOutput>((resolve, reject) => {
       pendingPromises.set('init', {
         type: 'init',
         resolve,
@@ -142,7 +143,7 @@ const handleMessage = (message: Message) => {
       return;
     }
 
-    promise.resolve();
+    promise.resolve(message.output);
     pendingPromises.delete('init');
   } else if (message.type === 'mutation_result') {
     const promise = pendingPromises.get(message.mutationId);
