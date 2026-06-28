@@ -39,6 +39,7 @@ export * from './apps/tab-delete';
 export * from './nodes/node-delete';
 export * from './nodes/node-create';
 export * from './nodes/node-update';
+export * from './notifications/notification-read';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface MutationMap {}

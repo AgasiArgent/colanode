@@ -28,6 +28,8 @@ import { NodeInteractionGetQueryHandler } from './interactions/node-interaction-
 import { RadarDataGetQueryHandler } from './interactions/radar-data-get';
 import { NodeListQueryHandler } from './nodes/node-list';
 import { NodeReactionsListQueryHandler } from './nodes/node-reaction-list';
+import { NotificationListQueryHandler } from './notifications/notification-list';
+import { NotificationUnreadCountQueryHandler } from './notifications/notification-unread-count';
 import { RecordFieldValueCountQueryHandler } from './records/record-field-value-count';
 import { RecordSearchQueryHandler } from './records/record-search';
 import { ServerListQueryHandler } from './servers/server-list';
@@ -73,5 +75,7 @@ export const buildQueryHandlerMap = (app: AppService): QueryHandlerMap => {
     'emoji.svg.get': new EmojiSvgGetQueryHandler(app),
     'tabs.list': new TabsListQueryHandler(app),
     'server.list': new ServerListQueryHandler(app),
+    'notification.list': new NotificationListQueryHandler(app),
+    'notification.unread-count': new NotificationUnreadCountQueryHandler(app),
   };
 };

@@ -43,6 +43,7 @@ import { UsersCreateMutationHandler } from './users/users-create';
 import { WorkspaceCreateMutationHandler } from './workspaces/workspace-create';
 import { WorkspaceDeleteMutationHandler } from './workspaces/workspace-delete';
 import { WorkspaceUpdateMutationHandler } from './workspaces/workspace-update';
+import { NotificationReadMutationHandler } from './notifications/notification-read';
 
 export type MutationHandlerMap = {
   [K in keyof MutationMap]: MutationHandler<MutationMap[K]['input']>;
@@ -94,5 +95,6 @@ export const buildMutationHandlerMap = (
     'tab.create': new TabCreateMutationHandler(app),
     'tab.update': new TabUpdateMutationHandler(app),
     'tab.delete': new TabDeleteMutationHandler(app),
+    'notification.read': new NotificationReadMutationHandler(app),
   };
 };
