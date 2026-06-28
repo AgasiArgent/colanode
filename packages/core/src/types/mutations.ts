@@ -191,6 +191,24 @@ export type UpdateDocumentMutation = z.infer<
   typeof updateDocumentMutationSchema
 >;
 
+export const notificationReadMutationDataSchema = z.object({
+  notificationId: z.string(),
+  readAt: z.string(),
+});
+
+export type NotificationReadMutationData = z.infer<
+  typeof notificationReadMutationDataSchema
+>;
+
+export const notificationReadMutationSchema = mutationBaseSchema.extend({
+  type: z.literal('notification.read'),
+  data: notificationReadMutationDataSchema,
+});
+
+export type NotificationReadMutation = z.infer<
+  typeof notificationReadMutationSchema
+>;
+
 export const mutationSchema = z.discriminatedUnion('type', [
   createNodeMutationSchema,
   updateNodeMutationSchema,
@@ -200,6 +218,7 @@ export const mutationSchema = z.discriminatedUnion('type', [
   nodeInteractionSeenMutationSchema,
   nodeInteractionOpenedMutationSchema,
   updateDocumentMutationSchema,
+  notificationReadMutationSchema,
 ]);
 
 export type Mutation = z.infer<typeof mutationSchema>;
