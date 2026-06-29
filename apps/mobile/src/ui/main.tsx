@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
+import superjson from 'superjson';
+
 import { eventBus } from '@colanode/client/lib';
 import { MutationInput, MutationResult } from '@colanode/client/mutations';
 import { AppInitOutput } from '@colanode/client/types';
@@ -21,7 +23,7 @@ const windowId = generateId(IdType.Window);
 const pendingPromises = new Map<string, PendingPromise>();
 
 const postMessage = (message: Message) => {
-  window.ReactNativeWebView?.postMessage(JSON.stringify(message));
+  window.ReactNativeWebView?.postMessage(superjson.stringify(message));
 };
 
 window.colanode = {
@@ -175,7 +177,7 @@ const handleMessage = (message: Message) => {
 };
 
 window.addEventListener('message', (event) => {
-  const message = JSON.parse(event.data) as Message;
+  const message = superjson.parse<Message>(event.data);
   handleMessage(message);
 });
 

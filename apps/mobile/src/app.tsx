@@ -23,6 +23,7 @@ import {
   WebViewErrorEvent,
   WebViewHttpErrorEvent,
 } from 'react-native-webview/lib/WebViewTypes';
+import superjson from 'superjson';
 
 import { eventBus } from '@colanode/client/lib';
 import { AppMeta, AppService } from '@colanode/client/services';
@@ -233,7 +234,7 @@ export const App = () => {
   }, []);
 
   const handleMessage = useCallback(async (e: WebViewMessageEvent) => {
-    const message = JSON.parse(e.nativeEvent.data) as Message;
+    const message = superjson.parse<Message>(e.nativeEvent.data);
     if (message.type === 'console') {
       if (message.level === 'log') {
         console.log(
@@ -313,7 +314,7 @@ export const App = () => {
   }, []);
 
   const sendMessage = useCallback((message: Message) => {
-    webViewRef.current?.postMessage(JSON.stringify(message));
+    webViewRef.current?.postMessage(superjson.stringify(message));
   }, []);
 
   const [webviewError, setWebviewError] = useState<string | null>(null);
