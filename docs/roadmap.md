@@ -48,6 +48,7 @@ We compared three candidates for "self-hosted/free, rich-yet-simple, talk to col
 - Time-spent reports
 - Audit-log UI
 - Full built-in **mail** (IMAP receive = large subsystem; revisit). If built: shared-mailbox access via a button in mail, not a separate page.
+- **Bug-repro: sink vs source — decide.** Shared bug-repro (pin + screen-video, `repro.kvotaflow.ru`) is being added to kvota/crmapp. Colanode is designed as the *future sink* (bugs from all apps → records/channels; the bug row is the hook), but could also be a *source* (report bugs in colanode itself, via the reusable launcher module). Decide sink-first vs source before embedding. Design note: `~/workspace/ci/docs/superpowers/specs/2026-07-01-bug-repro-module-extraction-note.md`.
 
 ### 🔴 Skip / rethink
 - Git as "commits + diff" view — not interesting; if needed, connect GitHub/GitLab trivially. Replaced by visual-recap.
@@ -79,3 +80,4 @@ A cross-space feed (published recaps, tasks, alerts) tagged with the project/spa
 - Multi-workspace admin view vs local-first model — how to aggregate cleanly across spaces.
 - Notification delivery matrix: in-app vs web-push vs Expo push — per-event routing + user prefs.
 - Guest-sharing for visual-recap: scope a guest to a single published recap vs a whole space.
+- Bug-repro: is colanode the **sink** (aggregate bugs from all apps as records) first, or also a **source** (embed the pin+video launcher module here)? See backlog + `~/workspace/ci/docs/superpowers/specs/2026-07-01-bug-repro-module-extraction-note.md`.
