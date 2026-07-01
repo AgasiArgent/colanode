@@ -327,6 +327,18 @@ export type TabDeletedEvent = {
   tab: Tab;
 };
 
+export type NotificationCreatedEvent = {
+  type: 'notification.created';
+  workspace: WorkspaceEventData;
+  notificationId: string;
+};
+
+export type NotificationReadEvent = {
+  type: 'notification.read';
+  workspace: WorkspaceEventData;
+  notificationId: string;
+};
+
 export type Event =
   | UserCreatedEvent
   | UserUpdatedEvent
@@ -380,4 +392,6 @@ export type Event =
   | TempFileDeletedEvent
   | TabCreatedEvent
   | TabUpdatedEvent
-  | TabDeletedEvent;
+  | TabDeletedEvent
+  | NotificationCreatedEvent
+  | NotificationReadEvent;

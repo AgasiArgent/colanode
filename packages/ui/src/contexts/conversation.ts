@@ -8,7 +8,10 @@ interface ConversationContext {
   rootId: string;
   role: NodeRole;
   canCreateMessage: boolean;
+  isThread: boolean;
   onReply: (message: LocalMessageNode) => void;
+  onQuoteReply: (message: LocalMessageNode) => void;
+  onOpenThread: (messageId: string) => void;
   onLastMessageIdChange: (id: string) => void;
   canDeleteMessage: (message: LocalMessageNode) => boolean;
 }

@@ -5,13 +5,17 @@ import { LocalSpaceNode } from '@colanode/client/types';
 import { Avatar } from '@colanode/ui/components/avatars/avatar';
 import { SidebarItem } from '@colanode/ui/components/layouts/sidebars/sidebar-item';
 import { SpaceSidebarDropdown } from '@colanode/ui/components/spaces/space-sidebar-dropdown';
+import { SpaceSidebarGroup } from '@colanode/ui/components/spaces/space-sidebar-group';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@colanode/ui/components/ui/collapsible';
 import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { sortSpaceChildren } from '@colanode/ui/lib/spaces';
+import {
+  groupSpaceChildrenByType,
+  sortSpaceChildren,
+} from '@colanode/ui/lib/spaces';
 
 interface SpaceSidebarItemProps {
   space: LocalSpaceNode;
@@ -29,6 +33,7 @@ export const SpaceSidebarItem = ({ space }: SpaceSidebarItemProps) => {
   );
 
   const children = sortSpaceChildren(space, nodeChildrenGetQuery.data);
+  const groups = groupSpaceChildrenByType(children);
 
   return (
     <Collapsible
@@ -36,7 +41,10 @@ export const SpaceSidebarItem = ({ space }: SpaceSidebarItemProps) => {
       defaultOpen={true}
       className="group/sidebar-space"
     >
-      <div className="group/space-row text-sm flex h-7 items-center gap-2 overflow-hidden rounded-md px-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground cursor-pointer">
+      <div
+        data-testid={`space-sidebar-item-${space.id}`}
+        className="group/space-row text-sm flex h-7 items-center gap-2 overflow-hidden rounded-md px-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground cursor-pointer"
+      >
         <CollapsibleTrigger asChild>
           <button className="flex items-center gap-2 overflow-hidden rounded-md text-left text-sm flex-1 cursor-pointer">
             <Avatar
@@ -52,13 +60,21 @@ export const SpaceSidebarItem = ({ space }: SpaceSidebarItemProps) => {
         <SpaceSidebarDropdown space={space} />
       </div>
       <CollapsibleContent>
-        <ul className="ml-3 flex min-w-0 flex-col gap-0.5 py-0.5">
-          {children.map((child) => (
-            <li key={child.id}>
-              <SidebarItem node={child} />
-            </li>
-          ))}
-        </ul>
+        {groups.length <= 1 ? (
+          <ul className="ml-3 flex min-w-0 flex-col gap-0.5 py-0.5">
+            {children.map((child) => (
+              <li key={child.id}>
+                <SidebarItem node={child} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="ml-3 flex min-w-0 flex-col gap-0.5 py-0.5">
+            {groups.map((group) => (
+              <SpaceSidebarGroup key={group.type} space={space} group={group} />
+            ))}
+          </div>
+        )}
       </CollapsibleContent>
     </Collapsible>
   );

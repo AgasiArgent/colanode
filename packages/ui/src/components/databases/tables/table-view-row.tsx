@@ -20,7 +20,10 @@ export const TableViewRow = ({ index, record }: TableViewRowProps) => {
 
   return (
     <RecordProvider record={record} role={role}>
-      <div className="animate-fade-in flex flex-row items-center gap-0.5 border-b">
+      <div
+        data-testid={`table-row-${record.id}`}
+        className="animate-fade-in flex flex-row items-center gap-0.5 border-b"
+      >
         <span
           className="flex cursor-pointer items-center justify-center text-sm text-muted-foreground"
           style={{ width: '30px', minWidth: '30px' }}

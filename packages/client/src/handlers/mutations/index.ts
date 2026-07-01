@@ -22,6 +22,7 @@ import { FileCreateMutationHandler } from './files/file-create';
 import { FileDownloadMutationHandler } from './files/file-download';
 import { TempFileCreateMutationHandler } from './files/temp-file-create';
 import { MessageCreateMutationHandler } from './messages/message-create';
+import { MessageTaskSetMutationHandler } from './messages/message-task-set';
 import { NodeCollaboratorCreateMutationHandler } from './nodes/node-collaborator-create';
 import { NodeCollaboratorDeleteMutationHandler } from './nodes/node-collaborator-delete';
 import { NodeCollaboratorUpdateMutationHandler } from './nodes/node-collaborator-update';
@@ -42,6 +43,7 @@ import { UsersCreateMutationHandler } from './users/users-create';
 import { WorkspaceCreateMutationHandler } from './workspaces/workspace-create';
 import { WorkspaceDeleteMutationHandler } from './workspaces/workspace-delete';
 import { WorkspaceUpdateMutationHandler } from './workspaces/workspace-update';
+import { NotificationReadMutationHandler } from './notifications/notification-read';
 
 export type MutationHandlerMap = {
   [K in keyof MutationMap]: MutationHandler<MutationMap[K]['input']>;
@@ -60,6 +62,7 @@ export const buildMutationHandlerMap = (
     'node.update': new NodeUpdateMutationHandler(app),
     'chat.create': new ChatCreateMutationHandler(app),
     'message.create': new MessageCreateMutationHandler(app),
+    'message.task.set': new MessageTaskSetMutationHandler(app),
     'node.collaborator.create': new NodeCollaboratorCreateMutationHandler(app),
     'node.collaborator.delete': new NodeCollaboratorDeleteMutationHandler(app),
     'node.collaborator.update': new NodeCollaboratorUpdateMutationHandler(app),
@@ -92,5 +95,6 @@ export const buildMutationHandlerMap = (
     'tab.create': new TabCreateMutationHandler(app),
     'tab.update': new TabUpdateMutationHandler(app),
     'tab.delete': new TabDeleteMutationHandler(app),
+    'notification.read': new NotificationReadMutationHandler(app),
   };
 };

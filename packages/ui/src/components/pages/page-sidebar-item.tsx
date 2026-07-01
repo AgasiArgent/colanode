@@ -43,7 +43,13 @@ export const PageSidebarItem = ({ page }: PageSidebarItemProps) => {
       onOpenChange={setOpen}
       className="group/page-item w-full"
     >
-      <Link from="/workspace/$userId" to="$nodeId" params={{ nodeId: page.id }}>
+      <Link
+        from="/workspace/$userId"
+        to="$nodeId"
+        params={{ nodeId: page.id }}
+        data-testid={`page-item-${page.id}`}
+        activeProps={{ 'aria-current': 'page' }}
+      >
         {({ isActive }) => (
           <div
             className={cn(
@@ -55,6 +61,8 @@ export const PageSidebarItem = ({ page }: PageSidebarItemProps) => {
             {hasChildren ? (
               <CollapsibleTrigger asChild>
                 <button
+                  type="button"
+                  aria-label={open ? 'Collapse subpages' : 'Expand subpages'}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();

@@ -1,9 +1,28 @@
 import { Asset } from 'expo-asset';
 import { modelName } from 'expo-device';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { View, ActivityIndicator, Platform, StyleSheet } from 'react-native';
+import {
+  Component,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ErrorInfo,
+  type ReactNode,
+} from 'react';
+import {
+  View,
+  Text,
+  Pressable,
+  ActivityIndicator,
+  Platform,
+  StyleSheet,
+} from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
+import {
+  WebViewErrorEvent,
+  WebViewHttpErrorEvent,
+} from 'react-native-webview/lib/WebViewTypes';
 
 import { eventBus } from '@colanode/client/lib';
 import { AppMeta, AppService } from '@colanode/client/services';
@@ -16,7 +35,143 @@ import { MobilePathService } from '@colanode/mobile/services/path-service';
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0a0a0a', padding: 0, margin: 0 },
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  errorContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    padding: 24,
+    backgroundColor: '#0a0a0a',
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#f5f5f5',
+    textAlign: 'center',
+  },
+  errorMessage: {
+    fontSize: 14,
+    color: '#a3a3a3',
+    textAlign: 'center',
+  },
+  errorRetryButton: {
+    marginTop: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 6,
+    backgroundColor: '#f5f5f5',
+    minHeight: 48,
+    minWidth: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  errorRetryText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0a0a0a',
+  },
 });
+
+// React Native's `global`/`window` is not a DOM EventTarget, so it has no
+// `addEventListener('error' | 'unhandledrejection', ...)` (that's a browser
+// API, only present inside the WebView content — see the console bridge in
+// apps/mobile/src/ui/main.tsx). The native-side equivalent for uncaught JS
+// exceptions is `ErrorUtils`. We chain through the previously installed
+// handler (RN's own redbox/exception reporter) so behavior is unchanged --
+// we only add a loud, contextual log on top of it.
+//
+// Unhandled promise rejections on the native side are already surfaced
+// (non-silently) by React Native's built-in rejection tracking (LogBox in
+// dev, console.warn in prod); there is no equivalent global hook to layer a
+// custom context log onto without reconfiguring that polyfill at app
+// bootstrap, which is out of scope here.
+const defaultErrorHandler = ErrorUtils.getGlobalHandler();
+ErrorUtils.setGlobalHandler((error, isFatal) => {
+  console.error('[Mobile] Uncaught global error', error, { isFatal });
+  defaultErrorHandler(error, isFatal);
+});
+
+interface MobileErrorStateProps {
+  testID: string;
+  title: string;
+  message: string;
+  retryTestID: string;
+  onRetry: () => void;
+}
+
+const MobileErrorState = ({
+  testID,
+  title,
+  message,
+  retryTestID,
+  onRetry,
+}: MobileErrorStateProps) => {
+  return (
+    <View testID={testID} style={styles.errorContainer}>
+      <Text style={styles.errorTitle}>{title}</Text>
+      <Text style={styles.errorMessage}>{message}</Text>
+      <Pressable
+        testID={retryTestID}
+        onPress={onRetry}
+        accessibilityRole="button"
+        accessibilityLabel="Try again"
+        style={styles.errorRetryButton}
+      >
+        <Text style={styles.errorRetryText}>Try again</Text>
+      </Pressable>
+    </View>
+  );
+};
+
+interface MobileErrorBoundaryState {
+  error: Error | null;
+}
+
+// Wraps the native app tree (SafeAreaView + WebView) so a render-time error
+// there shows a visible, test-observable failure state instead of a blank
+// screen -- the React Native counterpart of the shared web AppErrorBoundary
+// (@colanode/ui/components/app/app-error-boundary) that covers the web,
+// desktop, and mobile-WebView content builds.
+class MobileErrorBoundary extends Component<
+  { children: ReactNode },
+  MobileErrorBoundaryState
+> {
+  state: MobileErrorBoundaryState = { error: null };
+
+  static getDerivedStateFromError(error: Error): MobileErrorBoundaryState {
+    return { error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error(
+      '[Mobile] Uncaught render error in app tree',
+      error,
+      errorInfo.componentStack
+    );
+  }
+
+  reset = () => {
+    this.setState({ error: null });
+  };
+
+  render() {
+    const { error } = this.state;
+    if (!error) {
+      return this.props.children;
+    }
+
+    return (
+      <MobileErrorState
+        testID="app-error-boundary"
+        title="Something went wrong"
+        message={error.message || 'The app ran into an unexpected error.'}
+        retryTestID="app-error-boundary-retry-button"
+        onRetry={this.reset}
+      />
+    );
+  }
+}
 
 export const App = () => {
   const windowId = useRef<string>(generateId(IdType.Window));
@@ -157,10 +312,35 @@ export const App = () => {
     webViewRef.current?.postMessage(JSON.stringify(message));
   }, []);
 
+  const [webviewError, setWebviewError] = useState<string | null>(null);
+
+  const handleWebViewError = useCallback((event: WebViewErrorEvent) => {
+    const { description, code } = event.nativeEvent;
+    console.error('[Mobile] WebView failed to load', { description, code });
+    setWebviewError(description || 'Failed to load app content');
+  }, []);
+
+  const handleWebViewHttpError = useCallback((event: WebViewHttpErrorEvent) => {
+    const { description, statusCode, url } = event.nativeEvent;
+    console.error('[Mobile] WebView HTTP error', {
+      description,
+      statusCode,
+      url,
+    });
+    setWebviewError(
+      description || `Failed to load app content (HTTP ${statusCode})`
+    );
+  }, []);
+
+  const retryWebView = useCallback(() => {
+    setWebviewError(null);
+    webViewRef.current?.reload();
+  }, []);
+
   if (!uri) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator />
+      <View style={styles.loading}>
+        <ActivityIndicator testID="app-loading-indicator" />
       </View>
     );
   }
@@ -171,21 +351,44 @@ export const App = () => {
         edges={['top', 'bottom', 'left', 'right']}
         style={styles.container}
       >
-        <WebView
-          ref={webViewRef}
-          style={{ flex: 1, padding: 0, margin: 0, backgroundColor: '#0a0a0a' }}
-          originWhitelist={['*']}
-          allowFileAccess
-          allowFileAccessFromFileURLs
-          allowingReadAccessToURL={
-            Platform.OS === 'ios' ? (baseDir ?? uri) : undefined
-          }
-          source={{ uri }}
-          javaScriptEnabled
-          setSupportMultipleWindows={false}
-          onMessage={handleMessage}
-          allowsBackForwardNavigationGestures={true}
-        />
+        <MobileErrorBoundary>
+          {webviewError ? (
+            <MobileErrorState
+              testID="webview-load-error"
+              title="Failed to load"
+              message={webviewError}
+              retryTestID="webview-load-error-retry-button"
+              onRetry={retryWebView}
+            />
+          ) : (
+            <WebView
+              testID="app-webview"
+              ref={webViewRef}
+              style={{
+                flex: 1,
+                padding: 0,
+                margin: 0,
+                backgroundColor: '#0a0a0a',
+              }}
+              originWhitelist={['*']}
+              allowFileAccess
+              allowFileAccessFromFileURLs
+              allowingReadAccessToURL={
+                Platform.OS === 'ios' ? (baseDir ?? uri) : undefined
+              }
+              source={{ uri }}
+              javaScriptEnabled
+              setSupportMultipleWindows={false}
+              onMessage={handleMessage}
+              onError={handleWebViewError}
+              onHttpError={handleWebViewHttpError}
+              webviewDebuggingEnabled={
+                __DEV__ || process.env.EXPO_PUBLIC_E2E === 'true'
+              }
+              allowsBackForwardNavigationGestures={true}
+            />
+          )}
+        </MobileErrorBoundary>
       </SafeAreaView>
     </SafeAreaProvider>
   );

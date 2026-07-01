@@ -138,6 +138,8 @@ const CommandList = ({
       <div ref={refs.setFloating} style={{ ...floatingStyles, zIndex: 60 }}>
         <div
           id="mention-command"
+          role="listbox"
+          data-testid="editor-mention-menu"
           className="z-50 min-w-32 w-80 rounded-md border bg-popover text-popover-foreground p-1 shadow-md animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 overflow-hidden"
         >
           <ScrollArea className="h-80">
@@ -146,6 +148,9 @@ const CommandList = ({
                 {items.map((item: User, index: number) => (
                   <button
                     type="button"
+                    role="option"
+                    aria-selected={index === selectedIndex}
+                    data-testid={`editor-mention-item-${item.id}`}
                     className={`relative flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-left outline-hidden select-none focus:bg-accent focus:text-accent-foreground hover:bg-accent hover:text-accent-foreground ${
                       index === selectedIndex
                         ? 'bg-accent text-accent-foreground'

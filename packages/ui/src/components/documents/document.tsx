@@ -40,6 +40,7 @@ export const Document = ({ node, canEdit, autoFocus }: DocumentProps) => {
       state={state}
       updates={updates}
       canEdit={canEdit}
+      // eslint-disable-next-line jsx-a11y/no-autofocus -- intentional: primary field (document title/content) focused when the containing page/record is opened
       autoFocus={autoFocus}
     />
   );

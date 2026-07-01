@@ -2,6 +2,7 @@ import {
   AccountStatus,
   generateId,
   IdType,
+  NodeRole,
   UserStatus,
   WorkspaceStatus,
 } from '@colanode/core';
@@ -13,7 +14,10 @@ import type {
   SelectUser,
   SelectWorkspace,
 } from '@colanode/server/data/schema';
-import { generatePasswordHash } from '@colanode/server/lib/accounts';
+import {
+  generatePasswordHash,
+  insertAccount,
+} from '@colanode/server/lib/accounts';
 import { createNode } from '@colanode/server/lib/nodes';
 import { generateToken } from '@colanode/server/lib/tokens';
 import { DeviceType } from '@colanode/server/types/devices';
@@ -34,27 +38,7 @@ export const createAccount = async (input?: {
   const passwordHash =
     password === null ? null : await generatePasswordHash(password);
 
-  const account = await database
-    .insertInto('accounts')
-    .returningAll()
-    .values({
-      id: generateId(IdType.Account),
-      name,
-      email,
-      avatar: null,
-      password: passwordHash,
-      attributes: null,
-      created_at: new Date(),
-      updated_at: null,
-      status,
-    })
-    .executeTakeFirst();
-
-  if (!account) {
-    throw new Error('Failed to create account');
-  }
-
-  return account;
+  return insertAccount({ email, name, status, passwordHash });
 };
 
 export const createWorkspace = async (input: {
@@ -158,6 +142,7 @@ export const createSpaceNode = async (input: {
   workspaceId: string;
   userId: string;
   name?: string;
+  collaborators?: Record<string, NodeRole>;
 }): Promise<string> => {
   const spaceId = generateId(IdType.Space);
   const attributes: NodeAttributes = {
@@ -168,6 +153,7 @@ export const createSpaceNode = async (input: {
     visibility: 'private',
     collaborators: {
       [input.userId]: 'admin',
+      ...input.collaborators,
     },
   };
 
@@ -251,6 +237,56 @@ export const createFileNode = async (input: {
   }
 
   return fileId;
+};
+
+export const createMessageNode = async (input: {
+  workspaceId: string;
+  userId: string;
+  rootId: string;
+  parentId: string;
+  name?: string;
+  mentionUserId?: string;
+}): Promise<string> => {
+  const messageId = generateId(IdType.Message);
+
+  // Build mention content block if mentionUserId is provided
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let content: Record<string, any> | null = null;
+  if (input.mentionUserId) {
+    const blockId = generateId(IdType.Block);
+    content = {
+      [blockId]: {
+        id: blockId,
+        type: 'paragraph',
+        parentId: messageId,
+        index: 'a0',
+        content: [
+          { type: 'mention', attrs: { target: 'user', id: input.mentionUserId } },
+        ],
+      },
+    };
+  }
+
+  const attributes: NodeAttributes = {
+    type: 'message',
+    subtype: 'standard',
+    parentId: input.parentId,
+    content,
+  };
+
+  const created = await createNode({
+    nodeId: messageId,
+    rootId: input.rootId,
+    attributes,
+    userId: input.userId,
+    workspaceId: input.workspaceId,
+  });
+
+  if (!created) {
+    throw new Error('Failed to create message node');
+  }
+
+  return messageId;
 };
 
 export const buildCreateNodeMutation = (input: {

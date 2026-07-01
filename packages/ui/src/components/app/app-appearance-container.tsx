@@ -2,6 +2,7 @@ import { Check, Laptop, Moon, Sun } from 'lucide-react';
 
 import { ThemeColor, ThemeMode } from '@colanode/client/types';
 import { AppAppearanceBreadcrumb } from '@colanode/ui/components/app/app-appearance-breadcrumb';
+import { AppChatSettings } from '@colanode/ui/components/app/app-chat-settings';
 import { Container } from '@colanode/ui/components/layouts/containers/container';
 import { Button } from '@colanode/ui/components/ui/button';
 import { Separator } from '@colanode/ui/components/ui/separator';
@@ -73,6 +74,7 @@ export const AppAppearanceContainer = () => {
               <Button
                 key={option.key}
                 variant="outline"
+                aria-pressed={isActive}
                 onClick={() => {
                   setThemeMode(option.value ?? undefined);
                 }}
@@ -107,6 +109,7 @@ export const AppAppearanceContainer = () => {
               <Button
                 key={option.value}
                 variant="outline"
+                aria-pressed={isActive}
                 onClick={() => {
                   if (isDefault) {
                     setThemeColor(undefined);
@@ -132,6 +135,8 @@ export const AppAppearanceContainer = () => {
             );
           })}
         </div>
+
+        <AppChatSettings />
       </div>
     </Container>
   );

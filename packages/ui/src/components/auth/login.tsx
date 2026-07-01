@@ -168,6 +168,7 @@ export const Login = () => {
                 navigate({ to: '/auth/register' });
               }}
               type="button"
+              data-testid="login-register-link-button"
             >
               No account yet? Register
             </Button>
@@ -187,6 +188,7 @@ export const Login = () => {
                 setState({ type: 'login' });
               }}
               type="button"
+              data-testid="login-back-to-login-button"
             >
               Back to login
             </Button>

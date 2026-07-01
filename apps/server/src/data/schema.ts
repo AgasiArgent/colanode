@@ -306,6 +306,24 @@ interface CounterTable {
   updated_at: ColumnType<Date | null, Date | null, Date | null>;
 }
 
+interface NotificationTable {
+  id: ColumnType<string, string, never>;
+  user_id: ColumnType<string, string, never>;
+  workspace_id: ColumnType<string, string, never>;
+  root_id: ColumnType<string, string, never>;
+  type: ColumnType<string, string, never>;
+  source_node_id: ColumnType<string, string, never>;
+  actor_id: ColumnType<string | null, string | null, never>;
+  preview: ColumnType<Record<string, unknown>, Record<string, unknown>, never>;
+  created_at: ColumnType<Date, Date, never>;
+  read_at: ColumnType<Date | null, Date | null, Date | null>;
+  revision: ColumnType<string, never, never>;
+}
+
+export type SelectNotification = Selectable<NotificationTable>;
+export type CreateNotification = Insertable<NotificationTable>;
+export type UpdateNotification = Updateable<NotificationTable>;
+
 export interface DatabaseSchema {
   accounts: AccountTable;
   devices: DeviceTable;
@@ -324,4 +342,5 @@ export interface DatabaseSchema {
   node_embeddings: NodeEmbeddingTable;
   document_embeddings: DocumentEmbeddingTable;
   counters: CounterTable;
+  notifications: NotificationTable;
 }

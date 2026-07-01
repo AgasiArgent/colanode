@@ -1,5 +1,7 @@
 import { count, inArray, useLiveQuery } from '@tanstack/react-db';
-import { LayoutGrid, MessageCircle, Settings } from 'lucide-react';
+import { Bell, LayoutGrid, MessageCircle, Settings } from 'lucide-react';
+
+import { useLiveQuery as useColanodeLiveQuery } from '@colanode/ui/hooks/use-live-query';
 
 import { SidebarMenuType, UploadStatus } from '@colanode/client/types';
 import { SidebarMenuFooter } from '@colanode/ui/components/layouts/sidebars/sidebar-menu-footer';
@@ -19,6 +21,13 @@ export const SidebarMenu = ({ value, onChange }: SidebarMenuProps) => {
 
   const chatsState = radar.getChatsState(workspace.userId);
   const channelsState = radar.getChannelsState(workspace.userId);
+
+  const notificationUnreadCountQuery = useColanodeLiveQuery({
+    type: 'notification.unread-count',
+    userId: workspace.userId,
+  });
+
+  const notificationUnreadCount = notificationUnreadCountQuery.data ?? 0;
 
   const pendingUploadsQuery = useLiveQuery(
     (q) =>
@@ -45,6 +54,7 @@ export const SidebarMenu = ({ value, onChange }: SidebarMenuProps) => {
       <div className="flex flex-col gap-1 mt-2 w-full p-2 items-center grow">
         <SidebarMenuIcon
           icon={MessageCircle}
+          label="Chats"
           onClick={() => {
             onChange('chats');
           }}
@@ -57,6 +67,7 @@ export const SidebarMenu = ({ value, onChange }: SidebarMenuProps) => {
         />
         <SidebarMenuIcon
           icon={LayoutGrid}
+          label="Spaces"
           onClick={() => {
             onChange('spaces');
           }}
@@ -67,9 +78,23 @@ export const SidebarMenu = ({ value, onChange }: SidebarMenuProps) => {
             maxCount: 99,
           }}
         />
+        <SidebarMenuIcon
+          icon={Bell}
+          label="Inbox"
+          onClick={() => {
+            onChange('inbox');
+          }}
+          isActive={value === 'inbox'}
+          unreadBadge={{
+            count: notificationUnreadCount,
+            unread: notificationUnreadCount > 0,
+            maxCount: 99,
+          }}
+        />
         <div className="mt-auto" />
         <SidebarMenuIcon
           icon={Settings}
+          label="Settings"
           onClick={() => {
             onChange('settings');
           }}

@@ -16,6 +16,7 @@ import { NodeCountersService } from '@colanode/client/services/workspaces/node-c
 import { NodeInteractionService } from '@colanode/client/services/workspaces/node-interaction-service';
 import { NodeReactionService } from '@colanode/client/services/workspaces/node-reaction-service';
 import { NodeService } from '@colanode/client/services/workspaces/node-service';
+import { NotificationService } from '@colanode/client/services/workspaces/notification-service';
 import { RadarService } from '@colanode/client/services/workspaces/radar-service';
 import { SyncService } from '@colanode/client/services/workspaces/sync-service';
 import { UserService } from '@colanode/client/services/workspaces/user-service';
@@ -39,6 +40,7 @@ export class WorkspaceService {
   public readonly synchronizer: SyncService;
   public readonly radar: RadarService;
   public readonly nodeCounters: NodeCountersService;
+  public readonly notifications: NotificationService;
 
   private readonly workspaceFilesCleanJobScheduleId: string;
 
@@ -64,6 +66,7 @@ export class WorkspaceService {
     this.synchronizer = new SyncService(this);
     this.radar = new RadarService(this);
     this.nodeCounters = new NodeCountersService(this);
+    this.notifications = new NotificationService(this);
 
     this.workspaceFilesCleanJobScheduleId = `workspace.files.clean.${this.account.id}.${this.workspace.workspaceId}`;
   }

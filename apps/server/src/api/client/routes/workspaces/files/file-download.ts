@@ -7,9 +7,13 @@ import {
   extractNodeRole,
   FileStatus,
 } from '@colanode/core';
+import { toSafeLogFields } from '@colanode/server/api/client/lib/log-error';
 import { database } from '@colanode/server/data/database';
+import { createLogger } from '@colanode/server/lib/logger';
 import { fetchNodeTree, mapNode } from '@colanode/server/lib/nodes';
 import { storage } from '@colanode/server/lib/storage';
+
+const logger = createLogger('api:client:workspaces:file-download');
 
 export const fileDownloadRoute: FastifyPluginCallbackZod = (
   instance,
@@ -88,7 +92,11 @@ export const fileDownloadRoute: FastifyPluginCallbackZod = (
         }
 
         return reply.send(stream);
-      } catch {
+      } catch (error) {
+        logger.error(
+          toSafeLogFields(error),
+          `Failed to download file ${fileId} from storage (path: ${upload.path})`
+        );
         return reply.code(404).send({
           code: ApiErrorCode.FileNotFound,
           message: 'File not found.',

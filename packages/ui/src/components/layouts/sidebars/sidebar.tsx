@@ -5,11 +5,14 @@ import { SidebarChats } from '@colanode/ui/components/layouts/sidebars/sidebar-c
 import { SidebarMenu } from '@colanode/ui/components/layouts/sidebars/sidebar-menu';
 import { SidebarSettings } from '@colanode/ui/components/layouts/sidebars/sidebar-settings';
 import { SidebarSpaces } from '@colanode/ui/components/layouts/sidebars/sidebar-spaces';
+import { InboxPanel } from '@colanode/ui/components/inbox/inbox-panel';
 import { useApp } from '@colanode/ui/contexts/app';
+import { useWorkspace } from '@colanode/ui/contexts/workspace';
 import { cn } from '@colanode/ui/lib/utils';
 
 export const Sidebar = () => {
   const app = useApp();
+  const workspace = useWorkspace();
   const [menu, setMenu] = useState<SidebarMenuType>('spaces');
 
   return (
@@ -23,6 +26,7 @@ export const Sidebar = () => {
       <div className="min-h-0 grow overflow-auto border-l border-sidebar-border">
         {menu === 'spaces' && <SidebarSpaces />}
         {menu === 'chats' && <SidebarChats />}
+        {menu === 'inbox' && <InboxPanel userId={workspace.userId} />}
         {menu === 'settings' && <SidebarSettings />}
       </div>
     </div>

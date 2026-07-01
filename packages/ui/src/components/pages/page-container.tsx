@@ -9,5 +9,12 @@ interface PageContainerProps {
 
 export const PageContainer = ({ page, role }: PageContainerProps) => {
   const canEdit = hasNodeRole(role, 'editor');
-  return <Document node={page} canEdit={canEdit} autoFocus="start" />;
+  return (
+    <Document
+      node={page}
+      canEdit={canEdit}
+      // eslint-disable-next-line jsx-a11y/no-autofocus -- intentional: primary field (page title/content) focused when the page is opened
+      autoFocus="start"
+    />
+  );
 };

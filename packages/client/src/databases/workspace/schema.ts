@@ -286,6 +286,24 @@ export type SelectDownload = Selectable<DownloadTable>;
 export type CreateDownload = Insertable<DownloadTable>;
 export type UpdateDownload = Updateable<DownloadTable>;
 
+interface NotificationTable {
+  id: ColumnType<string, string, never>;
+  user_id: ColumnType<string, string, never>;
+  workspace_id: ColumnType<string, string, never>;
+  root_id: ColumnType<string, string, never>;
+  type: ColumnType<string, string, never>;
+  source_node_id: ColumnType<string, string, never>;
+  actor_id: ColumnType<string | null, string | null, never>;
+  preview: ColumnType<string, string, string>;
+  created_at: ColumnType<string, string, never>;
+  read_at: ColumnType<string | null, string | null, string | null>;
+  revision: ColumnType<string, string, string>;
+}
+
+export type SelectNotification = Selectable<NotificationTable>;
+export type CreateNotification = Insertable<NotificationTable>;
+export type UpdateNotification = Updateable<NotificationTable>;
+
 export interface WorkspaceDatabaseSchema {
   users: UserTable;
   nodes: NodeTable;
@@ -307,4 +325,5 @@ export interface WorkspaceDatabaseSchema {
   mutations: MutationTable;
   tombstones: TombstoneTable;
   cursors: CursorTable;
+  notifications: NotificationTable;
 }

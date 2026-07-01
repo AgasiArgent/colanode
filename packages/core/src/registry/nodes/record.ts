@@ -12,6 +12,7 @@ export const recordAttributesSchema = z.object({
   databaseId: z.string(),
   name: z.string(),
   avatar: z.string().nullable().optional(),
+  sourceMessageId: z.string().nullable().optional(),
   fields: z.record(z.string(), fieldValueSchema),
 });
 

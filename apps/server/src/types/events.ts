@@ -139,6 +139,20 @@ export type DocumentUpdateCreatedEvent = {
   workspaceId: string;
 };
 
+export type NotificationCreatedEvent = {
+  type: 'notification.created';
+  notificationId: string;
+  userId: string;
+  workspaceId: string;
+};
+
+export type NotificationUpdatedEvent = {
+  type: 'notification.updated';
+  notificationId: string;
+  userId: string;
+  workspaceId: string;
+};
+
 export type Event =
   | NodeCreatedEvent
   | NodeUpdatedEvent
@@ -160,4 +174,6 @@ export type Event =
   | FileDeletedEvent
   | FileInteractionUpdatedEvent
   | DocumentUpdatedEvent
-  | DocumentUpdateCreatedEvent;
+  | DocumentUpdateCreatedEvent
+  | NotificationCreatedEvent
+  | NotificationUpdatedEvent;

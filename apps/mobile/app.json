@@ -1,7 +1,8 @@
 {
   "expo": {
-    "name": "Colanode",
-    "slug": "colanode",
+    "name": "Superchat",
+    "slug": "superchat",
+    "owner": "bratmario",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,9 +14,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
+      "bundleIdentifier": "com.bratmario.superchat",
       "supportsTablet": true
     },
     "android": {
+      "package": "com.bratmario.superchat",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -26,6 +29,14 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-asset", "expo-sqlite"]
+    "plugins": [
+      "expo-asset",
+      "expo-sqlite"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "f26fd9ce-ad46-4bed-9b6b-cfa3d4fdc02b"
+      }
+    }
   }
 }

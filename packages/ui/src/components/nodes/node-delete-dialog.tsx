@@ -75,7 +75,11 @@ export const NodeDeleteDialog = ({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <Button variant="destructive" onClick={handleDelete}>
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            data-testid="node-delete-confirm-button"
+          >
             Delete
           </Button>
         </AlertDialogFooter>

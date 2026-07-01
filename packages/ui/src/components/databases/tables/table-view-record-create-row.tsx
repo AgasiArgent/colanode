@@ -14,6 +14,7 @@ export const TableViewRecordCreateRow = () => {
   return (
     <button
       type="button"
+      data-testid="table-record-create-button"
       className="animate-fade-in flex h-8 w-full cursor-pointer flex-row items-center gap-1 border-b pl-2 text-muted-foreground hover:bg-accent"
       onClick={() => view.createRecord()}
     >
