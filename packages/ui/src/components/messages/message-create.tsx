@@ -128,6 +128,7 @@ export const MessageCreate = forwardRef<MessageCreateRefProps>((_, ref) => {
             <DropdownMenuTrigger
               disabled={isPending || !conversation.canCreateMessage}
               className="cursor-pointer hover:bg-accent"
+              aria-label="Add attachment"
             >
               <span>
                 <Plus size={20} />
@@ -175,6 +176,9 @@ export const MessageCreate = forwardRef<MessageCreateRefProps>((_, ref) => {
           ) : (
             <button
               type="submit"
+              aria-label="Send message"
+              data-testid="message-composer-send"
+              aria-disabled={!(conversation.canCreateMessage && hasContent)}
               className={`${
                 conversation.canCreateMessage && hasContent
                   ? 'cursor-pointer text-blue-600'

@@ -30,7 +30,13 @@ export const RecordSettings = ({ record, role }: RecordSettingsProps) => {
     <Fragment>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Settings className="size-4 cursor-pointer text-muted-foreground hover:text-foreground" />
+          <Settings
+            role="button"
+            tabIndex={0}
+            aria-label="Record settings"
+            data-testid="record-settings-trigger"
+            className="size-4 cursor-pointer text-muted-foreground hover:text-foreground"
+          />
         </DropdownMenuTrigger>
         <DropdownMenuContent side="bottom" className="mr-2 w-80">
           <DropdownMenuLabel>{record.name}</DropdownMenuLabel>
@@ -41,6 +47,7 @@ export const RecordSettings = ({ record, role }: RecordSettingsProps) => {
           </DropdownMenuItem>
           <DropdownMenuItem
             className="flex items-center gap-2 cursor-pointer"
+            data-testid="record-delete-button"
             onClick={() => {
               if (!canDelete) {
                 return;

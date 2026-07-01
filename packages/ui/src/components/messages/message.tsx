@@ -106,6 +106,7 @@ export const Message = ({ message, previousMessage }: MessageProps) => {
       <div
         id={`message-${message.id}`}
         key={`message-${message.id}`}
+        data-testid={`message-item-${message.id}`}
         className={cn(
           'group flex flex-row px-1 rounded-sm transition-colors duration-150',
           isLongPressing

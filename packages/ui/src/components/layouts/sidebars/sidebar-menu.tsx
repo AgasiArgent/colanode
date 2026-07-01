@@ -54,6 +54,7 @@ export const SidebarMenu = ({ value, onChange }: SidebarMenuProps) => {
       <div className="flex flex-col gap-1 mt-2 w-full p-2 items-center grow">
         <SidebarMenuIcon
           icon={MessageCircle}
+          label="Chats"
           onClick={() => {
             onChange('chats');
           }}
@@ -66,6 +67,7 @@ export const SidebarMenu = ({ value, onChange }: SidebarMenuProps) => {
         />
         <SidebarMenuIcon
           icon={LayoutGrid}
+          label="Spaces"
           onClick={() => {
             onChange('spaces');
           }}
@@ -78,6 +80,7 @@ export const SidebarMenu = ({ value, onChange }: SidebarMenuProps) => {
         />
         <SidebarMenuIcon
           icon={Bell}
+          label="Inbox"
           onClick={() => {
             onChange('inbox');
           }}
@@ -91,6 +94,7 @@ export const SidebarMenu = ({ value, onChange }: SidebarMenuProps) => {
         <div className="mt-auto" />
         <SidebarMenuIcon
           icon={Settings}
+          label="Settings"
           onClick={() => {
             onChange('settings');
           }}

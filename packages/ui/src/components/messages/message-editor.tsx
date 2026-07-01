@@ -91,6 +91,8 @@ export const MessageEditor = forwardRef<
         attributes: {
           class:
             'prose-lg prose-stone dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full',
+          'aria-label': 'Write a message',
+          'data-testid': 'message-composer-input',
         },
         handleKeyDown: (_, event) => {
           return isHotkey('enter', event);

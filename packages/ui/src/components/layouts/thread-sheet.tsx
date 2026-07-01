@@ -29,10 +29,14 @@ export const ThreadSheet = () => {
       >
         <div className="flex h-10 shrink-0 flex-row items-center justify-between border-b border-border px-4">
           <SheetTitle className="text-sm font-semibold">Thread</SheetTitle>
-          <X
-            className="size-4 cursor-pointer text-muted-foreground hover:text-foreground"
+          <button
+            type="button"
+            aria-label="Close thread"
+            className="cursor-pointer text-muted-foreground hover:text-foreground"
             onClick={closeThread}
-          />
+          >
+            <X className="size-4" />
+          </button>
         </div>
         <VisuallyHidden>
           <SheetDescription>Thread replies</SheetDescription>

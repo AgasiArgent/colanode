@@ -8,7 +8,9 @@ import {
   ApiErrorCode,
   WorkspaceStatus,
 } from '@colanode/core';
+import { toSafeLogFields } from '@colanode/server/api/client/lib/log-error';
 import { updateDocumentFromMutation } from '@colanode/server/lib/documents';
+import { createLogger } from '@colanode/server/lib/logger';
 import {
   markNodeAsOpened,
   markNodeAsSeen,
@@ -24,6 +26,8 @@ import {
   deleteNodeFromMutation,
 } from '@colanode/server/lib/nodes';
 import { WorkspaceContext } from '@colanode/server/types/api';
+
+const logger = createLogger('api:client:workspaces:mutations-sync');
 
 export const mutationsSyncRoute: FastifyPluginCallbackZod = (
   instance,
@@ -55,7 +59,11 @@ export const mutationsSyncRoute: FastifyPluginCallbackZod = (
             id: mutation.id,
             status: status,
           });
-        } catch {
+        } catch (error) {
+          logger.error(
+            toSafeLogFields(error),
+            `Failed to apply mutation ${mutation.id} (type: ${mutation.type}) for workspace ${workspace.id}`
+          );
           results.push({
             id: mutation.id,
             status: MutationStatus.INTERNAL_SERVER_ERROR,

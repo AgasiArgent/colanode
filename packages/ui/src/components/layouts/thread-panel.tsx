@@ -37,10 +37,14 @@ export const ThreadPanel = () => {
       <div className="flex h-full flex-col">
         <div className="flex h-10 shrink-0 flex-row items-center justify-between border-b border-border px-3">
           <p className="text-sm font-semibold">Thread</p>
-          <X
-            className="size-4 cursor-pointer text-muted-foreground hover:text-foreground"
+          <button
+            type="button"
+            aria-label="Close thread"
+            className="cursor-pointer text-muted-foreground hover:text-foreground"
             onClick={closeThread}
-          />
+          >
+            <X className="size-4" />
+          </button>
         </div>
         <ThreadPanelContent threadRootId={threadRootId} />
       </div>

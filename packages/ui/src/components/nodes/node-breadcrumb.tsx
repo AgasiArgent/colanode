@@ -57,7 +57,10 @@ export const NodeBreadcrumb = ({ nodes }: NodeBreadcrumbProps) => {
                   <BreadcrumbSeparator />
                   <BreadcrumbItem>
                     <DropdownMenu>
-                      <DropdownMenuTrigger className="flex items-center gap-1">
+                      <DropdownMenuTrigger
+                        className="flex items-center gap-1"
+                        aria-label="More breadcrumb items"
+                      >
                         <BreadcrumbEllipsis className="h-4 w-4" />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="start">

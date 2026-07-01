@@ -14,7 +14,10 @@ import type {
   SelectUser,
   SelectWorkspace,
 } from '@colanode/server/data/schema';
-import { generatePasswordHash } from '@colanode/server/lib/accounts';
+import {
+  generatePasswordHash,
+  insertAccount,
+} from '@colanode/server/lib/accounts';
 import { createNode } from '@colanode/server/lib/nodes';
 import { generateToken } from '@colanode/server/lib/tokens';
 import { DeviceType } from '@colanode/server/types/devices';
@@ -35,27 +38,7 @@ export const createAccount = async (input?: {
   const passwordHash =
     password === null ? null : await generatePasswordHash(password);
 
-  const account = await database
-    .insertInto('accounts')
-    .returningAll()
-    .values({
-      id: generateId(IdType.Account),
-      name,
-      email,
-      avatar: null,
-      password: passwordHash,
-      attributes: null,
-      created_at: new Date(),
-      updated_at: null,
-      status,
-    })
-    .executeTakeFirst();
-
-  if (!account) {
-    throw new Error('Failed to create account');
-  }
-
-  return account;
+  return insertAccount({ email, name, status, passwordHash });
 };
 
 export const createWorkspace = async (input: {

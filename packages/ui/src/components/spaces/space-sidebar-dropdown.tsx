@@ -40,7 +40,10 @@ export const SpaceSidebarDropdown = ({ space }: SpaceSidebarDropdownProps) => {
     <Fragment>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="text-muted-foreground opacity-0 transition-opacity group-hover/sidebar-space:opacity-100 flex items-center justify-center p-0 mr-1 size-4 focus-visible:outline-none focus-visible:ring-0 cursor-pointer">
+          <button
+            aria-label="Space options"
+            className="text-muted-foreground opacity-0 transition-opacity group-hover/sidebar-space:opacity-100 flex items-center justify-center p-0 mr-1 size-4 focus-visible:outline-none focus-visible:ring-0 cursor-pointer"
+          >
             <Ellipsis />
           </button>
         </DropdownMenuTrigger>

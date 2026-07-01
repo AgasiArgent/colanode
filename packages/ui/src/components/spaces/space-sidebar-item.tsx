@@ -41,7 +41,10 @@ export const SpaceSidebarItem = ({ space }: SpaceSidebarItemProps) => {
       defaultOpen={true}
       className="group/sidebar-space"
     >
-      <div className="group/space-row text-sm flex h-7 items-center gap-2 overflow-hidden rounded-md px-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground cursor-pointer">
+      <div
+        data-testid={`space-sidebar-item-${space.id}`}
+        className="group/space-row text-sm flex h-7 items-center gap-2 overflow-hidden rounded-md px-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground cursor-pointer"
+      >
         <CollapsibleTrigger asChild>
           <button className="flex items-center gap-2 overflow-hidden rounded-md text-left text-sm flex-1 cursor-pointer">
             <Avatar

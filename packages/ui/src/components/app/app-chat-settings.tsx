@@ -43,6 +43,7 @@ export const AppChatSettings = () => {
             <Button
               key={option.key}
               variant="outline"
+              aria-pressed={isActive}
               onClick={() => {
                 setReplyDefault(option.value);
               }}

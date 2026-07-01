@@ -74,6 +74,7 @@ export const AppAppearanceContainer = () => {
               <Button
                 key={option.key}
                 variant="outline"
+                aria-pressed={isActive}
                 onClick={() => {
                   setThemeMode(option.value ?? undefined);
                 }}
@@ -108,6 +109,7 @@ export const AppAppearanceContainer = () => {
               <Button
                 key={option.value}
                 variant="outline"
+                aria-pressed={isActive}
                 onClick={() => {
                   if (isDefault) {
                     setThemeColor(undefined);

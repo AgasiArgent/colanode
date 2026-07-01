@@ -2,12 +2,25 @@ import * as Comlink from 'comlink';
 import { createRoot } from 'react-dom/client';
 
 import { eventBus } from '@colanode/client/lib';
+import { AppErrorBoundary } from '@colanode/ui/components/app/app-error-boundary';
 import { BrowserNotSupported } from '@colanode/web/components/browser-not-supported';
 import { MobileNotSupported } from '@colanode/web/components/mobile-not-supported';
 import { ColanodeWorkerApi } from '@colanode/web/lib/types';
 import { isMobileDevice, isOpfsSupported } from '@colanode/web/lib/utils';
 import { Root } from '@colanode/web/root';
 import DedicatedWorker from '@colanode/web/workers/dedicated?worker';
+
+window.addEventListener('error', (event) => {
+  console.error('[Web] Uncaught window error', event.error ?? event.message, {
+    filename: event.filename,
+    lineno: event.lineno,
+    colno: event.colno,
+  });
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('[Web] Unhandled promise rejection', event.reason);
+});
 
 const initializeApp = async () => {
   const isMobile = isMobileDevice();
@@ -68,10 +81,21 @@ const initializeApp = async () => {
   );
 
   const root = createRoot(document.getElementById('root') as HTMLElement);
-  root.render(<Root />);
+  // Intentional double boundary: <Root> renders <App type="web"/>, which
+  // already wraps its own children in an AppErrorBoundary
+  // (context={`app-${type}`}) inside packages/ui, so this outer instance is
+  // a last-resort net around Root/App's own render/mount, not a duplicate of
+  // the inner one. Kept distinct via the "web-main" context label so logs
+  // show which layer actually caught the error.
+  root.render(
+    <AppErrorBoundary context="web-main">
+      <Root />
+    </AppErrorBoundary>
+  );
 };
 
-initializeApp().catch(() => {
+initializeApp().catch((error) => {
+  console.error('[Web] Failed to initialize app', error);
   const root = createRoot(document.getElementById('root') as HTMLElement);
   root.render(<BrowserNotSupported />);
 });

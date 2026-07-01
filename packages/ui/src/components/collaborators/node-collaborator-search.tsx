@@ -55,31 +55,52 @@ export const NodeCollaboratorSearch = ({
     <Popover open={open} onOpenChange={setOpen} modal={true}>
       <PopoverTrigger asChild>
         <Button
+          asChild
           variant="outline"
           role="combobox"
           aria-expanded={open}
           className="w-full justify-start p-2"
         >
-          {value.map((user) => (
-            <Badge key={user.id} variant="outline">
-              {user.name}
-              <span
-                className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onChange(value.filter((v) => v.id !== user.id));
-                }}
-              >
-                <X className="size-3 text-muted-foreground hover:text-foreground" />
+          <div
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setOpen(true);
+              }
+            }}
+          >
+            {value.map((user) => (
+              <Badge key={user.id} variant="outline">
+                {user.name}
+                <span
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Remove ${user.name}`}
+                  className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onChange(value.filter((v) => v.id !== user.id));
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onChange(value.filter((v) => v.id !== user.id));
+                    }
+                  }}
+                >
+                  <X className="size-3 text-muted-foreground hover:text-foreground" />
+                </span>
+              </Badge>
+            ))}
+            {value.length === 0 && (
+              <span className="text-xs text-muted-foreground">
+                Add collaborators
               </span>
-            </Badge>
-          ))}
-          {value.length === 0 && (
-            <span className="text-xs text-muted-foreground">
-              Add collaborators
-            </span>
-          )}
+            )}
+          </div>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-96 p-1">
@@ -88,6 +109,7 @@ export const NodeCollaboratorSearch = ({
             value={query}
             onValueChange={setQuery}
             placeholder="Search collaborators..."
+            aria-label="Search collaborators"
             className="h-9"
           />
           <CommandEmpty>No collaborator found.</CommandEmpty>
@@ -98,6 +120,7 @@ export const NodeCollaboratorSearch = ({
                   {users.map((user) => (
                     <CommandItem
                       key={user.id}
+                      data-testid={`collaborator-search-result-${user.id}`}
                       onSelect={() => {
                         onChange([...value, user]);
                         setQuery('');

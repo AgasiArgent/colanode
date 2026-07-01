@@ -61,12 +61,16 @@ export const MessageActions = () => {
       <div className="mx-1 h-6 w-px bg-border" />
       {message.canReplyInThread && (
         <MessageAction>
-          <MessagesSquare
-            className="size-4 cursor-pointer"
+          <button
+            type="button"
+            aria-label="Reply in thread"
+            className="flex size-full cursor-pointer items-center justify-center border-0 bg-transparent p-0"
             onClick={() => {
               conversation.onOpenThread(message.id);
             }}
-          />
+          >
+            <MessagesSquare className="size-4" />
+          </button>
         </MessageAction>
       )}
       <MessageAction>
@@ -74,42 +78,58 @@ export const MessageActions = () => {
       </MessageAction>
       {conversation.canCreateMessage && (
         <MessageAction>
-          <Quote
-            className="size-4 cursor-pointer"
+          <button
+            type="button"
+            aria-label="Quote reply"
+            className="flex size-full cursor-pointer items-center justify-center border-0 bg-transparent p-0"
             onClick={() => {
               conversation.onQuoteReply(message);
             }}
-          />
+          >
+            <Quote className="size-4" />
+          </button>
         </MessageAction>
       )}
       {conversation.canCreateMessage && (
         <MessageAction>
-          <Reply
-            className="size-4 cursor-pointer"
+          <button
+            type="button"
+            aria-label="Reply"
+            className="flex size-full cursor-pointer items-center justify-center border-0 bg-transparent p-0"
             onClick={() => {
               conversation.onReply(message);
             }}
-          />
+          >
+            <Reply className="size-4" />
+          </button>
         </MessageAction>
       )}
       {message.createdBy === workspace.userId && !message.taskId && (
         <MessageAction>
-          <SquareCheckBig
-            className="size-4 cursor-pointer"
+          <button
+            type="button"
+            aria-label="Create task from message"
+            className="flex size-full cursor-pointer items-center justify-center border-0 bg-transparent p-0"
             onClick={() => {
               setOpenCreateTask(true);
             }}
-          />
+          >
+            <SquareCheckBig className="size-4" />
+          </button>
         </MessageAction>
       )}
       {message.canDelete && (
         <MessageAction>
-          <Trash2
-            className="size-4 cursor-pointer"
+          <button
+            type="button"
+            aria-label="Delete message"
+            className="flex size-full cursor-pointer items-center justify-center border-0 bg-transparent p-0"
             onClick={() => {
               message.openDelete();
             }}
-          />
+          >
+            <Trash2 className="size-4" />
+          </button>
         </MessageAction>
       )}
     </ul>

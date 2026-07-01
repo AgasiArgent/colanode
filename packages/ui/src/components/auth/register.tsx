@@ -171,6 +171,7 @@ export const Register = () => {
                 navigate({ to: '/auth/login' });
               }}
               type="button"
+              data-testid="register-login-link-button"
             >
               Already have an account? Login
             </Button>
@@ -190,6 +191,7 @@ export const Register = () => {
                 setState({ type: 'register' });
               }}
               type="button"
+              data-testid="register-back-to-register-button"
             >
               Back to register
             </Button>

@@ -244,7 +244,12 @@ export const FieldCreatePopover = ({
             >
               Cancel
             </Button>
-            <Button type="submit" size="sm" disabled={isPending}>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={isPending}
+              data-testid="field-create-submit"
+            >
               {isPending && <Spinner className="mr-1" />}
               Create
             </Button>

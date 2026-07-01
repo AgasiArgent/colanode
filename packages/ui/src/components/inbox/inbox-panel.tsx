@@ -22,6 +22,9 @@ export const InboxPanel = ({ userId }: InboxPanelProps) => {
       {notifications.map((n) => (
         <button
           key={n.id}
+          type="button"
+          data-testid={`inbox-item-${n.id}`}
+          data-unread={!n.read_at}
           className="text-left p-2 hover:bg-muted"
           onClick={() => {
             window.colanode.executeMutation({

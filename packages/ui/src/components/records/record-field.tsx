@@ -25,24 +25,30 @@ export const RecordField = ({ field }: RecordFieldProps) => {
     <Fragment>
       <Popover modal={true}>
         <PopoverTrigger asChild>
-          <div className="flex h-8 w-full cursor-pointer flex-row items-center gap-1 p-1 text-sm hover:bg-accent">
+          <button
+            type="button"
+            data-testid={`record-field-trigger-${field.id}`}
+            className="flex h-8 w-full cursor-pointer flex-row items-center gap-1 p-1 text-sm hover:bg-accent text-left"
+          >
             <FieldIcon type={field.type} className="size-4" />
             <p>{field.name}</p>
-          </div>
+          </button>
         </PopoverTrigger>
         <PopoverContent className="ml-1 flex w-72 flex-col gap-1 p-2 text-sm">
           <FieldRenameInput field={field} />
           <Separator />
           {database.canEdit && !database.isLocked && (
-            <div
-              className="flex cursor-pointer flex-row items-center gap-2 p-1 hover:bg-accent"
+            <button
+              type="button"
+              data-testid={`record-field-delete-${field.id}`}
+              className="flex cursor-pointer flex-row items-center gap-2 p-1 hover:bg-accent text-left"
               onClick={() => {
                 setShowDeleteDialog(true);
               }}
             >
               <Trash2 className="size-4" />
               <span>Delete field</span>
-            </div>
+            </button>
           )}
         </PopoverContent>
       </Popover>

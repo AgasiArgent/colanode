@@ -287,6 +287,7 @@ export const MessageCreateTaskDialog = ({
                       <button
                         key={db.id}
                         type="button"
+                        aria-pressed={db.id === taskDatabaseId}
                         className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent"
                         onClick={() => handleDatabaseSelect(db)}
                       >
@@ -351,6 +352,7 @@ export const MessageCreateTaskDialog = ({
                   <div className="flex flex-col gap-0.5">
                     <button
                       type="button"
+                      aria-pressed={messageFieldId === null}
                       className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent"
                       onClick={() => setMessageFieldId(null)}
                     >
@@ -360,6 +362,7 @@ export const MessageCreateTaskDialog = ({
                       <button
                         key={field.id}
                         type="button"
+                        aria-pressed={field.id === messageFieldId}
                         className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent"
                         onClick={() => setMessageFieldId(field.id)}
                       >
@@ -400,6 +403,7 @@ export const MessageCreateTaskDialog = ({
                       <button
                         key={option.id}
                         type="button"
+                        aria-pressed={option.id === selectedStatusOptionId}
                         className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent"
                         onClick={() => {
                           setSelectedStatusOptionId(
