@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 import { User } from '@colanode/client/types';
 import { Avatar } from '@colanode/ui/components/avatars/avatar';
@@ -41,6 +41,7 @@ export const NodeCollaboratorSearch = ({
 
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
+  const listId = useId();
 
   const userSearchQuery = useQuery({
     type: 'user.search',
@@ -62,6 +63,9 @@ export const NodeCollaboratorSearch = ({
           className="w-full justify-start p-2"
         >
           <div
+            role="combobox"
+            aria-expanded={open}
+            aria-controls={listId}
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
@@ -103,7 +107,7 @@ export const NodeCollaboratorSearch = ({
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-96 p-1">
+      <PopoverContent id={listId} className="w-96 p-1">
         <Command className="min-h-min" shouldFilter={false}>
           <CommandInput
             value={query}

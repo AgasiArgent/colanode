@@ -88,7 +88,8 @@ export const CodeBlockNodeView = ({
             </Command>
           </PopoverContent>
         </Popover>
-        <div
+        <button
+          type="button"
           className="flex cursor-pointer flex-row items-center gap-1"
           onClick={() => {
             navigator.clipboard.writeText(code).then(() => {
@@ -98,7 +99,7 @@ export const CodeBlockNodeView = ({
         >
           <Clipboard className="size-4" />
           <p>{copied ? 'Copied' : 'Copy code'}</p>
-        </div>
+        </button>
       </div>
       <code>
         <NodeViewContent />

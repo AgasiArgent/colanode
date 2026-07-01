@@ -86,10 +86,17 @@ export const SelectFieldOptions = ({
                   )}
                 </div>
                 <div
+                  role="presentation"
                   className="opacity-0 group-hover:opacity-100"
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.stopPropagation();
+                      e.preventDefault();
+                    }
                   }}
                 >
                   <SelectOptionSettingsPopover

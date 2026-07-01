@@ -23,7 +23,7 @@ export const RecordContainer = ({ record, role }: RecordContainerProps) => {
         <RecordAttributes />
       </RecordProvider>
       <Separator className="my-4 w-full" />
-      <Document node={record} canEdit={canEdit} autoFocus={false} />
+      <Document node={record} canEdit={canEdit} />
     </RecordDatabase>
   );
 };

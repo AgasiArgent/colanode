@@ -83,6 +83,7 @@ export const DatePicker = ({
               onChange(toUTCDate(date));
             }
           }}
+          // eslint-disable-next-line jsx-a11y/no-autofocus -- intentional: primary field in popover, focus expected on open
           autoFocus={true}
         />
       </PopoverContent>

@@ -322,6 +322,7 @@ export const MessageCreateTaskDialog = ({
             </div>
             <Input
               id="task-name"
+              // eslint-disable-next-line jsx-a11y/no-autofocus -- intentional: primary field in "Create task from message" dialog, focus expected on open
               autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}

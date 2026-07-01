@@ -50,7 +50,8 @@ export const TableViewSettings = () => {
               <Separator />
               <div className="flex flex-col gap-2 text-sm">
                 <p className="my-1 font-semibold">Settings</p>
-                <div
+                <button
+                  type="button"
                   className="flex cursor-pointer flex-row items-center gap-1 rounded-md p-0.5 hover:bg-accent"
                   onClick={() => {
                     database.toggleLock();
@@ -64,9 +65,10 @@ export const TableViewSettings = () => {
                   <span>
                     {database.isLocked ? 'Unlock database' : 'Lock database'}
                   </span>
-                </div>
+                </button>
                 {!database.isLocked && (
-                  <div
+                  <button
+                    type="button"
                     className="flex cursor-pointer flex-row items-center gap-1 rounded-md p-0.5 hover:bg-accent"
                     onClick={() => {
                       setOpenDelete(true);
@@ -75,7 +77,7 @@ export const TableViewSettings = () => {
                   >
                     <Trash2 className="size-4" />
                     <span>Delete view</span>
-                  </div>
+                  </button>
                 )}
               </div>
             </Fragment>
