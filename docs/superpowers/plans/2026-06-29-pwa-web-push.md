@@ -18,6 +18,7 @@
 - Mirror the existing **notifications module** patterns exactly (migration sequence+trigger, synchronizer, mutation handler, client sync consumer). Reuse names/shapes shown below.
 - Node type literals: channel root = `'channel'`, DM root = `'chat'`, message node = `'message'`.
 - Recipient source of truth: `collaborations WHERE node_id = rootId AND deleted_at IS NULL` (this is the exact set the socket fanout uses in `socket-connection.ts`).
+- **Scope — edits pushed, deletes not:** message EDITS are pushed (`push-service` consumes `node.updated` as well as `node.created`); message DELETES are intentionally NOT handled — a stale push is left on the lock screen, matching Telegram/WhatsApp behavior. Tracking push-to-message identity for retraction is out of scope.
 - TDD: every server lib/service change lands with a Vitest + Testcontainers test. Commit after each green task.
 
 ## File Structure
@@ -1043,7 +1044,7 @@ Expected: FAIL (module not found).
 - [ ] **Step 3: Implement the service** — `apps/server/src/services/push-service.ts`:
 
 ```typescript
-import { NodeAttributes } from '@colanode/core';
+import { extractBlockTexts, NodeAttributes } from '@colanode/core';
 import { database } from '@colanode/server/data/database';
 import { config } from '@colanode/server/lib/config';
 import { eventBus } from '@colanode/server/lib/event-bus';
@@ -1070,7 +1071,8 @@ class PushService {
   }
 
   private async handleEvent(event: Event): Promise<void> {
-    if (event.type !== 'node.created') return;
+    // Push on new messages AND edits (node.updated). Reactions live in a separate table, so a node.updated on a message node is a genuine content edit. Deletes are intentionally NOT handled (stale push left in place, Telegram-style).
+    if (event.type !== 'node.created' && event.type !== 'node.updated') return;
 
     const nodeRow = await database
       .selectFrom('nodes')
@@ -1134,16 +1136,29 @@ class PushService {
       .execute();
     if (subscriptions.length === 0) return;
 
+    // Chat roots have no name — the push title falls back to the author's
+    // display name (channels keep using the channel name).
+    const authorRow = await database
+      .selectFrom('users')
+      .select(['name', 'custom_name'])
+      .where('id', '=', actorId)
+      .executeTakeFirst();
+    const authorName = authorRow
+      ? (authorRow.custom_name ?? authorRow.name)
+      : null;
+
     const attributes = nodeRow.attributes as NodeAttributes;
     const payload = {
-      title: this.rootTitle(rootNode),
-      body: this.preview(attributes),
+      title: this.rootTitle(rootNode, authorName),
+      body: this.preview(node.id, attributes),
       rootId: event.rootId,
       nodeId: node.id,
       workspaceId: event.workspaceId,
       url: `/${event.workspaceId}/${event.rootId}`,
     };
 
+    const startedAt = Date.now();
+    // shortcut: inline fan-out, fine for team-scale deploys — the warn above names the ceiling; move to a BullMQ job if a channel grows to hundreds of members.
     await Promise.all(
       subscriptions.map((sub) =>
         sendWebPush(sub, payload).catch((e) =>
@@ -1151,24 +1166,56 @@ class PushService {
         )
       )
     );
+    const durationMs = Date.now() - startedAt;
+
+    logger.info(
+      {
+        rootId: event.rootId,
+        recipientCount: finalUserIds.length,
+        subscriptionCount: subscriptions.length,
+        durationMs,
+      },
+      'push fan-out'
+    );
+
+    if (subscriptions.length > 200 || durationMs > 2000) {
+      logger.warn(
+        {
+          rootId: event.rootId,
+          subscriptionCount: subscriptions.length,
+          durationMs,
+        },
+        'push fan-out large — consider moving to a BullMQ job'
+      );
+    }
   }
 
-  private rootTitle(rootNode: { attributes: NodeAttributes }): string {
-    const name = (rootNode.attributes as { name?: string }).name;
+  private rootTitle(
+    rootNode: { type: string; name?: string },
+    authorName: string | null
+  ): string {
+    if (rootNode.type === 'chat') {
+      return authorName && authorName.length > 0 ? authorName : 'New message';
+    }
+
+    const name = rootNode.name;
     return name && name.length > 0 ? name : 'New message';
   }
 
-  private preview(attributes: NodeAttributes): string {
-    // Best-effort text preview from the message attributes' content blocks.
-    const text = JSON.stringify(attributes.content ?? attributes);
-    return text.length > PREVIEW_MAX ? text.slice(0, PREVIEW_MAX) + '…' : text;
+  private preview(nodeId: string, attributes: NodeAttributes): string {
+    const text =
+      attributes.type === 'message'
+        ? extractBlockTexts(nodeId, attributes.content)
+        : null;
+    const body = text && text.length > 0 ? text : 'New message';
+    return body.length > PREVIEW_MAX ? body.slice(0, PREVIEW_MAX) + '…' : body;
   }
 }
 
 export const pushService = new PushService();
 ```
 
-*(The `preview()` uses a best-effort JSON slice. If the codebase has a helper that extracts plain text from message content blocks — grep for `extractText`/`extractNodeText`/`extractBlocksText` — use it instead for a human-readable preview. Verify and swap in during implementation.)*
+*(The `preview()` method uses `extractBlockTexts` from `@colanode/core` — the same helper `messageModel.extractText` uses internally (see `packages/core/src/registry/nodes/message.ts` / `packages/core/src/lib/texts.ts`) — to produce a real plain-text preview from the message's content blocks, truncated to `PREVIEW_MAX` chars.)*
 
 - [ ] **Step 4: Wire boot** — in `apps/server/src/index.ts` add `import { pushService } from '@colanode/server/services/push-service';` and after `await notificationService.init();` add `await pushService.init();`.
 
@@ -1815,12 +1862,12 @@ git commit -m "feat(push): notifications enable toggle in settings"
 
 **Files:**
 - Modify: `packages/ui/src/components/channels/channel-settings.tsx`
-- (Optional) the chat header settings component (mirror for `chat` roots — grep `packages/ui/src/components/chats` for the equivalent of `channel-settings.tsx`).
+- Modify: `packages/ui/src/components/chats/chat-settings.tsx` — mirror for `chat` (DM) roots. Push notifications fire on DMs too, so muting a DM must be reachable from the UI; this is not optional. The component takes a `chat: LocalChatNode` prop (verified by reading the file), so use `chat.id` in place of `channel.id`.
 
 **Interfaces:**
 - Consumes: `useChannelMute(userId, nodeId)` (Task 11), `window.colanode.executeMutation({ type: 'mute.set', ... })`.
 
-- [ ] **Step 1: Add the mute item** — in `channel-settings.tsx`, import `Bell`, `BellOff` from `lucide-react`, `useChannelMute`, and `useWorkspace`; inside the component:
+- [ ] **Step 1: Add the mute item to channels** — in `channel-settings.tsx`, import `Bell`, `BellOff` from `lucide-react`, `useChannelMute`, and `useWorkspace`; inside the component:
 
 ```typescript
   const workspace = useWorkspace();
@@ -1851,14 +1898,44 @@ and add a menu item inside `<DropdownMenuContent>` (after a `<DropdownMenuSepara
           </DropdownMenuItem>
 ```
 
-- [ ] **Step 2: Build + commit**
+- [ ] **Step 2: Add the identical mute item to chats (DMs)** — `chat-settings.tsx` currently just renders `NodeCollaboratorsPopover`; it has no dropdown menu of its own, so wrap it with the same mute affordance used on channels. Import `Bell`, `BellOff` from `lucide-react`, `useChannelMute`, `useWorkspace`, and the same `DropdownMenu`/`DropdownMenuContent`/`DropdownMenuItem`/`DropdownMenuSeparator`/`DropdownMenuTrigger` primitives used in `channel-settings.tsx`; inside the component:
+
+```typescript
+  const workspace = useWorkspace();
+  const { muted } = useChannelMute(workspace.userId, chat.id);
+```
+
+and add the same menu item (after a `<DropdownMenuSeparator />` if there are other items, otherwise as the sole item) inside `<DropdownMenuContent>`:
+
+```typescript
+          <DropdownMenuItem
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={() => {
+              window.colanode.executeMutation({
+                type: 'mute.set',
+                userId: workspace.userId,
+                nodeId: chat.id,
+                muted: !muted,
+              });
+            }}
+          >
+            {muted ? (
+              <Bell className="size-4" />
+            ) : (
+              <BellOff className="size-4" />
+            )}
+            {muted ? 'Unmute notifications' : 'Mute notifications'}
+          </DropdownMenuItem>
+```
+
+- [ ] **Step 3: Build + commit**
 
 Run: `npm run build -w @colanode/ui`
 Expected: no type errors.
 
 ```bash
-git add packages/ui/src/components/channels/channel-settings.tsx
-git commit -m "feat(push): mute/unmute notifications menu item on channels"
+git add packages/ui/src/components/channels/channel-settings.tsx packages/ui/src/components/chats/chat-settings.tsx
+git commit -m "feat(push): mute/unmute notifications menu item on channels and chats"
 ```
 
 ---
@@ -1896,7 +1973,8 @@ Expected: all tests pass, including `web-push-sender`, `notification-mutes`, `pu
 
 ## Notes for the implementer
 
+- **Platform limitation — one push subscription per install:** push subscriptions are one-per-browser-install by web-platform constraint — a service-worker registration (one per origin/install) holds exactly ONE push subscription. The `push_subscriptions` `UNIQUE(endpoint)` upsert (Task 3/Task 6) therefore means that if a DIFFERENT account enables push on the SAME install, it takes over that device's push channel — this is expected, not a bug, and is the correct model for the constraint. The common cases are unaffected: the SAME account across multiple workspaces shares one account-level subscription, and different server origins get physically separate subscriptions (separate service-worker registrations). Optionally add a `shortcut:` comment in `push-subscriptions.ts` noting this when implementing Task 6.
 - **Verify-before-use anchors** (grep, don't assume): `IdType` enum members used for ids; `helpers/seed` exports (`createAccount/createWorkspace/createUser/createSpaceNode/createMessageNode` + add `createChannelNode`); how `notifications` is added to the core `SynchronizerMap`; where `WorkspaceService` instantiates its sub-services and its `deviceId` accessor; where `window.colanode` is assembled in `apps/web`; the `Switch` UI primitive path; the chat header settings component (mirror of `channel-settings.tsx`).
-- **Message preview**: the Task 8 `preview()` is a best-effort JSON slice — swap in a real text-extraction helper if one exists (grep `extract*Text`/`extractMentions` neighbors in `packages/core`).
+- **Message preview**: the Task 8 `preview()` uses `extractBlockTexts(nodeId, attributes.content)` from `@colanode/core` — the same helper `messageModel.extractText` uses (`packages/core/src/registry/nodes/message.ts` / `packages/core/src/lib/texts.ts`) — to produce a real plain-text preview truncated to `PREVIEW_MAX`. Do NOT reintroduce a `JSON.stringify` slice.
 - **Ordering**: Tasks 3 and 4 (migrations) must land before Task 2's test runs green and before Tasks 6–8; if using strict sequential execution, create the `push_subscriptions` migration (Task 3) before running Task 2's test. All other tasks are in dependency order.
 - **DRY/YAGNI**: no quiet hours, no per-type settings, no Expo/native push, no badges — out of scope per the spec.
