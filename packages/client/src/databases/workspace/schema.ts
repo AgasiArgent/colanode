@@ -304,6 +304,21 @@ export type SelectNotification = Selectable<NotificationTable>;
 export type CreateNotification = Insertable<NotificationTable>;
 export type UpdateNotification = Updateable<NotificationTable>;
 
+interface NotificationMuteTable {
+  id: ColumnType<string, string, never>;
+  user_id: ColumnType<string, string, never>;
+  node_id: ColumnType<string, string, never>;
+  workspace_id: ColumnType<string, string, never>;
+  muted: ColumnType<number, number, number>;
+  created_at: ColumnType<string, string, never>;
+  updated_at: ColumnType<string | null, string | null, string | null>;
+  revision: ColumnType<string, string, string>;
+}
+
+export type SelectNotificationMute = Selectable<NotificationMuteTable>;
+export type CreateNotificationMute = Insertable<NotificationMuteTable>;
+export type UpdateNotificationMute = Updateable<NotificationMuteTable>;
+
 export interface WorkspaceDatabaseSchema {
   users: UserTable;
   nodes: NodeTable;
@@ -326,4 +341,5 @@ export interface WorkspaceDatabaseSchema {
   tombstones: TombstoneTable;
   cursors: CursorTable;
   notifications: NotificationTable;
+  notification_mutes: NotificationMuteTable;
 }

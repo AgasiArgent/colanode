@@ -20,6 +20,8 @@ import {
   SyncDocumentUpdateData,
   SyncNotificationsInput,
   SyncNotificationData,
+  SyncNotificationMutesInput,
+  SyncNotificationMuteData,
 } from '@colanode/core';
 
 interface RootSynchronizers {
@@ -39,6 +41,7 @@ type SyncHandlers = {
   nodeTombstones: (data: SyncNodeTombstoneData) => Promise<void>;
   documentUpdates: (data: SyncDocumentUpdateData) => Promise<void>;
   notifications: (data: SyncNotificationData) => Promise<void>;
+  notificationMutes: (data: SyncNotificationMuteData) => Promise<void>;
 };
 
 const debug = createDebugger('desktop:service:sync');
@@ -57,6 +60,9 @@ export class SyncService {
     | undefined;
   private notificationSynchronizer:
     | Synchronizer<SyncNotificationsInput>
+    | undefined;
+  private notificationMuteSynchronizer:
+    | Synchronizer<SyncNotificationMutesInput>
     | undefined;
 
   constructor(workspaceService: WorkspaceService) {
@@ -86,6 +92,10 @@ export class SyncService {
       notifications:
         this.workspace.notifications.syncServerNotification.bind(
           this.workspace.notifications
+        ),
+      notificationMutes:
+        this.workspace.notificationMutes.syncServerNotificationMute.bind(
+          this.workspace.notificationMutes
         ),
     };
     eventBus.subscribe(this.handleEvent.bind(this));
@@ -143,6 +153,17 @@ export class SyncService {
       await this.notificationSynchronizer.init();
     }
 
+    if (!this.notificationMuteSynchronizer) {
+      this.notificationMuteSynchronizer = new Synchronizer(
+        this.workspace,
+        { type: 'notification-mutes' },
+        'notification-mutes',
+        this.syncHandlers.notificationMutes
+      );
+
+      await this.notificationMuteSynchronizer.init();
+    }
+
     const collaborations =
       this.workspace.collaborations.getActiveCollaborations();
 
@@ -155,6 +176,7 @@ export class SyncService {
     this.userSynchronizer?.destroy();
     this.collaborationSynchronizer?.destroy();
     this.notificationSynchronizer?.destroy();
+    this.notificationMuteSynchronizer?.destroy();
 
     for (const rootSynchronizers of this.rootSynchronizers.values()) {
       this.destroyRootSynchronizers(rootSynchronizers);

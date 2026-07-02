@@ -21,6 +21,7 @@ import { createLocalFilesTable } from './00018-create-local-files-table';
 import { createUploadsTable } from './00019-create-uploads-table';
 import { createDownloadsTable } from './00020-create-downloads-table';
 import { createNotificationsTable } from './00021-create-notifications-table';
+import { createNotificationMutesTable } from './00022-create-notification-mutes-table';
 
 export const workspaceDatabaseMigrations: Record<string, Migration> = {
   '00001-create-users-table': createUsersTable,
@@ -44,4 +45,5 @@ export const workspaceDatabaseMigrations: Record<string, Migration> = {
   '00019-create-uploads-table': createUploadsTable,
   '00020-create-downloads-table': createDownloadsTable,
   '00021-create-notifications-table': createNotificationsTable,
+  '00022-create-notification-mutes-table': createNotificationMutesTable,
 };
