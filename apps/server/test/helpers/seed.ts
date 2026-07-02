@@ -172,6 +172,35 @@ export const createSpaceNode = async (input: {
   return spaceId;
 };
 
+export const createChannelNode = async (input: {
+  workspaceId: string;
+  userId: string;
+  parentId: string;
+  rootId: string;
+  name?: string;
+}): Promise<string> => {
+  const channelId = generateId(IdType.Channel);
+  const attributes: NodeAttributes = {
+    type: 'channel',
+    name: input.name ?? 'Test Channel',
+    parentId: input.parentId,
+  };
+
+  const created = await createNode({
+    nodeId: channelId,
+    rootId: input.rootId,
+    attributes,
+    userId: input.userId,
+    workspaceId: input.workspaceId,
+  });
+
+  if (!created) {
+    throw new Error('Failed to create channel node');
+  }
+
+  return channelId;
+};
+
 export const createPageNode = async (input: {
   workspaceId: string;
   userId: string;

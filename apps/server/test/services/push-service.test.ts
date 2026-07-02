@@ -1,0 +1,109 @@
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+
+vi.mock('@colanode/server/lib/push/web-push-sender', () => ({
+  sendWebPush: vi.fn().mockResolvedValue(undefined),
+}));
+
+import { generateId, IdType } from '@colanode/core';
+import { database } from '@colanode/server/data/database';
+import { config } from '@colanode/server/lib/config';
+import { eventBus } from '@colanode/server/lib/event-bus';
+import { sendWebPush } from '@colanode/server/lib/push/web-push-sender';
+import { pushService } from '@colanode/server/services/push-service';
+
+import {
+  createAccount,
+  createWorkspace,
+  createUser,
+  createSpaceNode,
+  createChannelNode,
+  createMessageNode,
+} from '../helpers/seed';
+
+const waitFor = async (fn: () => Promise<boolean>, ms = 2000) => {
+  const start = Date.now();
+  while (Date.now() - start < ms) {
+    if (await fn()) return true;
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  return false;
+};
+
+beforeAll(async () => {
+  // config.push prefaults to { enabled: false } in the test env — without this
+  // patch pushService.init() no-ops and no push is ever dispatched. sendWebPush
+  // is mocked above, so the fake VAPID keys are never used.
+  config.push = {
+    enabled: true,
+    subject: 'mailto:test@example.com',
+    publicKey: 'pk',
+    privateKey: 'sk',
+  };
+  await pushService.init();
+});
+
+describe('pushService', () => {
+  it('sends a push to a channel member (not the author) who has a subscription and is not muted', async () => {
+    const authorAccount = await createAccount();
+    const memberAccount = await createAccount();
+    const workspace = await createWorkspace({ createdBy: authorAccount.id });
+    const author = await createUser({
+      workspaceId: workspace.id,
+      account: authorAccount,
+      role: 'collaborator',
+    });
+    const member = await createUser({
+      workspaceId: workspace.id,
+      account: memberAccount,
+      role: 'collaborator',
+    });
+
+    // Collaboration access is materialized on the space (a channel has no
+    // collaborators of its own — access is inherited from the owning space,
+    // exactly as the socket fanout resolves it).
+    const spaceId = await createSpaceNode({
+      workspaceId: workspace.id,
+      userId: author.id,
+      collaborators: { [member.id]: 'collaborator' },
+    });
+
+    const channelId = await createChannelNode({
+      workspaceId: workspace.id,
+      userId: author.id,
+      parentId: spaceId,
+      rootId: spaceId,
+    });
+
+    await database
+      .insertInto('push_subscriptions')
+      .values({
+        id: generateId(IdType.Device),
+        account_id: memberAccount.id,
+        device_id: generateId(IdType.Device),
+        endpoint: 'https://push.example/ok',
+        p256dh: 'k',
+        auth: 'a',
+        created_at: new Date(),
+      })
+      .execute();
+
+    const messageId = await createMessageNode({
+      workspaceId: workspace.id,
+      userId: author.id,
+      rootId: spaceId,
+      parentId: channelId,
+    });
+
+    eventBus.publish({
+      type: 'node.created',
+      nodeId: messageId,
+      rootId: spaceId,
+      workspaceId: workspace.id,
+    });
+
+    const ok = await waitFor(async () =>
+      (sendWebPush as unknown as ReturnType<typeof vi.fn>).mock.calls.length > 0
+    );
+    expect(ok).toBe(true);
+  });
+});
