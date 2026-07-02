@@ -111,23 +111,29 @@ class PushService {
       : null;
 
     const attributes = nodeRow.attributes as NodeAttributes;
-    const payload = {
+    const basePayload = {
       title: this.containerTitle(container, authorName),
       body: this.preview(node.id, attributes),
       rootId: container.id,
       nodeId: node.id,
       workspaceId: event.workspaceId,
-      url: `/${event.workspaceId}/${container.id}`,
     };
+
+    // Web routes are keyed by the recipient's in-workspace user id
+    // (/workspace/$userId/$nodeId), so the deep-link differs per account.
+    const userIdByAccount = new Map(users.map((u) => [u.account_id, u.id]));
 
     const startedAt = Date.now();
     // shortcut: inline fan-out, fine for team-scale deploys — the warn below names the ceiling; move to a BullMQ job if a channel grows to hundreds of members.
     await Promise.all(
-      subscriptions.map((sub) =>
-        sendWebPush(sub, payload).catch((e) =>
-          logger.error(e, `push send failed for ${sub.id}`)
-        )
-      )
+      subscriptions.map((sub) => {
+        const recipientUserId = userIdByAccount.get(sub.account_id);
+        if (!recipientUserId) return Promise.resolve();
+        return sendWebPush(sub, {
+          ...basePayload,
+          url: `/workspace/${recipientUserId}/${container.id}`,
+        }).catch((e) => logger.error(e, `push send failed for ${sub.id}`));
+      })
     );
     const durationMs = Date.now() - startedAt;
 

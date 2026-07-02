@@ -101,9 +101,14 @@ describe('pushService', () => {
       workspaceId: workspace.id,
     });
 
-    const ok = await waitFor(async () =>
-      (sendWebPush as unknown as ReturnType<typeof vi.fn>).mock.calls.length > 0
-    );
+    const sendWebPushMock = sendWebPush as unknown as ReturnType<typeof vi.fn>;
+    const ok = await waitFor(async () => sendWebPushMock.mock.calls.length > 0);
     expect(ok).toBe(true);
+
+    const [subscription, payload] = sendWebPushMock.mock.calls[0]!;
+    expect(subscription.account_id).toBe(memberAccount.id);
+    expect(payload.rootId).toBe(channelId);
+    expect(payload.nodeId).toBe(messageId);
+    expect(payload.url).toBe(`/workspace/${member.id}/${channelId}`);
   });
 });
