@@ -10,6 +10,7 @@ export type ServerAttributes = {
   insecure?: boolean;
   account?: ServerAccountAttributes;
   sha?: string | null;
+  push?: { enabled: boolean; publicKey?: string };
 };
 
 export type ServerState = {

@@ -30,6 +30,9 @@ export const configGetRoute: FastifyPluginCallbackZod = (instance, _, done) => {
                 enabled: false,
               },
         },
+        push: config.push.enabled
+          ? { enabled: true, publicKey: config.push.publicKey }
+          : { enabled: false },
       };
 
       return output;

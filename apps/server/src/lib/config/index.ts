@@ -9,6 +9,7 @@ import { emailConfigSchema } from './email';
 import { jobsConfigSchema } from './jobs';
 import { loggingConfigSchema } from './logging';
 import { postgresConfigSchema } from './postgres';
+import { pushConfigSchema } from './push';
 import { redisConfigSchema } from './redis';
 import { storageConfigSchema } from './storage';
 import {
@@ -42,6 +43,7 @@ const configSchema = z.object({
   jobs: jobsConfigSchema,
   logging: loggingConfigSchema,
   workspace: workspaceConfigSchema,
+  push: pushConfigSchema,
 });
 
 export type Configuration = z.infer<typeof configSchema>;
