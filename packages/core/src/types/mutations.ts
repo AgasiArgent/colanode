@@ -209,6 +209,63 @@ export type NotificationReadMutation = z.infer<
   typeof notificationReadMutationSchema
 >;
 
+export const pushSubscriptionCreateMutationDataSchema = z.object({
+  endpoint: z.string(),
+  p256dh: z.string(),
+  auth: z.string(),
+  deviceId: z.string(),
+  createdAt: z.string(),
+});
+
+export type PushSubscriptionCreateMutationData = z.infer<
+  typeof pushSubscriptionCreateMutationDataSchema
+>;
+
+export const pushSubscriptionCreateMutationSchema = mutationBaseSchema.extend(
+  {
+    type: z.literal('pushSubscription.create'),
+    data: pushSubscriptionCreateMutationDataSchema,
+  }
+);
+
+export type PushSubscriptionCreateMutation = z.infer<
+  typeof pushSubscriptionCreateMutationSchema
+>;
+
+export const pushSubscriptionDeleteMutationDataSchema = z.object({
+  endpoint: z.string(),
+});
+
+export type PushSubscriptionDeleteMutationData = z.infer<
+  typeof pushSubscriptionDeleteMutationDataSchema
+>;
+
+export const pushSubscriptionDeleteMutationSchema = mutationBaseSchema.extend(
+  {
+    type: z.literal('pushSubscription.delete'),
+    data: pushSubscriptionDeleteMutationDataSchema,
+  }
+);
+
+export type PushSubscriptionDeleteMutation = z.infer<
+  typeof pushSubscriptionDeleteMutationSchema
+>;
+
+export const muteSetMutationDataSchema = z.object({
+  nodeId: z.string(),
+  muted: z.boolean(),
+  updatedAt: z.string(),
+});
+
+export type MuteSetMutationData = z.infer<typeof muteSetMutationDataSchema>;
+
+export const muteSetMutationSchema = mutationBaseSchema.extend({
+  type: z.literal('mute.set'),
+  data: muteSetMutationDataSchema,
+});
+
+export type MuteSetMutation = z.infer<typeof muteSetMutationSchema>;
+
 export const mutationSchema = z.discriminatedUnion('type', [
   createNodeMutationSchema,
   updateNodeMutationSchema,
@@ -219,6 +276,9 @@ export const mutationSchema = z.discriminatedUnion('type', [
   nodeInteractionOpenedMutationSchema,
   updateDocumentMutationSchema,
   notificationReadMutationSchema,
+  pushSubscriptionCreateMutationSchema,
+  pushSubscriptionDeleteMutationSchema,
+  muteSetMutationSchema,
 ]);
 
 export type Mutation = z.infer<typeof mutationSchema>;
