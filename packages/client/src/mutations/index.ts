@@ -40,6 +40,9 @@ export * from './nodes/node-delete';
 export * from './nodes/node-create';
 export * from './nodes/node-update';
 export * from './notifications/notification-read';
+export * from './notifications/mute-set';
+export * from './push-subscriptions/push-subscription-create';
+export * from './push-subscriptions/push-subscription-delete';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface MutationMap {}
