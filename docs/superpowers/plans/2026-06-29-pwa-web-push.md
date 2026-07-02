@@ -188,9 +188,10 @@ Expected: `web-push` + `@types/web-push` appear in `apps/server/package.json`; r
 - [ ] **Step 2: Write the failing test** — `apps/server/test/lib/web-push-sender.test.ts`:
 
 ```typescript
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { database } from '@colanode/server/data/database';
+import { config } from '@colanode/server/lib/config';
 import { sendWebPush } from '@colanode/server/lib/push/web-push-sender';
 
 vi.mock('web-push', () => ({
@@ -201,6 +202,18 @@ vi.mock('web-push', () => ({
 }));
 
 import webpush from 'web-push';
+
+beforeAll(() => {
+  // config.push prefaults to { enabled: false } in the test env — without this
+  // patch sendWebPush returns before reaching the pruning logic under test.
+  // web-push itself is mocked above, so the fake VAPID keys are never used.
+  config.push = {
+    enabled: true,
+    subject: 'mailto:test@example.com',
+    publicKey: 'pk',
+    privateKey: 'sk',
+  };
+});
 
 describe('sendWebPush', () => {
   it('deletes the subscription row on a 410 Gone', async () => {
@@ -970,6 +983,7 @@ vi.mock('@colanode/server/lib/push/web-push-sender', () => ({
 import { generateId, IdType } from '@colanode/core';
 import { database } from '@colanode/server/data/database';
 import { eventBus } from '@colanode/server/lib/event-bus';
+import { config } from '@colanode/server/lib/config';
 import { sendWebPush } from '@colanode/server/lib/push/web-push-sender';
 import { pushService } from '@colanode/server/services/push-service';
 import {
@@ -990,6 +1004,15 @@ const waitFor = async (fn: () => Promise<boolean>, ms = 2000) => {
 };
 
 beforeAll(async () => {
+  // config.push prefaults to { enabled: false } in the test env — without this
+  // patch pushService.init() no-ops and no push is ever dispatched. sendWebPush
+  // is mocked above, so the fake VAPID keys are never used.
+  config.push = {
+    enabled: true,
+    subject: 'mailto:test@example.com',
+    publicKey: 'pk',
+    privateKey: 'sk',
+  };
   await pushService.init();
 });
 
