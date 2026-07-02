@@ -340,6 +340,21 @@ export type SelectPushSubscription = Selectable<PushSubscriptionTable>;
 export type CreatePushSubscription = Insertable<PushSubscriptionTable>;
 export type UpdatePushSubscription = Updateable<PushSubscriptionTable>;
 
+interface NotificationMuteTable {
+  id: ColumnType<string, string, never>;
+  user_id: ColumnType<string, string, never>;
+  node_id: ColumnType<string, string, never>;
+  workspace_id: ColumnType<string, string, never>;
+  muted: ColumnType<boolean, boolean, boolean>;
+  created_at: ColumnType<Date, Date, never>;
+  updated_at: ColumnType<Date | null, Date | null, Date | null>;
+  revision: ColumnType<string, never, never>;
+}
+
+export type SelectNotificationMute = Selectable<NotificationMuteTable>;
+export type CreateNotificationMute = Insertable<NotificationMuteTable>;
+export type UpdateNotificationMute = Updateable<NotificationMuteTable>;
+
 export interface DatabaseSchema {
   accounts: AccountTable;
   devices: DeviceTable;
@@ -360,4 +375,5 @@ export interface DatabaseSchema {
   counters: CounterTable;
   notifications: NotificationTable;
   push_subscriptions: PushSubscriptionTable;
+  notification_mutes: NotificationMuteTable;
 }
