@@ -1,0 +1,40 @@
+{
+  "name": "Colanode Staging",
+  "web": {
+    "domain": "localhost:55080",
+    "protocol": "http"
+  },
+  "mode": "standalone",
+  "cors": {
+    "origin": "http://localhost:55080",
+    "maxAge": 7200
+  },
+  "account": {
+    "verificationType": "automatic",
+    "otpTimeout": 600
+  },
+  "postgres": {
+    "url": "env://POSTGRES_URL"
+  },
+  "redis": {
+    "url": "env://REDIS_URL",
+    "db": 0,
+    "eventsChannel": "events"
+  },
+  "storage": {
+    "tus": {
+      "locker": { "type": "redis", "prefix": "colanode:tus:lock" },
+      "cache": { "type": "none" }
+    },
+    "provider": {
+      "type": "file",
+      "directory": "/var/lib/colanode/storage"
+    }
+  },
+  "workspace": {
+    "maxFileSize": "524288000"
+  },
+  "logging": {
+    "level": "info"
+  }
+}
