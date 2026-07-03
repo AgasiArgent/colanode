@@ -94,7 +94,7 @@ export const SidebarMenu = ({ value, onChange }: SidebarMenuProps) => {
         <div className="mt-auto" />
         <SidebarMenuIcon
           icon={Settings}
-          label="Setings??"
+          label="Settings"
           onClick={() => {
             onChange('settings');
           }}
