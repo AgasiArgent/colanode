@@ -52,15 +52,11 @@ scenarios:
       - wait: { text: "What did you get done this week?", timeout_ms: 20000 }
     actions: []
     assertions:
-      # Documents that the settings control IS present, just misspelled (PASS).
-      - oracle: action-result
-        description: the misspelled settings button is present in the sidebar
-        effect:
-          any_of:
-            - element_visible: { role: button, name: "Setings??" }
-        timeout_ms: 5000
       # The defect: a correctly-spelled "Settings" button must exist. On the buggy
       # build getByRole('button', {name:'Settings'}) matches nothing → AR FAIL.
+      # (Deliberately no assertion pinning the misspelled "Setings??" name here —
+      # that was only true pre-fix; asserting it would make this regression lock-in
+      # manifest permanently unable to pass once the label is corrected.)
       - oracle: action-result
         description: the sidebar settings button must read "Settings" (correct spelling)
         effect:
