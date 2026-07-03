@@ -20,7 +20,7 @@ jobs:
           CLIPS_BASE: https://repro.kvotaflow.ru
         run: |
           claude -p "$(sed 's/{{ISSUE}}/${{ github.event.issue.number }}/g' .github/bug-loop/repro-prompt.md)" \
-            --max-turns 60 \
+            --max-turns 120 \
             --allowedTools "Bash,Read,Write,Grep,Glob,Skill"
       - name: Teardown
         if: always()
