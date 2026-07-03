@@ -10,6 +10,11 @@ Your job — prove or disprove the reported bug, deterministically:
 3. Author a v2 manifest that deterministically demonstrates the bug (scenario FAILS on the buggy build),
    including the in-flow seeding steps. Set `base_url: "__BT_BASE_URL__"` (literal placeholder).
    Run it via the Mode 0 runner to confirm it fails for the RIGHT reason.
+   IMPORTANT: this exact file gets committed verbatim and re-run by the fix/gate/ship stages to verify the
+   FIXED build — assert ONLY conditions that must hold once the bug is fixed. Do NOT add an assertion that
+   pins the current buggy behavior (e.g. "the misspelled label is still present") alongside the fix
+   assertion — the two are typically mutually exclusive on a single control, which makes the manifest
+   permanently unable to pass once the real fix lands.
 4. If reproduced: `gh issue edit {{ISSUE}} --add-label reproduced` and post a comment with
    (a) one paragraph of what fails and why, (b) the full manifest in a ```yaml code block,
    (c) the failing oracle evidence (real console/network counts).
