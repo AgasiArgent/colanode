@@ -54,4 +54,17 @@ describe('SidebarMenu', () => {
     expect(markup).toContain('aria-label="Settings"');
     expect(markup).not.toContain('Setings??');
   });
+
+  it('labels the chats control with the correctly spelled "Chats"', () => {
+    const markup = renderToStaticMarkup(
+      <SidebarMenu value="chats" onChange={() => {}} />
+    );
+
+    // Regression for issue #14: the chats button is icon-only, so its aria-label
+    // is its sole accessible name. It was misspelled "Chatts" (extra "t"), so a
+    // role+name query for "Chats" matched nothing. The label must read exactly
+    // "Chats".
+    expect(markup).toContain('aria-label="Chats"');
+    expect(markup).not.toContain('Chatts');
+  });
 });
