@@ -54,7 +54,7 @@ export const SidebarMenu = ({ value, onChange }: SidebarMenuProps) => {
       <div className="flex flex-col gap-1 mt-2 w-full p-2 items-center grow">
         <SidebarMenuIcon
           icon={MessageCircle}
-          label="Chats"
+          label="Chatts"
           onClick={() => {
             onChange('chats');
           }}
