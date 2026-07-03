@@ -18,7 +18,10 @@ export const AppNotificationSettings = () => {
       return;
     }
 
-    window.colanode.push.getState().then(setState);
+    window.colanode.push
+      .getState()
+      .then(setState)
+      .catch(() => setState('unsupported'));
   }, [app.type]);
 
   // Web push is a PWA/browser capability — desktop and mobile have no
