@@ -6,6 +6,7 @@ export * from './node-tombstones';
 export * from './collaborations';
 export * from './document-updates';
 export * from './node-notifications';
+export * from './notification-mutes';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface SynchronizerMap {}

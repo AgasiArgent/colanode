@@ -7,6 +7,7 @@ import { eventBus } from '@colanode/server/lib/event-bus';
 import { emailService } from '@colanode/server/services/email-service';
 import { jobService } from '@colanode/server/services/job-service';
 import { notificationService } from '@colanode/server/services/notification-service';
+import { pushService } from '@colanode/server/services/push-service';
 
 dotenv.config({
   quiet: true,
@@ -23,6 +24,7 @@ const init = async () => {
 
   await eventBus.init();
   await notificationService.init();
+  await pushService.init();
   await emailService.init();
 };
 

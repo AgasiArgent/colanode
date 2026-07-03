@@ -111,6 +111,10 @@ export class ServerService {
               },
             }
           : undefined,
+        push:
+          config.push && config.push.enabled
+            ? { enabled: true, publicKey: config.push.publicKey }
+            : { enabled: false },
       };
 
       this.attributes = attributes;

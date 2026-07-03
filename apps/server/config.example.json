@@ -70,6 +70,12 @@
       }
     }
   },
+  "push": {
+    "enabled": false,
+    "subject": "mailto:admin@example.com",
+    "publicKey": "env://PUSH_VAPID_PUBLIC_KEY",
+    "privateKey": "env://PUSH_VAPID_PRIVATE_KEY"
+  },
   "jobs": {
     "queue": {
       "name": "jobs",

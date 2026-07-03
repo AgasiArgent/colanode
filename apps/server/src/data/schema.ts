@@ -324,6 +324,37 @@ export type SelectNotification = Selectable<NotificationTable>;
 export type CreateNotification = Insertable<NotificationTable>;
 export type UpdateNotification = Updateable<NotificationTable>;
 
+interface PushSubscriptionTable {
+  id: ColumnType<string, string, never>;
+  account_id: ColumnType<string, string, never>;
+  device_id: ColumnType<string, string, never>;
+  endpoint: ColumnType<string, string, string>;
+  p256dh: ColumnType<string, string, string>;
+  auth: ColumnType<string, string, string>;
+  created_at: ColumnType<Date, Date, never>;
+  updated_at: ColumnType<Date | null, Date | null, Date | null>;
+  last_failure_at: ColumnType<Date | null, Date | null, Date | null>;
+}
+
+export type SelectPushSubscription = Selectable<PushSubscriptionTable>;
+export type CreatePushSubscription = Insertable<PushSubscriptionTable>;
+export type UpdatePushSubscription = Updateable<PushSubscriptionTable>;
+
+interface NotificationMuteTable {
+  id: ColumnType<string, string, never>;
+  user_id: ColumnType<string, string, never>;
+  node_id: ColumnType<string, string, never>;
+  workspace_id: ColumnType<string, string, never>;
+  muted: ColumnType<boolean, boolean, boolean>;
+  created_at: ColumnType<Date, Date, never>;
+  updated_at: ColumnType<Date | null, Date | null, Date | null>;
+  revision: ColumnType<string, never, never>;
+}
+
+export type SelectNotificationMute = Selectable<NotificationMuteTable>;
+export type CreateNotificationMute = Insertable<NotificationMuteTable>;
+export type UpdateNotificationMute = Updateable<NotificationMuteTable>;
+
 export interface DatabaseSchema {
   accounts: AccountTable;
   devices: DeviceTable;
@@ -343,4 +374,6 @@ export interface DatabaseSchema {
   document_embeddings: DocumentEmbeddingTable;
   counters: CounterTable;
   notifications: NotificationTable;
+  push_subscriptions: PushSubscriptionTable;
+  notification_mutes: NotificationMuteTable;
 }

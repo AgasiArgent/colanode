@@ -33,6 +33,10 @@ import { NodeInteractionSeenMutationHandler } from './nodes/node-interaction-see
 import { NodeReactionCreateMutationHandler } from './nodes/node-reaction-create';
 import { NodeReactionDeleteMutationHandler } from './nodes/node-reaction-delete';
 import { NodeUpdateMutationHandler } from './nodes/node-update';
+import { MuteSetMutationHandler } from './notifications/mute-set';
+import { NotificationReadMutationHandler } from './notifications/notification-read';
+import { PushSubscriptionCreateMutationHandler } from './push-subscriptions/push-subscription-create';
+import { PushSubscriptionDeleteMutationHandler } from './push-subscriptions/push-subscription-delete';
 import { ServerCreateMutationHandler } from './servers/server-create';
 import { ServerDeleteMutationHandler } from './servers/server-delete';
 import { ServerSyncMutationHandler } from './servers/server-sync';
@@ -43,7 +47,6 @@ import { UsersCreateMutationHandler } from './users/users-create';
 import { WorkspaceCreateMutationHandler } from './workspaces/workspace-create';
 import { WorkspaceDeleteMutationHandler } from './workspaces/workspace-delete';
 import { WorkspaceUpdateMutationHandler } from './workspaces/workspace-update';
-import { NotificationReadMutationHandler } from './notifications/notification-read';
 
 export type MutationHandlerMap = {
   [K in keyof MutationMap]: MutationHandler<MutationMap[K]['input']>;
@@ -96,5 +99,8 @@ export const buildMutationHandlerMap = (
     'tab.update': new TabUpdateMutationHandler(app),
     'tab.delete': new TabDeleteMutationHandler(app),
     'notification.read': new NotificationReadMutationHandler(app),
+    'mute.set': new MuteSetMutationHandler(app),
+    'pushSubscription.create': new PushSubscriptionCreateMutationHandler(app),
+    'pushSubscription.delete': new PushSubscriptionDeleteMutationHandler(app),
   };
 };

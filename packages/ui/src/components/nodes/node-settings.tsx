@@ -1,7 +1,7 @@
 import { LocalNode } from '@colanode/client/types';
 import { NodeRole } from '@colanode/core';
 import { ChannelSettings } from '@colanode/ui/components/channels/channel-settings';
-import { NodeCollaboratorsPopover } from '@colanode/ui/components/collaborators/node-collaborators-popover';
+import { ChatSettings } from '@colanode/ui/components/chats/chat-settings';
 import { DatabaseSettings } from '@colanode/ui/components/databases/database-settings';
 import { FileSettings } from '@colanode/ui/components/files/file-settings';
 import { FolderSettings } from '@colanode/ui/components/folders/folder-settings';
@@ -19,7 +19,7 @@ export const NodeSettings = ({ node, role }: NodeSettingsProps) => {
   }
 
   if (node.type === 'chat') {
-    return <NodeCollaboratorsPopover node={node} nodes={[node]} role={role} />;
+    return <ChatSettings chat={node} role={role} />;
   }
 
   if (node.type === 'database') {

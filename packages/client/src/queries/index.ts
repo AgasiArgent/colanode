@@ -19,6 +19,7 @@ export * from './interactions/node-interaction-get';
 export * from './interactions/radar-data-get';
 export * from './nodes/node-reaction-list';
 export * from './notifications/notification-list';
+export * from './notifications/notification-mute-get';
 export * from './notifications/notification-unread-count';
 export * from './records/record-search';
 export * from './users/user-list';

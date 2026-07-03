@@ -8,6 +8,12 @@ import { MobileNotSupported } from '@colanode/web/components/mobile-not-supporte
 import { ColanodeWorkerApi } from '@colanode/web/lib/types';
 import { isMobileDevice, isOpfsSupported } from '@colanode/web/lib/utils';
 import { Root } from '@colanode/web/root';
+import {
+  disableWebPush,
+  enableWebPush,
+  getWebPushState,
+  isWebPushSupported,
+} from '@colanode/web/services/push-service';
 import DedicatedWorker from '@colanode/web/workers/dedicated?worker';
 
 window.addEventListener('error', (event) => {
@@ -70,6 +76,13 @@ const initializeApp = async () => {
       // No-op on web
     },
     showFileSaveDialog: async () => undefined,
+    push: {
+      enable: (userId, vapidPublicKey) =>
+        enableWebPush(userId, vapidPublicKey),
+      disable: (userId) => disableWebPush(userId),
+      getState: () => getWebPushState(),
+      isSupported: () => isWebPushSupported(),
+    },
   };
 
   window.eventBus = eventBus;

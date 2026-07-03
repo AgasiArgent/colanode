@@ -15,7 +15,6 @@ import {
   markNodeAsOpened,
   markNodeAsSeen,
 } from '@colanode/server/lib/node-interactions';
-import { markNotificationRead } from '@colanode/server/lib/notifications';
 import {
   createNodeReaction,
   deleteNodeReaction,
@@ -25,6 +24,12 @@ import {
   updateNodeFromMutation,
   deleteNodeFromMutation,
 } from '@colanode/server/lib/nodes';
+import { setNotificationMute } from '@colanode/server/lib/notification-mutes';
+import { markNotificationRead } from '@colanode/server/lib/notifications';
+import {
+  createPushSubscription,
+  deletePushSubscription,
+} from '@colanode/server/lib/push-subscriptions';
 import { WorkspaceContext } from '@colanode/server/types/api';
 
 const logger = createLogger('api:client:workspaces:mutations-sync');
@@ -100,6 +105,12 @@ const handleMutation = async (
     return await updateDocumentFromMutation(workspace, mutation.data);
   } else if (mutation.type === 'notification.read') {
     return await markNotificationRead(workspace, mutation);
+  } else if (mutation.type === 'pushSubscription.create') {
+    return await createPushSubscription(workspace, mutation);
+  } else if (mutation.type === 'pushSubscription.delete') {
+    return await deletePushSubscription(workspace, mutation);
+  } else if (mutation.type === 'mute.set') {
+    return await setNotificationMute(workspace, mutation);
   } else {
     return MutationStatus.METHOD_NOT_ALLOWED;
   }

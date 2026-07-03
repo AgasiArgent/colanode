@@ -339,6 +339,12 @@ export type NotificationReadEvent = {
   notificationId: string;
 };
 
+export type NotificationMuteUpdatedEvent = {
+  type: 'notification.mute.updated';
+  workspace: WorkspaceEventData;
+  nodeId: string;
+};
+
 export type Event =
   | UserCreatedEvent
   | UserUpdatedEvent
@@ -394,4 +400,5 @@ export type Event =
   | TabUpdatedEvent
   | TabDeletedEvent
   | NotificationCreatedEvent
-  | NotificationReadEvent;
+  | NotificationReadEvent
+  | NotificationMuteUpdatedEvent;
