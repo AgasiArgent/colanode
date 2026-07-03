@@ -25,10 +25,10 @@ jobs:
       - name: Wait for PR tests (named check, not self)
         run: |
           for i in $(seq 1 60); do
-            S=$(gh pr checks "$PR" --json name,state -q '.[] | select(.name=="Run affected tests") | .state' || echo PENDING)
+            S=$(gh pr checks "$PR" 2>/dev/null | awk -F'\t' '$1=="Run affected tests"{print $2}' || true)
             case "$S" in
-              SUCCESS) exit 0 ;;
-              FAILURE|ERROR|CANCELLED) echo "PR tests failed"; exit 1 ;;
+              pass) exit 0 ;;
+              fail|cancelled) echo "PR tests failed"; exit 1 ;;
               *) sleep 20 ;;
             esac
           done
@@ -50,5 +50,5 @@ jobs:
       - name: Escalate instead of merging
         if: failure()
         run: |
-          gh pr edit "$PR" --add-label needs-human
+          gh api "repos/${{ github.repository }}/issues/$PR/labels" -f "labels[]=needs-human"
           .github/bug-loop/notify.sh "PR #$PR did not pass the auto-merge gate — needs human review: $(gh pr view "$PR" --json url -q .url)"
