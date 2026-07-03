@@ -15,6 +15,13 @@ Your job — prove or disprove the reported bug, deterministically:
    pins the current buggy behavior (e.g. "the misspelled label is still present") alongside the fix
    assertion — the two are typically mutually exclusive on a single control, which makes the manifest
    permanently unable to pass once the real fix lands.
+   PORTABILITY: this same manifest also runs unmodified against staging (http://localhost:55080) AND prod
+   (https://chat.kvotaflow.ru) later, with only base_url substituted — nothing else about the target
+   differs. Never target an element by a value that is itself environment-config-derived, e.g. the
+   server's display `name` (staging config.json says "Colanode Staging", prod says something else) or a
+   domain-suffixed test id. Prefer stable, env-independent locators: static test_id, a CSS attribute
+   *prefix* match (e.g. `[data-testid^="server-card-"]`) when the suffix is env-specific, role+name for
+   copy that's the same everywhere, or visible static text.
 4. If reproduced: `gh issue edit {{ISSUE}} --add-label reproduced` and post a comment with
    (a) one paragraph of what fails and why, (b) the full manifest in a ```yaml code block,
    (c) the failing oracle evidence (real console/network counts).
