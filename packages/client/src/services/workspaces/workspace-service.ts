@@ -65,11 +65,11 @@ export class WorkspaceService {
     this.mutations = new MutationService(this);
     this.users = new UserService(this);
     this.collaborations = new CollaborationService(this);
+    this.notifications = new NotificationService(this);
+    this.notificationMutes = new NotificationMuteService(this);
     this.synchronizer = new SyncService(this);
     this.radar = new RadarService(this);
     this.nodeCounters = new NodeCountersService(this);
-    this.notifications = new NotificationService(this);
-    this.notificationMutes = new NotificationMuteService(this);
 
     this.workspaceFilesCleanJobScheduleId = `workspace.files.clean.${this.account.id}.${this.workspace.workspaceId}`;
   }
