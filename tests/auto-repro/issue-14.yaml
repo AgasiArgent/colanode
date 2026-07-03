@@ -40,17 +40,16 @@ scenarios:
       # --- wait for the workspace home (icon rail is rendered here) ---
       - wait: { text: "Spaces", timeout_ms: 20000 }
     assertions:
-      # SABOTAGE (rollback drill, bug-loop D4): intentionally asserts the OPPOSITE
-      # of the fix oracle below — expects the misspelled "Chatts" instead of the
-      # correct "Chats". This makes the manifest FAIL on a correct build, so that
-      # pushing it triggers the ship workflow's staging-verify failure path.
-      # Original (correct) assertion, restored by the ship workflow's revert:
-      #   - element_visible: { role: button, name: "Chats" }
+      # FIX oracle: the rail icon button must announce "Chats". Targets role=button
+      # so it can only match the icon-only rail control (the sidebar panel header
+      # "Chats" is a paragraph, never a button) — no false pass. "Chats" is not a
+      # substring of the buggy "Chatts", so this FAILS on the buggy build for the
+      # right reason and PASSES once the aria-label is corrected.
       - oracle: action-result
         timeout_ms: 10000
         effect:
           any_of:
-            - element_visible: { role: button, name: "Chatts" }
+            - element_visible: { role: button, name: "Chats" }
       # Registration must have completed and produced no server errors.
       - oracle: network-completeness
         required:
