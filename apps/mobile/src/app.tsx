@@ -34,6 +34,7 @@ import { Message } from '@colanode/mobile/lib/types';
 import { MobileFileSystem } from '@colanode/mobile/services/file-system';
 import { MobileKyselyService } from '@colanode/mobile/services/kysely-service';
 import { MobilePathService } from '@colanode/mobile/services/path-service';
+import { MobilePushService } from '@colanode/mobile/services/push-service';
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0a0a0a', padding: 0, margin: 0 },
@@ -181,6 +182,8 @@ export const App = () => {
   const app = useRef<AppService | null>(null);
   const appInitialized = useRef<boolean>(false);
   const initOutput = useRef<AppInitOutput | null>(null);
+  const pushService = useRef(new MobilePushService()).current;
+  const pushToken = useRef<string | null>(null);
 
   const [uri, setUri] = useState<string | null>(null);
   const [baseDir, setBaseDir] = useState<string | null>(null);
@@ -283,6 +286,47 @@ export const App = () => {
         type: 'mutation_result',
         mutationId: message.mutationId,
         result,
+      });
+    } else if (message.type === 'push_enable') {
+      const token = await pushService.enable();
+      let success = false;
+      if (token && app.current) {
+        pushToken.current = token;
+        const result = await app.current.mediator.executeMutation({
+          type: 'apnsSubscription.create',
+          userId: message.userId,
+          deviceToken: token,
+        });
+        success = result.success;
+      }
+
+      sendMessage({
+        type: 'push_enable_result',
+        requestId: message.requestId,
+        success,
+      });
+    } else if (message.type === 'push_disable') {
+      const token = pushToken.current;
+      if (token && app.current) {
+        await app.current.mediator.executeMutation({
+          type: 'apnsSubscription.delete',
+          userId: message.userId,
+          deviceToken: token,
+        });
+        pushToken.current = null;
+      }
+
+      await pushService.disable();
+      sendMessage({
+        type: 'push_disable_result',
+        requestId: message.requestId,
+      });
+    } else if (message.type === 'push_get_state') {
+      const state = await pushService.getState();
+      sendMessage({
+        type: 'push_get_state_result',
+        requestId: message.requestId,
+        state,
       });
     } else if (message.type === 'query') {
       if (!app.current) {

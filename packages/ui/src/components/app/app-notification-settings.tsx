@@ -14,7 +14,7 @@ export const AppNotificationSettings = () => {
   const [state, setState] = useState<WebPushState | 'loading'>('loading');
 
   useEffect(() => {
-    if (app.type !== 'web') {
+    if (app.type !== 'web' && app.type !== 'mobile') {
       return;
     }
 
@@ -24,24 +24,33 @@ export const AppNotificationSettings = () => {
       .catch(() => setState('unsupported'));
   }, [app.type]);
 
-  // Web push is a PWA/browser capability — desktop and mobile have no
-  // equivalent yet, so the toggle only renders in the web app.
-  if (app.type !== 'web') {
+  // Push notifications are delivered via web push (PWA/browser) or native
+  // APNs (mobile) — desktop has no equivalent yet, so the toggle only
+  // renders in the web app and the mobile app.
+  if (app.type !== 'web' && app.type !== 'mobile') {
     return null;
   }
 
   const serverPush = server.attributes.push;
+  const serverApns = server.attributes.apns;
+  const pushAvailable =
+    app.type === 'web'
+      ? !!serverPush?.enabled && !!serverPush.publicKey
+      : serverApns?.enabled === true;
 
   const onToggle = async (checked: boolean) => {
     if (checked) {
-      if (!serverPush?.enabled || !serverPush.publicKey) {
+      if (!pushAvailable) {
         return;
       }
 
-      const ok = await window.colanode.push.enable(
-        workspace.userId,
-        serverPush.publicKey
-      );
+      const ok =
+        app.type === 'web'
+          ? await window.colanode.push.enable(
+              workspace.userId,
+              serverPush?.publicKey
+            )
+          : await window.colanode.push.enable(workspace.userId);
       setState(ok ? 'enabled' : 'denied');
     } else {
       await window.colanode.push.disable(workspace.userId);
@@ -61,9 +70,13 @@ export const AppNotificationSettings = () => {
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
           {state === 'unsupported'
-            ? 'Add this app to your Home Screen to enable notifications.'
+            ? app.type === 'web'
+              ? 'Add this app to your Home Screen to enable notifications.'
+              : 'Push notifications are not supported on this device.'
             : state === 'denied'
-              ? 'Notifications are blocked in your browser settings.'
+              ? app.type === 'web'
+                ? 'Notifications are blocked in your browser settings.'
+                : 'Notifications are blocked. Enable them for this app in iOS Settings.'
               : 'Push notifications on this device.'}
         </div>
         <Checkbox
@@ -73,7 +86,7 @@ export const AppNotificationSettings = () => {
             state === 'unsupported' ||
             state === 'denied' ||
             state === 'loading' ||
-            !serverPush?.enabled
+            !pushAvailable
           }
           onCheckedChange={(checked) => {
             if (typeof checked === 'boolean') {

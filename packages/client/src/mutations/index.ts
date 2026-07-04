@@ -43,6 +43,8 @@ export * from './notifications/notification-read';
 export * from './notifications/mute-set';
 export * from './push-subscriptions/push-subscription-create';
 export * from './push-subscriptions/push-subscription-delete';
+export * from './apns-subscriptions/apns-subscription-create';
+export * from './apns-subscriptions/apns-subscription-delete';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface MutationMap {}

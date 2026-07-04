@@ -4,6 +4,8 @@ import { AppService } from '@colanode/client/services';
 
 import { AccountLogoutMutationHandler } from './accounts/account-logout';
 import { AccountUpdateMutationHandler } from './accounts/account-update';
+import { ApnsSubscriptionCreateMutationHandler } from './apns-subscriptions/apns-subscription-create';
+import { ApnsSubscriptionDeleteMutationHandler } from './apns-subscriptions/apns-subscription-delete';
 import { MetadataDeleteMutationHandler } from './apps/metadata-delete';
 import { MetadataUpdateMutationHandler } from './apps/metadata-update';
 import { TabCreateMutationHandler } from './apps/tab-create';
@@ -102,5 +104,7 @@ export const buildMutationHandlerMap = (
     'mute.set': new MuteSetMutationHandler(app),
     'pushSubscription.create': new PushSubscriptionCreateMutationHandler(app),
     'pushSubscription.delete': new PushSubscriptionDeleteMutationHandler(app),
+    'apnsSubscription.create': new ApnsSubscriptionCreateMutationHandler(app),
+    'apnsSubscription.delete': new ApnsSubscriptionDeleteMutationHandler(app),
   };
 };

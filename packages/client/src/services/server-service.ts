@@ -115,6 +115,10 @@ export class ServerService {
           config.push && config.push.enabled
             ? { enabled: true, publicKey: config.push.publicKey }
             : { enabled: false },
+        apns:
+          config.apns && config.apns.enabled
+            ? { enabled: true, bundleId: config.apns.bundleId }
+            : { enabled: false },
       };
 
       this.attributes = attributes;

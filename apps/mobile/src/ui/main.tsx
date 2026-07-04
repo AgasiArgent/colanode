@@ -11,8 +11,12 @@ import { generateId, IdType } from '@colanode/core/lib/id';
 import {
   InitMessage,
   Message,
+  MobilePushState,
   MutationMessage,
   PendingPromise,
+  PushDisableMessage,
+  PushEnableMessage,
+  PushGetStateMessage,
   QueryAndSubscribeMessage,
   QueryMessage,
   QueryUnsubscribeMessage,
@@ -32,14 +36,69 @@ window.colanode = {
   reset: async () => {
     window.location.reload();
   },
-  // Web Push (VAPID) is a browser mechanism and is not how the native app will
-  // deliver notifications — that will go through APNs via expo-notifications.
-  // Report unsupported so the shared UI hides the web-push toggle on mobile.
+  // Native push is APNs via expo-notifications, bridged to the RN host —
+  // the VAPID key web push uses has no meaning here, so it's ignored.
   push: {
-    enable: async () => false,
-    disable: async () => {},
-    getState: async () => 'unsupported',
-    isSupported: () => false,
+    enable: async (userId) => {
+      const requestId = generateId(IdType.Query);
+      const message: PushEnableMessage = {
+        type: 'push_enable',
+        requestId,
+        userId,
+      };
+
+      const promise = new Promise<boolean>((resolve, reject) => {
+        pendingPromises.set(requestId, {
+          type: 'push_enable',
+          requestId,
+          resolve,
+          reject,
+        });
+      });
+
+      postMessage(message);
+      return promise;
+    },
+    disable: async (userId) => {
+      const requestId = generateId(IdType.Query);
+      const message: PushDisableMessage = {
+        type: 'push_disable',
+        requestId,
+        userId,
+      };
+
+      const promise = new Promise<void>((resolve, reject) => {
+        pendingPromises.set(requestId, {
+          type: 'push_disable',
+          requestId,
+          resolve,
+          reject,
+        });
+      });
+
+      postMessage(message);
+      return promise;
+    },
+    getState: async () => {
+      const requestId = generateId(IdType.Query);
+      const message: PushGetStateMessage = {
+        type: 'push_get_state',
+        requestId,
+      };
+
+      const promise = new Promise<MobilePushState>((resolve, reject) => {
+        pendingPromises.set(requestId, {
+          type: 'push_get_state',
+          requestId,
+          resolve,
+          reject,
+        });
+      });
+
+      postMessage(message);
+      return promise;
+    },
+    isSupported: () => true,
   },
   init: async () => {
     const message: InitMessage = {
@@ -169,6 +228,30 @@ const handleMessage = (message: Message) => {
 
     promise.resolve(message.result);
     pendingPromises.delete(message.mutationId);
+  } else if (message.type === 'push_enable_result') {
+    const promise = pendingPromises.get(message.requestId);
+    if (!promise || promise.type !== 'push_enable') {
+      return;
+    }
+
+    promise.resolve(message.success);
+    pendingPromises.delete(message.requestId);
+  } else if (message.type === 'push_disable_result') {
+    const promise = pendingPromises.get(message.requestId);
+    if (!promise || promise.type !== 'push_disable') {
+      return;
+    }
+
+    promise.resolve();
+    pendingPromises.delete(message.requestId);
+  } else if (message.type === 'push_get_state_result') {
+    const promise = pendingPromises.get(message.requestId);
+    if (!promise || promise.type !== 'push_get_state') {
+      return;
+    }
+
+    promise.resolve(message.state);
+    pendingPromises.delete(message.requestId);
   } else if (message.type === 'query_result') {
     const promise = pendingPromises.get(message.queryId);
     if (!promise || promise.type !== 'query') {

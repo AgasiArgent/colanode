@@ -1,6 +1,7 @@
 import { extractBlockTexts, extractNodeName, NodeAttributes } from '@colanode/core';
 import { database } from '@colanode/server/data/database';
 import { SelectNode } from '@colanode/server/data/schema';
+import { sendApns } from '@colanode/server/lib/apns/apns-sender';
 import { config } from '@colanode/server/lib/config';
 import { eventBus } from '@colanode/server/lib/event-bus';
 import { createLogger } from '@colanode/server/lib/logger';
@@ -16,7 +17,7 @@ class PushService {
   private subscriptionId: string | null = null;
 
   public async init(): Promise<void> {
-    if (!config.push.enabled) return;
+    if (!config.push.enabled && !config.apns.enabled) return;
     if (this.subscriptionId !== null) return;
     this.subscriptionId = eventBus.subscribe((event) => {
       void this.handleEvent(event).catch((e) =>
@@ -92,12 +93,21 @@ class PushService {
     const accountIds = [...new Set(users.map((u) => u.account_id))];
     if (accountIds.length === 0) return;
 
-    const subscriptions = await database
-      .selectFrom('push_subscriptions')
-      .selectAll()
-      .where('account_id', 'in', accountIds)
-      .execute();
-    if (subscriptions.length === 0) return;
+    const [pushSubscriptions, apnsSubscriptions] = await Promise.all([
+      database
+        .selectFrom('push_subscriptions')
+        .selectAll()
+        .where('account_id', 'in', accountIds)
+        .execute(),
+      database
+        .selectFrom('apns_subscriptions')
+        .selectAll()
+        .where('account_id', 'in', accountIds)
+        .execute(),
+    ]);
+    if (pushSubscriptions.length === 0 && apnsSubscriptions.length === 0) {
+      return;
+    }
 
     // Chats have no name of their own — the push title falls back to the
     // author's display name (channels keep using the channel name).
@@ -125,33 +135,42 @@ class PushService {
 
     const startedAt = Date.now();
     // shortcut: inline fan-out, fine for team-scale deploys — the warn below names the ceiling; move to a BullMQ job if a channel grows to hundreds of members.
-    await Promise.all(
-      subscriptions.map((sub) => {
+    await Promise.all([
+      ...pushSubscriptions.map((sub) => {
         const recipientUserId = userIdByAccount.get(sub.account_id);
         if (!recipientUserId) return Promise.resolve();
         return sendWebPush(sub, {
           ...basePayload,
           url: `/workspace/${recipientUserId}/${container.id}`,
         }).catch((e) => logger.error(e, `push send failed for ${sub.id}`));
-      })
-    );
+      }),
+      ...apnsSubscriptions.map((sub) => {
+        const recipientUserId = userIdByAccount.get(sub.account_id);
+        if (!recipientUserId) return Promise.resolve();
+        return sendApns(sub, {
+          ...basePayload,
+          url: `/workspace/${recipientUserId}/${container.id}`,
+        }).catch((e) => logger.error(e, `apns send failed for ${sub.id}`));
+      }),
+    ]);
     const durationMs = Date.now() - startedAt;
+    const subscriptionCount = pushSubscriptions.length + apnsSubscriptions.length;
 
     logger.info(
       {
         rootId: container.id,
         recipientCount: finalUserIds.length,
-        subscriptionCount: subscriptions.length,
+        subscriptionCount,
         durationMs,
       },
       'push fan-out'
     );
 
-    if (subscriptions.length > 200 || durationMs > 2000) {
+    if (subscriptionCount > 200 || durationMs > 2000) {
       logger.warn(
         {
           rootId: container.id,
-          subscriptionCount: subscriptions.length,
+          subscriptionCount,
           durationMs,
         },
         'push fan-out large — consider moving to a BullMQ job'
