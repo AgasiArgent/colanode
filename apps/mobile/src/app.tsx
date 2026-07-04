@@ -262,8 +262,14 @@ export const App = () => {
       while (initOutput.current === null) {
         await new Promise((resolve) => setTimeout(resolve, 50));
         count++;
-        if (count > 100) {
-          throw new Error('App initialization timed out');
+        // Cold first-run migrate+init can take well over 5s on a fresh
+        // simulator, so budget 30s. On timeout, report an error result
+        // instead of throwing into this un-awaited handler — a throw here
+        // left the WebView waiting on init() forever with no signal.
+        if (count > 600) {
+          console.error('[Mobile] App initialization timed out after 30s');
+          sendMessage({ type: 'init_result', output: 'error' });
+          return;
         }
       }
       sendMessage({ type: 'init_result', output: initOutput.current });
