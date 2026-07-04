@@ -27,6 +27,20 @@ const postMessage = (message: Message) => {
 };
 
 window.colanode = {
+  // Native reset isn't bridged to the RN host yet; reloading the WebView is the
+  // best-effort equivalent until a dedicated reset message is added to the bridge.
+  reset: async () => {
+    window.location.reload();
+  },
+  // Web Push (VAPID) is a browser mechanism and is not how the native app will
+  // deliver notifications — that will go through APNs via expo-notifications.
+  // Report unsupported so the shared UI hides the web-push toggle on mobile.
+  push: {
+    enable: async () => false,
+    disable: async () => {},
+    getState: async () => 'unsupported',
+    isSupported: () => false,
+  },
   init: async () => {
     const message: InitMessage = {
       type: 'init',
