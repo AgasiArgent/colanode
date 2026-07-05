@@ -20,6 +20,6 @@ export default defineConfig({
     environment: 'node',
     globalSetup: ['./test/global-setup.ts'],
     setupFiles: ['./test/setup-env.ts'],
-    include: ['test/**/*.test.ts', 'test/**/*.spec.ts'],
+    include: ['test/**/*.test.ts', 'test/**/*.spec.ts', 'src/**/*.test.ts'],
   },
 });
