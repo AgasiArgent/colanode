@@ -19,9 +19,10 @@ describe('features/bug-report/submitBugReport', () => {
   });
 
   it('calls executeMutation with a bugReport.create payload and maps the issue url', async () => {
-    const executeMutation = vi
-      .fn()
-      .mockResolvedValue({ success: true, issueUrl: 'http://x/1', issueNumber: 1 });
+    const executeMutation = vi.fn().mockResolvedValue({
+      success: true,
+      output: { success: true, issueUrl: 'http://x/1', issueNumber: 1 },
+    });
     // @ts-expect-error partial stub for test
     window.colanode = { executeMutation };
 
@@ -37,6 +38,18 @@ describe('features/bug-report/submitBugReport', () => {
       })
     );
     expect(result).toEqual({ success: true, issueUrl: 'http://x/1' });
+  });
+
+  it('surfaces the real MutationResult error message when the mutation fails', async () => {
+    const executeMutation = vi.fn().mockResolvedValue({
+      success: false,
+      error: { code: 'ApiError', message: 'token revoked' },
+    });
+    // @ts-expect-error partial stub for test
+    window.colanode = { executeMutation };
+
+    const result = await submitBugReport([], note);
+    expect(result).toEqual({ success: false, error: 'token revoked' });
   });
 
   it('returns a failure result (keeping pins for retry) when the mutation throws', async () => {

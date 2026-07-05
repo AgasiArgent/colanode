@@ -21,7 +21,7 @@ describe('lib/bug-report/github-issues', () => {
     const out = await createGithubIssue('T', 'B');
 
     expect(out).toEqual({ issueUrl: 'http://x/7', issueNumber: 7 });
-    const [url, init] = fetchMock.mock.calls[0];
+    const [url, init] = fetchMock.mock.calls[0]!;
     expect(url).toBe('https://api.github.com/repos/AgasiArgent/colanode/issues');
     expect(JSON.parse((init as RequestInit).body as string).labels).toEqual([
       'report',

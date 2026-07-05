@@ -39,7 +39,7 @@ describe('lib/bug-report/issue-body', () => {
     expect(body).toContain('**Got:** Setings??');
     expect(body).toContain('**Pinned source (1 pins, most useful first):**');
     expect(body).toContain(
-      '1. `packages/ui/src/components/layouts/sidebars/sidebar-menu.tsx:97` — `<SidebarMenuItem>` — selector `nav > a:nth-child(3)`'
+      '1. `packages/ui/src/components/layouts/sidebars/sidebar-menu.tsx:97` — `<SidebarMenuItem>` — selector `nav > a:nth-child(3)` — note: "typo"'
     );
     expect(body).toContain('**Console errors (1):**');
     expect(body).toContain('_Reported from colanode pinpoint widget._');
@@ -53,7 +53,23 @@ describe('lib/bug-report/issue-body', () => {
         { comment: 'x', sourceFile: null, componentPath: null, selector: 'div.foo' },
       ],
     });
-    expect(body).toContain('1. _no source resolved_ — selector `div.foo`');
+    expect(body).toContain(
+      '1. _no source resolved_ — selector `div.foo` — note: "x"'
+    );
+  });
+
+  it('appends a note fragment when a pin has a comment, and omits it when empty', () => {
+    const body = buildIssueBody({
+      ...base,
+      title: '',
+      pins: [
+        { comment: 'reproduces every time', sourceFile: 'a.tsx:1', componentPath: null, selector: 'div.bar' },
+        { comment: '', sourceFile: 'b.tsx:2', componentPath: null, selector: 'div.baz' },
+      ],
+    });
+    expect(body).toContain('1. `a.tsx:1` — selector `div.bar` — note: "reproduces every time"');
+    expect(body).toContain('2. `b.tsx:2` — selector `div.baz`');
+    expect(body).not.toContain('`div.baz` — note:');
   });
 
   it('falls back to "<Component> — <page>" for an empty title', () => {

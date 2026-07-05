@@ -34,7 +34,8 @@ function renderPin(pin: BugReportPin, index: number): string {
   const anchor = pin.sourceFile
     ? `\`${pin.sourceFile}\`${pin.componentPath ? ` — \`${pin.componentPath}\`` : ''}`
     : '_no source resolved_';
-  return `${index + 1}. ${anchor} — selector \`${pin.selector}\``;
+  const note = pin.comment ? ` — note: "${pin.comment}"` : '';
+  return `${index + 1}. ${anchor} — selector \`${pin.selector}\`${note}`;
 }
 
 export function buildIssueBody(input: BugReportIssueInput): string {

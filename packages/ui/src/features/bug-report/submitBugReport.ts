@@ -26,7 +26,7 @@ export async function submitBugReport(
   note: BugNote
 ): Promise<SubmitResult> {
   try {
-    const output = await window.colanode.executeMutation({
+    const result = await window.colanode.executeMutation({
       type: 'bugReport.create',
       userId: note.userId,
       workspaceId: note.workspaceId,
@@ -37,8 +37,9 @@ export async function submitBugReport(
       pins: buildPinSnapshots(pins),
       debugContext: collectDebugContext(),
     });
-    if (!output.success) return { success: false, error: 'Submit failed' };
-    return { success: true, issueUrl: output.issueUrl };
+    if (!result.success) return { success: false, error: result.error.message };
+    if (!result.output.success) return { success: false, error: 'Submit failed' };
+    return { success: true, issueUrl: result.output.issueUrl };
   } catch (error) {
     return {
       success: false,
