@@ -4,6 +4,8 @@ A staging copy of the app (built from current main) is running at http://localho
 Your job — prove or disprove the reported bug, deterministically:
 1. Read the issue. If it references a Clips recording, fetch its diagnostics:
    `curl -s "$CLIPS_BASE/api/agent-context.json?id=<recordingId>" -H "Authorization: Bearer $CLIPS_AGENT_INGEST_TOKEN"`.
+   If the issue body has a `Pinned source:` block (file:line anchors from the pinpoint widget), open those
+   files at those lines FIRST — they are the reporter's best guess at where the bug lives — before browsing.
 2. Invoke the browser-test-v2 skill (quick mode) against http://localhost:55080. Seed in-flow:
    register a fresh account (bt-issue{{ISSUE}}@bt.local / password Bt-{{ISSUE}}-pass1) and create whatever
    workspace/data the scenario needs, then walk the reported flow. Oracle floor is mandatory.

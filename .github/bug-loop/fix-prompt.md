@@ -6,6 +6,8 @@ Workflow (strict):
 2. Save the manifest verbatim to `tests/auto-repro/issue-{{ISSUE}}.yaml` (keep `__BT_BASE_URL__`).
 3. Root-cause the bug (systematic-debugging discipline: trace, don't guess). Write a REGRESSION TEST first
    (vitest, colocated with the code under test) that fails on current code for the bug's reason.
+   If the issue body has a `Pinned source:` block, open those file:line anchors first as the starting point
+   for root-cause tracing (they are a hint, not a guarantee — still trace to the real cause).
 4. Implement the minimal root-cause fix. No refactors, no drive-by changes. Target ≤150 changed lines,
    only under apps/web/, packages/ui/, packages/client/.
 5. `npx turbo run test --affected -- --watch false` must pass.
