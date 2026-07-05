@@ -17,7 +17,7 @@
       "bundleIdentifier": "com.bratmario.superchat",
       "supportsTablet": true,
       "entitlements": {
-        "aps-environment": "development"
+        "aps-environment": "production"
       },
       "infoPlist": {
         "UIBackgroundModes": ["remote-notification"]
