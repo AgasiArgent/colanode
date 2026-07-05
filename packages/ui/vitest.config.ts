@@ -6,6 +6,13 @@ import { defineConfig } from 'vitest/config';
 // (e.g. @colanode/client/lib/mappers) resolve via directory aliasing
 // rather than the package `exports` map, matching apps/web/vite.config.js.
 export default defineConfig({
+  test: {
+    // The bug-report feature (pinpoint widget) touches window/document
+    // directly (debugContext interceptors, element capture, testing-library
+    // render). Node was the implicit default here before; jsdom is a strict
+    // superset for the existing node-only lib tests.
+    environment: 'jsdom',
+  },
   resolve: {
     alias: {
       '@colanode/core': resolve(__dirname, '../core/src'),
