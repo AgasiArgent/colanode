@@ -19,3 +19,30 @@ export type BugReportDebugContext = {
   consoleErrors: BugReportConsoleEntry[];
   collectedAt: string;
 };
+
+export type BugReportCreateMutationInput = {
+  type: 'bugReport.create';
+  userId: string;
+  workspaceId: string;
+  title: string;
+  did: string;
+  expected: string;
+  got: string;
+  pins: PinSnapshot[];
+  debugContext: BugReportDebugContext;
+};
+
+export type BugReportCreateMutationOutput = {
+  success: boolean;
+  issueUrl: string;
+  issueNumber: number;
+};
+
+declare module '@colanode/client/mutations' {
+  interface MutationMap {
+    'bugReport.create': {
+      input: BugReportCreateMutationInput;
+      output: BugReportCreateMutationOutput;
+    };
+  }
+}
