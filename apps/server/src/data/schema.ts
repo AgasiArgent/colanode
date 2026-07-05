@@ -340,6 +340,20 @@ export type SelectPushSubscription = Selectable<PushSubscriptionTable>;
 export type CreatePushSubscription = Insertable<PushSubscriptionTable>;
 export type UpdatePushSubscription = Updateable<PushSubscriptionTable>;
 
+interface ApnsSubscriptionTable {
+  id: ColumnType<string, string, never>;
+  account_id: ColumnType<string, string, never>;
+  device_id: ColumnType<string, string, never>;
+  device_token: ColumnType<string, string, string>;
+  created_at: ColumnType<Date, Date, never>;
+  updated_at: ColumnType<Date | null, Date | null, Date | null>;
+  last_failure_at: ColumnType<Date | null, Date | null, Date | null>;
+}
+
+export type SelectApnsSubscription = Selectable<ApnsSubscriptionTable>;
+export type CreateApnsSubscription = Insertable<ApnsSubscriptionTable>;
+export type UpdateApnsSubscription = Updateable<ApnsSubscriptionTable>;
+
 interface NotificationMuteTable {
   id: ColumnType<string, string, never>;
   user_id: ColumnType<string, string, never>;
@@ -375,5 +389,6 @@ export interface DatabaseSchema {
   counters: CounterTable;
   notifications: NotificationTable;
   push_subscriptions: PushSubscriptionTable;
+  apns_subscriptions: ApnsSubscriptionTable;
   notification_mutes: NotificationMuteTable;
 }

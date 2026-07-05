@@ -23,15 +23,18 @@ import {
   WebViewErrorEvent,
   WebViewHttpErrorEvent,
 } from 'react-native-webview/lib/WebViewTypes';
+import superjson from 'superjson';
 
 import { eventBus } from '@colanode/client/lib';
 import { AppMeta, AppService } from '@colanode/client/services';
+import { AppInitOutput } from '@colanode/client/types';
 import { generateId, IdType } from '@colanode/core';
 import { copyAssets, indexHtmlAsset } from '@colanode/mobile/lib/assets';
 import { Message } from '@colanode/mobile/lib/types';
 import { MobileFileSystem } from '@colanode/mobile/services/file-system';
 import { MobileKyselyService } from '@colanode/mobile/services/kysely-service';
 import { MobilePathService } from '@colanode/mobile/services/path-service';
+import { MobilePushService } from '@colanode/mobile/services/push-service';
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0a0a0a', padding: 0, margin: 0 },
@@ -178,6 +181,9 @@ export const App = () => {
   const webViewRef = useRef<WebView>(null);
   const app = useRef<AppService | null>(null);
   const appInitialized = useRef<boolean>(false);
+  const initOutput = useRef<AppInitOutput | null>(null);
+  const pushService = useRef(new MobilePushService()).current;
+  const pushToken = useRef<string | null>(null);
 
   const [uri, setUri] = useState<string | null>(null);
   const [baseDir, setBaseDir] = useState<string | null>(null);
@@ -214,8 +220,10 @@ export const App = () => {
         await app.current.migrate();
         await app.current.init();
         appInitialized.current = true;
+        initOutput.current = 'success';
       } catch (error) {
         console.error(error);
+        initOutput.current = 'error';
       }
     })();
   }, []);
@@ -229,7 +237,7 @@ export const App = () => {
   }, []);
 
   const handleMessage = useCallback(async (e: WebViewMessageEvent) => {
-    const message = JSON.parse(e.nativeEvent.data) as Message;
+    const message = superjson.parse<Message>(e.nativeEvent.data);
     if (message.type === 'console') {
       if (message.level === 'log') {
         console.log(
@@ -254,14 +262,20 @@ export const App = () => {
       }
     } else if (message.type === 'init') {
       let count = 0;
-      while (!appInitialized.current) {
+      while (initOutput.current === null) {
         await new Promise((resolve) => setTimeout(resolve, 50));
         count++;
-        if (count > 100) {
-          throw new Error('App initialization timed out');
+        // Cold first-run migrate+init can take well over 5s on a fresh
+        // simulator, so budget 30s. On timeout, report an error result
+        // instead of throwing into this un-awaited handler — a throw here
+        // left the WebView waiting on init() forever with no signal.
+        if (count > 600) {
+          console.error('[Mobile] App initialization timed out after 30s');
+          sendMessage({ type: 'init_result', output: 'error' });
+          return;
         }
       }
-      sendMessage({ type: 'init_result' });
+      sendMessage({ type: 'init_result', output: initOutput.current });
     } else if (message.type === 'mutation') {
       if (!app.current) {
         return;
@@ -272,6 +286,47 @@ export const App = () => {
         type: 'mutation_result',
         mutationId: message.mutationId,
         result,
+      });
+    } else if (message.type === 'push_enable') {
+      const token = await pushService.enable();
+      let success = false;
+      if (token && app.current) {
+        pushToken.current = token;
+        const result = await app.current.mediator.executeMutation({
+          type: 'apnsSubscription.create',
+          userId: message.userId,
+          deviceToken: token,
+        });
+        success = result.success;
+      }
+
+      sendMessage({
+        type: 'push_enable_result',
+        requestId: message.requestId,
+        success,
+      });
+    } else if (message.type === 'push_disable') {
+      const token = pushToken.current;
+      if (token && app.current) {
+        await app.current.mediator.executeMutation({
+          type: 'apnsSubscription.delete',
+          userId: message.userId,
+          deviceToken: token,
+        });
+        pushToken.current = null;
+      }
+
+      await pushService.disable();
+      sendMessage({
+        type: 'push_disable_result',
+        requestId: message.requestId,
+      });
+    } else if (message.type === 'push_get_state') {
+      const state = await pushService.getState();
+      sendMessage({
+        type: 'push_get_state_result',
+        requestId: message.requestId,
+        state,
       });
     } else if (message.type === 'query') {
       if (!app.current) {
@@ -309,7 +364,7 @@ export const App = () => {
   }, []);
 
   const sendMessage = useCallback((message: Message) => {
-    webViewRef.current?.postMessage(JSON.stringify(message));
+    webViewRef.current?.postMessage(superjson.stringify(message));
   }, []);
 
   const [webviewError, setWebviewError] = useState<string | null>(null);

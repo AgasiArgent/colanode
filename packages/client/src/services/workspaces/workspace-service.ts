@@ -65,6 +65,12 @@ export class WorkspaceService {
     this.mutations = new MutationService(this);
     this.users = new UserService(this);
     this.collaborations = new CollaborationService(this);
+    // NotificationService/NotificationMuteService must be constructed BEFORE
+    // SyncService: SyncService's constructor binds
+    // this.workspace.notifications.syncServerNotification (and the mute
+    // equivalent) into its sync-handler map, so those services have to already
+    // exist or it throws "Cannot read property 'syncServerNotification' of
+    // undefined" and the workspace never loads.
     this.notifications = new NotificationService(this);
     this.notificationMutes = new NotificationMuteService(this);
     this.synchronizer = new SyncService(this);

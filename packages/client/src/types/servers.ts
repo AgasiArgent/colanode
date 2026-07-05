@@ -11,6 +11,7 @@ export type ServerAttributes = {
   account?: ServerAccountAttributes;
   sha?: string | null;
   push?: { enabled: boolean; publicKey?: string };
+  apns?: { enabled: boolean; bundleId?: string };
 };
 
 export type ServerState = {

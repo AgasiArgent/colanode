@@ -78,7 +78,9 @@ const initializeApp = async () => {
     showFileSaveDialog: async () => undefined,
     push: {
       enable: (userId, vapidPublicKey) =>
-        enableWebPush(userId, vapidPublicKey),
+        vapidPublicKey
+          ? enableWebPush(userId, vapidPublicKey)
+          : Promise.resolve(false),
       disable: (userId) => disableWebPush(userId),
       getState: () => getWebPushState(),
       isSupported: () => isWebPushSupported(),

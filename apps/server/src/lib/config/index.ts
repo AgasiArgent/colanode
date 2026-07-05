@@ -4,6 +4,7 @@ import { z } from 'zod/v4';
 
 import { accountConfigSchema } from './account';
 import { aiConfigSchema } from './ai';
+import { apnsConfigSchema } from './apns';
 import { corsSchema } from './cors';
 import { emailConfigSchema } from './email';
 import { jobsConfigSchema } from './jobs';
@@ -44,6 +45,7 @@ const configSchema = z.object({
   logging: loggingConfigSchema,
   workspace: workspaceConfigSchema,
   push: pushConfigSchema,
+  apns: apnsConfigSchema,
 });
 
 export type Configuration = z.infer<typeof configSchema>;

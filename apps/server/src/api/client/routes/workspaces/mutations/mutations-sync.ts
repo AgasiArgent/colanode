@@ -9,6 +9,10 @@ import {
   WorkspaceStatus,
 } from '@colanode/core';
 import { toSafeLogFields } from '@colanode/server/api/client/lib/log-error';
+import {
+  createApnsSubscription,
+  deleteApnsSubscription,
+} from '@colanode/server/lib/apns-subscriptions';
 import { updateDocumentFromMutation } from '@colanode/server/lib/documents';
 import { createLogger } from '@colanode/server/lib/logger';
 import {
@@ -109,6 +113,10 @@ const handleMutation = async (
     return await createPushSubscription(workspace, mutation);
   } else if (mutation.type === 'pushSubscription.delete') {
     return await deletePushSubscription(workspace, mutation);
+  } else if (mutation.type === 'apnsSubscription.create') {
+    return await createApnsSubscription(workspace, mutation);
+  } else if (mutation.type === 'apnsSubscription.delete') {
+    return await deleteApnsSubscription(workspace, mutation);
   } else if (mutation.type === 'mute.set') {
     return await setNotificationMute(workspace, mutation);
   } else {

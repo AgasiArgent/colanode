@@ -30,7 +30,7 @@ export interface ColanodeWindowApi {
     options: SaveDialogOptions
   ) => Promise<string | undefined>;
   push: {
-    enable: (userId: string, vapidPublicKey: string) => Promise<boolean>;
+    enable: (userId: string, vapidPublicKey?: string) => Promise<boolean>;
     disable: (userId: string) => Promise<void>;
     getState: () => Promise<WebPushState>;
     isSupported: () => boolean;

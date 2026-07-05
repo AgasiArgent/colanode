@@ -21,6 +21,13 @@ export const serverPushConfigSchema = z.discriminatedUnion('enabled', [
 
 export type ServerPushConfig = z.infer<typeof serverPushConfigSchema>;
 
+export const serverApnsConfigSchema = z.discriminatedUnion('enabled', [
+  z.object({ enabled: z.literal(true), bundleId: z.string() }),
+  z.object({ enabled: z.literal(false) }),
+]);
+
+export type ServerApnsConfig = z.infer<typeof serverApnsConfigSchema>;
+
 export const serverConfigSchema = z.object({
   name: z.string(),
   avatar: z.string(),
@@ -30,6 +37,7 @@ export const serverConfigSchema = z.object({
   pathPrefix: z.string().nullable().optional(),
   account: serverAccountConfigSchema.nullable().optional(),
   push: serverPushConfigSchema.nullable().optional(),
+  apns: serverApnsConfigSchema.nullable().optional(),
 });
 
 export type ServerConfig = z.infer<typeof serverConfigSchema>;
