@@ -6,6 +6,7 @@ import { WorkspaceLayout } from '@colanode/ui/components/workspaces/workspace-la
 import { WorkspaceLocationTracker } from '@colanode/ui/components/workspaces/workspace-location-tracker';
 import { WorkspaceNotFound } from '@colanode/ui/components/workspaces/workspace-not-found';
 import { WorkspaceContext } from '@colanode/ui/contexts/workspace';
+import { BugReportWidget } from '@colanode/ui/features/bug-report';
 
 interface WorkspaceProps {
   userId: string;
@@ -66,6 +67,7 @@ export const Workspace = ({ userId }: WorkspaceProps) => {
         }}
       >
         <WorkspaceLocationTracker />
+        <BugReportWidget />
         <WorkspaceLayout />
       </WorkspaceContext.Provider>
     </ServerProvider>
