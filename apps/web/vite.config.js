@@ -28,21 +28,40 @@ export default defineConfig({
     // dispatcher is null on render → "Cannot read properties of null (reading
     // 'useRef')" crashes the whole app. Force a single react/react-dom copy.
     dedupe: ['react', 'react-dom'],
-    alias: {
-      '@colanode/web': resolve(__dirname, './src'),
-      '@colanode/core': resolve(__dirname, '../../packages/core/src'),
-      '@colanode/crdt': resolve(__dirname, '../../packages/crdt/src'),
-      '@colanode/client': resolve(__dirname, '../../packages/client/src'),
-      '@colanode/ui': resolve(__dirname, '../../packages/ui/src'),
-      // @agent-native/pinpoint lazily import()s @agent-native/core only on its
-      // built-in "send to agent chat" path, which the bug-report feature's own
-      // sendToAgent bridge replaces. Alias it to a stub so the bundler can
-      // resolve the dynamic-import target without pulling in the framework.
-      '@agent-native/core': resolve(
-        __dirname,
-        '../../packages/ui/src/features/bug-report/agentNativeCoreStub.ts'
-      ),
-    },
+    alias: [
+      { find: '@colanode/web', replacement: resolve(__dirname, './src') },
+      {
+        find: '@colanode/core',
+        replacement: resolve(__dirname, '../../packages/core/src'),
+      },
+      {
+        find: '@colanode/crdt',
+        replacement: resolve(__dirname, '../../packages/crdt/src'),
+      },
+      {
+        find: '@colanode/client',
+        replacement: resolve(__dirname, '../../packages/client/src'),
+      },
+      {
+        find: '@colanode/ui',
+        replacement: resolve(__dirname, '../../packages/ui/src'),
+      },
+      // @agent-native/pinpoint lazily import()s @agent-native/core (and subpaths
+      // like @agent-native/core/client) only on its built-in "send to agent
+      // chat" path, which the bug-report feature's own sendToAgent bridge
+      // replaces. A plain string alias only matches the bare specifier and
+      // concatenates any subpath onto the stub file path (stub.ts/client →
+      // ENOTDIR), hard-failing `vite build`. Use a regex that maps the bare
+      // specifier AND any subpath to the same stub so the bundler can resolve
+      // every dynamic-import target without pulling in the framework.
+      {
+        find: /^@agent-native\/core(\/.*)?$/,
+        replacement: resolve(
+          __dirname,
+          '../../packages/ui/src/features/bug-report/agentNativeCoreStub.ts'
+        ),
+      },
+    ],
   },
   optimizeDeps: {
     exclude: ['@sqlite.org/sqlite-wasm'],
