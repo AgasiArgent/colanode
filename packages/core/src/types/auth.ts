@@ -1,22 +1,19 @@
 import { z } from 'zod/v4';
 
 import { accountOutputSchema } from '@colanode/core/types/accounts';
+import { emailSchema } from '@colanode/core/types/email';
 import { workspaceOutputSchema } from '@colanode/core/types/workspaces';
 
 export const emailRegisterInputSchema = z.object({
   name: z.string({ error: 'Name is required' }),
-  email: z.string({ error: 'Email is required' }).email({
-    message: 'Invalid email address',
-  }),
+  email: emailSchema,
   password: z.string({ error: 'Password is required' }),
 });
 
 export type EmailRegisterInput = z.infer<typeof emailRegisterInputSchema>;
 
 export const emailLoginInputSchema = z.object({
-  email: z.string({ error: 'Email is required' }).email({
-    message: 'Invalid email address',
-  }),
+  email: emailSchema,
   password: z.string({ error: 'Password is required' }),
 });
 
@@ -63,7 +60,7 @@ export const emailVerifyInputSchema = z.object({
 export type EmailVerifyInput = z.infer<typeof emailVerifyInputSchema>;
 
 export const emailPasswordResetInitInputSchema = z.object({
-  email: z.email(),
+  email: emailSchema,
 });
 
 export type EmailPasswordResetInitInput = z.infer<

@@ -1,5 +1,7 @@
 import { z } from 'zod/v4';
 
+import { emailSchema } from '@colanode/core/types/email';
+
 export enum WorkspaceStatus {
   Active = 1,
   Inactive = 2,
@@ -58,7 +60,7 @@ export const workspaceUpdateInputSchema = z.object({
 export type WorkspaceUpdateInput = z.infer<typeof workspaceUpdateInputSchema>;
 
 export const userCreateInputSchema = z.object({
-  email: z.email(),
+  email: emailSchema,
   role: workspaceRoleSchema,
 });
 

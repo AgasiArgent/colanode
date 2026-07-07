@@ -20,6 +20,7 @@ export * from './registry/nodes/file';
 export * from './registry/documents/index';
 export * from './registry/documents/rich-text';
 export * from './types/accounts';
+export * from './types/email';
 export * from './types/files';
 export * from './types/sockets';
 export * from './types/servers';
