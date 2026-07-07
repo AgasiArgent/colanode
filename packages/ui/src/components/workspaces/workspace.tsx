@@ -2,6 +2,7 @@ import { eq, useLiveQuery } from '@tanstack/react-db';
 
 import { collections } from '@colanode/ui/collections';
 import { ServerProvider } from '@colanode/ui/components/servers/server-provider';
+import { InAppNotificationToaster } from '@colanode/ui/components/workspaces/in-app-notification-toaster';
 import { WorkspaceLayout } from '@colanode/ui/components/workspaces/workspace-layout';
 import { WorkspaceLocationTracker } from '@colanode/ui/components/workspaces/workspace-location-tracker';
 import { WorkspaceNotFound } from '@colanode/ui/components/workspaces/workspace-not-found';
@@ -66,6 +67,7 @@ export const Workspace = ({ userId }: WorkspaceProps) => {
         }}
       >
         <WorkspaceLocationTracker />
+        <InAppNotificationToaster />
         <WorkspaceLayout />
       </WorkspaceContext.Provider>
     </ServerProvider>
