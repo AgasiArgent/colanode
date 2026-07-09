@@ -50,6 +50,21 @@ const main = async (): Promise<void> => {
     }
   });
 
+  // The engine targets Electron/browser hosts where an unhandled rejection is
+  // logged, not fatal. Match those semantics: a background sync hiccup must
+  // not take the whole MCP down. stderr lands in the client's MCP logs.
+  process.on('unhandledRejection', (reason) => {
+    console.error('colanode-mcp unhandled rejection:', reason);
+  });
+
+  // The engine keeps the event loop alive (timers, sockets, sqlite), and the
+  // SDK's stdio transport never watches for stdin EOF — without explicit exits
+  // every closed client session leaks a live MCP process.
+  process.stdin.on('end', () => process.exit(0));
+  process.stdin.on('close', () => process.exit(0));
+  process.on('SIGINT', () => process.exit(0));
+  process.on('SIGTERM', () => process.exit(0));
+
   await server.connect(new StdioServerTransport());
 };
 

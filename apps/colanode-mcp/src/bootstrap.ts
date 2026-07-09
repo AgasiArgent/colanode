@@ -28,16 +28,28 @@ export const resolveUserId = (
 let enginePromise: Promise<AppService> | null = null;
 
 export const getEngine = (): Promise<AppService> => {
-  if (!enginePromise) {
-    const config = loadConfig();
-    enginePromise = bootEngine({
-      serverUrl: config.serverUrl,
-      email: config.email,
-      password: config.password,
-      dataDir: config.dataDir,
-    });
+  if (enginePromise) {
+    return enginePromise;
   }
-  return enginePromise;
+
+  const config = loadConfig();
+  const boot = bootEngine({
+    serverUrl: config.serverUrl,
+    email: config.email,
+    password: config.password,
+    dataDir: config.dataDir,
+  });
+
+  // A failed boot (e.g. server unreachable during first login) must not be
+  // cached forever — reset so the next tool call retries.
+  boot.catch(() => {
+    if (enginePromise === boot) {
+      enginePromise = null;
+    }
+  });
+
+  enginePromise = boot;
+  return boot;
 };
 
 export const makeUserIdResolver =
