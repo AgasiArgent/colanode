@@ -36,9 +36,25 @@ export class AccountSocket {
       return;
     }
 
-    const response = await this.account.client
-      .post('v1/sockets')
-      .json<SocketInitOutput>();
+    // Callers fire init() without awaiting it, so a rejection here becomes an
+    // unhandled rejection (fatal in Node hosts). Treat a failed token request
+    // like any other connection failure: back off and wait for the next check.
+    let response: SocketInitOutput;
+    try {
+      response = await this.account.client
+        .post('v1/sockets')
+        .json<SocketInitOutput>();
+    } catch (error) {
+      debug(
+        `Socket init failed for account ${this.account.id}: ${error}`
+      );
+      this.backoffCalculator.increaseError();
+      eventBus.publish({
+        type: 'account.connection.closed',
+        accountId: this.account.id,
+      });
+      return;
+    }
 
     this.socket = new WebSocket(
       `${this.account.server.socketBaseUrl}/v1/sockets/${response.id}`
