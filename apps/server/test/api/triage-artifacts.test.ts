@@ -3,9 +3,9 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import { database } from '@colanode/server/data/database';
 
+import { buildMultipart } from './triage-ingest.test';
 import { buildTestApp } from '../helpers/app';
 
-import { buildMultipart } from './triage-ingest.test';
 
 describe('GET /client/v1/triage/artifacts/:reportId/:artifactId', () => {
   let app: FastifyInstance;
