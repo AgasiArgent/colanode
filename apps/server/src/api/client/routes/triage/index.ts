@@ -5,6 +5,7 @@ import { triageIngestAuthenticator } from '@colanode/server/api/client/plugins/t
 
 import { triageArtifactDownloadRoute } from './artifact-download';
 import { triageIngestRoute } from './ingest-create';
+import { triageOpsRoutes } from './ops';
 
 export const triageRoutes: FastifyPluginCallback = (instance, _, done) => {
   instance.register((subInstance) => {
@@ -16,6 +17,7 @@ export const triageRoutes: FastifyPluginCallback = (instance, _, done) => {
   });
 
   instance.register(triageArtifactDownloadRoute);
+  instance.register(triageOpsRoutes, { prefix: '/ops' });
 
   done();
 };
