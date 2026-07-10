@@ -16,36 +16,38 @@ export const AppAssets = () => {
   return (
     <style>{`
       @font-face {
-        font-family: "satoshi";
-        src: url('${fontPrefix}/satoshi-variable.woff2') format("woff2-variations"),
-            url('${fontPrefix}/satoshi-variable.woff2') format("woff2");
-        font-weight: 300 900;
+        font-family: "Bricolage Grotesque";
+        src: url('${fontPrefix}/bricolage-grotesque-variable.woff2') format("woff2-variations"),
+            url('${fontPrefix}/bricolage-grotesque-variable.woff2') format("woff2");
+        font-weight: 400 800;
         font-style: normal;
         font-display: swap;
       }
 
       @font-face {
-        font-family: "satoshi";
-        src: url('${fontPrefix}/satoshi-variable-italic.woff2') format("woff2-variations"),
-            url('${fontPrefix}/satoshi-variable-italic.woff2') format("woff2");
-        font-weight: 300 900;
+        font-family: "Karla";
+        src: url('${fontPrefix}/karla-variable.woff2') format("woff2-variations"),
+            url('${fontPrefix}/karla-variable.woff2') format("woff2");
+        font-weight: 400 700;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: "Karla";
+        src: url('${fontPrefix}/karla-italic.woff2') format("woff2");
+        font-weight: 400;
         font-style: italic;
         font-display: swap;
       }
 
-      .font-satoshi {
-        font-family: 'satoshi';
-      }
-
       @font-face {
-        font-family: 'antonio';
-        src: url('${fontPrefix}/antonio.ttf') format('truetype');
-        font-weight: normal;
+        font-family: "Spline Sans Mono";
+        src: url('${fontPrefix}/spline-sans-mono-variable.woff2') format("woff2-variations"),
+            url('${fontPrefix}/spline-sans-mono-variable.woff2') format("woff2");
+        font-weight: 300 700;
         font-style: normal;
-      }
-
-      .font-antonio {
-        font-family: 'antonio';
+        font-display: swap;
       }
     `}</style>
   );
