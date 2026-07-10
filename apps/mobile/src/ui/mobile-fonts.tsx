@@ -1,4 +1,3 @@
-import antonioFont from '../../assets/fonts/antonio.ttf';
 import satoshiFont from '../../assets/fonts/satoshi-variable.woff2';
 import satoshiItalicFont from '../../assets/fonts/satoshi-variable-italic.woff2';
 
@@ -24,12 +23,6 @@ export const MobileFonts = () => (
       font-weight: 300 900;
       font-style: italic;
       font-display: swap;
-    }
-    @font-face {
-      font-family: 'antonio';
-      src: url('${antonioFont}') format('truetype');
-      font-weight: normal;
-      font-style: normal;
     }
   `}</style>
 );

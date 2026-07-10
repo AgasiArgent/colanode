@@ -5,10 +5,6 @@ import { ThemeMode } from '@colanode/client/types';
 // Note: shadcn --accent is the neutral hover/selected wash; the brand green
 // lives in --primary.
 
-const baseVariables = {
-  '--radius': '0.75rem',
-};
-
 const lightVariables = {
   '--background': '#F2F1EA',
   '--foreground': '#1C2420',
@@ -114,8 +110,5 @@ const darkVariables = {
 };
 
 export const getThemeVariables = (mode: ThemeMode): Record<string, string> => {
-  return {
-    ...baseVariables,
-    ...(mode === 'light' ? lightVariables : darkVariables),
-  };
+  return mode === 'light' ? lightVariables : darkVariables;
 };

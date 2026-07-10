@@ -10,7 +10,6 @@ describe('getThemeVariables', () => {
     expect(vars['--sidebar']).toBe('#EDECE3');
     expect(vars['--spore']).toBe('#A96B1B');
     expect(vars['--bubble-other-border']).toBe('#E0DED4');
-    expect(vars['--radius']).toBe('0.75rem');
   });
 
   it('returns the Mycel dark palette', () => {
