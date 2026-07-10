@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
 
-import { AppInitOutput, ThemeColor, ThemeMode } from '@colanode/client/types';
+import { AppInitOutput, ThemeMode } from '@colanode/client/types';
 import { ThemeContext } from '@colanode/ui/contexts/theme';
 import { useMetadata } from '@colanode/ui/hooks/use-metadata';
 import { useSystemTheme } from '@colanode/ui/hooks/use-system-theme';
 import { getThemeVariables } from '@colanode/ui/lib/themes';
 
-const useApplyTheme = (mode: ThemeMode, color?: ThemeColor) => {
+const useApplyTheme = (mode: ThemeMode) => {
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
@@ -31,13 +31,13 @@ const useApplyTheme = (mode: ThemeMode, color?: ThemeColor) => {
       return;
     }
 
-    const themeVariables = getThemeVariables(mode, color);
+    const themeVariables = getThemeVariables(mode);
     const htmlElement = document.documentElement;
 
     Object.entries(themeVariables).forEach(([key, value]) => {
       htmlElement.style.setProperty(key, value);
     });
-  }, [mode, color]);
+  }, [mode]);
 };
 
 const AppThemeProviderInitialized = ({
@@ -48,16 +48,13 @@ const AppThemeProviderInitialized = ({
   const systemTheme = useSystemTheme();
 
   const [themeMode] = useMetadata<ThemeMode>('app', 'theme.mode');
-  const [themeColor] = useMetadata<ThemeColor>('app', 'theme.color');
 
   const resolvedThemeMode = themeMode ?? systemTheme;
 
-  useApplyTheme(resolvedThemeMode, themeColor);
+  useApplyTheme(resolvedThemeMode);
 
   return (
-    <ThemeContext.Provider
-      value={{ mode: resolvedThemeMode, color: themeColor }}
-    >
+    <ThemeContext.Provider value={{ mode: resolvedThemeMode }}>
       {children}
     </ThemeContext.Provider>
   );
@@ -69,10 +66,10 @@ export const AppThemeProviderUninitialized = ({
   children: React.ReactNode;
 }) => {
   const systemTheme = useSystemTheme();
-  useApplyTheme(systemTheme, undefined);
+  useApplyTheme(systemTheme);
 
   return (
-    <ThemeContext.Provider value={{ mode: systemTheme, color: undefined }}>
+    <ThemeContext.Provider value={{ mode: systemTheme }}>
       {children}
     </ThemeContext.Provider>
   );
