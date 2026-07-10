@@ -5,6 +5,7 @@ import { SidebarChats } from '@colanode/ui/components/layouts/sidebars/sidebar-c
 import { SidebarMenu } from '@colanode/ui/components/layouts/sidebars/sidebar-menu';
 import { SidebarSettings } from '@colanode/ui/components/layouts/sidebars/sidebar-settings';
 import { SidebarSpaces } from '@colanode/ui/components/layouts/sidebars/sidebar-spaces';
+import { SidebarSyncStatus } from '@colanode/ui/components/layouts/sidebars/sidebar-sync-status';
 import { InboxPanel } from '@colanode/ui/components/inbox/inbox-panel';
 import { useApp } from '@colanode/ui/contexts/app';
 import { useWorkspace } from '@colanode/ui/contexts/workspace';
@@ -23,11 +24,14 @@ export const Sidebar = () => {
       )}
     >
       <SidebarMenu value={menu} onChange={setMenu} />
-      <div className="min-h-0 grow overflow-auto border-l border-sidebar-border">
-        {menu === 'spaces' && <SidebarSpaces />}
-        {menu === 'chats' && <SidebarChats />}
-        {menu === 'inbox' && <InboxPanel userId={workspace.userId} />}
-        {menu === 'settings' && <SidebarSettings />}
+      <div className="flex min-h-0 grow flex-col border-l border-sidebar-border">
+        <div className="min-h-0 grow overflow-auto">
+          {menu === 'spaces' && <SidebarSpaces />}
+          {menu === 'chats' && <SidebarChats />}
+          {menu === 'inbox' && <InboxPanel userId={workspace.userId} />}
+          {menu === 'settings' && <SidebarSettings />}
+        </div>
+        <SidebarSyncStatus />
       </div>
     </div>
   );
