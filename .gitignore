@@ -198,5 +198,7 @@ expo-env.d.ts
 *.p12
 *.key
 *.mobileprovision
-/ios
-/android
+# expo prebuild output (regenerated from app.json; a committed copy would pin
+# stale Info.plist values like UIUserInterfaceStyle)
+apps/mobile/ios/
+apps/mobile/android/
