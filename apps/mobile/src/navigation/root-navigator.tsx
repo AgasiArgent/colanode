@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
+import { SettingsNavigator } from '@colanode/mobile/navigation/settings-navigator';
 import { ChatsScreen } from '@colanode/mobile/screens/chats/chats-screen';
 import { InboxScreen } from '@colanode/mobile/screens/inbox/inbox-screen';
-import { SettingsScreen } from '@colanode/mobile/screens/settings/settings-screen';
 import { SpacesScreen } from '@colanode/mobile/screens/spaces/spaces-screen';
 import { useTheme } from '@colanode/mobile/theme/theme-context';
 import { fonts, typeScale } from '@colanode/mobile/theme/typography';
@@ -55,7 +55,11 @@ export const RootNavigator = () => {
       <Tab.Screen name="Chats" component={ChatsScreen} />
       <Tab.Screen name="Spaces" component={SpacesScreen} />
       <Tab.Screen name="Inbox" component={InboxScreen} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
+      <Tab.Screen
+        name="Settings"
+        component={SettingsNavigator}
+        options={{ headerShown: false }}
+      />
     </Tab.Navigator>
   );
 };
