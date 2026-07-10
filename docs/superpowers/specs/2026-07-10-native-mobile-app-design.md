@@ -33,7 +33,7 @@ iOS-only today); Android stays possible but out of scope.
 | Data access | **Shim + reuse `packages/ui` hooks/collections verbatim** (approach 1). No `ui-core` extraction now; revisit once native proves itself |
 | Navigation | `react-navigation` (bottom-tabs + native-stack). No expo-router: no deep links needed yet, less magic with the existing custom Metro entry |
 | Page editing | **TipTap island**: reading is a native ProseMirror-JSON renderer; editing embeds the existing TipTap editor (with its Yjs binding) in a document-sized WebView with a native toolbar. Zero risk to CRDT sync; all rich blocks for free |
-| Styling | Provisional neutral token module `theme/tokens.ts`; replaced by claude.ai/design tokens later (separate restyle pass) |
+| Styling | M1 ships provisional neutral tokens; the **Mycel** design system (claude.ai/design project `b08894a6-0794-47ed-9bee-5a3f8934be84`, tokens in `tokens/*.css`, dark theme primary) lands as milestone **M1.5** between M1 and M2, so every real screen (M2+) is built in the final visual language |
 | Phase 1 scope | Auth + shell + chats + inbox + spaces tree + pages (native read, island edit). Databases/folders show an "open on desktop" stub |
 
 ## Architecture
@@ -87,6 +87,12 @@ Key data operations (all existing, none added):
   (4 tabs + stacks); provisional tokens; proof: a screen renders live
   `server.list` data through a `packages/ui` hook. Includes the Metro
   bundling spike for partial `packages/ui` imports.
+- **M1.5 Mycel design integration.** Fonts (Bricolage Grotesque / Karla /
+  Spline Sans Mono via expo-google-fonts), dual-theme palette (dark primary),
+  ThemeProvider + useTheme, navigation/tab-bar restyle, migration of M1
+  screens off the provisional tokens. Source of truth: claude.ai/design
+  project "Workspace brand concepts" (`tokens/*.css`, `components/core/*`,
+  `Mycel Product.dc.html`).
 - **M2 Auth.** Server picker/add; email login + register; workspace
   picker; Settings tab with account info and logout. App boots to login
   when no account, to Chats otherwise.
