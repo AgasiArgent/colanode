@@ -18,11 +18,15 @@ export interface TriageItemDraft {
   sourceRef: Record<string, unknown>;
 }
 
+const MAX_SUMMARY_LENGTH = 500;
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const str = (value: unknown): string =>
   typeof value === 'string' ? value : '';
+
+const truncate = (value: string): string => value.slice(0, MAX_SUMMARY_LENGTH);
 
 export const explodeReport = (input: ExplodeInput): TriageItemDraft[] => {
   const baseRef = {
@@ -57,11 +61,11 @@ export const explodeReport = (input: ExplodeInput): TriageItemDraft[] => {
     return [
       {
         kind: 'record-issue',
-        summary: input.title || input.got || 'Recorded issue',
+        summary: truncate(input.title || input.got || 'Recorded issue'),
         sourceRef: {
           ...baseRef,
           recordingId: str(recording.recordingId),
-          recordingUrl: str(recording.url),
+          recordingUrl: str(recording.recordingUrl),
         },
       },
     ];
@@ -70,7 +74,7 @@ export const explodeReport = (input: ExplodeInput): TriageItemDraft[] => {
   return [
     {
       kind: 'legacy',
-      summary: input.title || input.got || input.did || 'Feedback',
+      summary: truncate(input.title || input.got || input.did || 'Feedback'),
       sourceRef: baseRef,
     },
   ];

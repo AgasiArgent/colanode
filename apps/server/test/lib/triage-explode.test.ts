@@ -46,13 +46,31 @@ describe('explodeReport', () => {
   it('produces a record-issue item when a recording is present', () => {
     const items = explodeReport({
       ...base,
-      debugContext: { recording: { recordingId: 'rec-1', url: 'https://r/1' } },
+      debugContext: {
+        recording: { recordingId: 'rec-1', recordingUrl: 'https://r/1' },
+      },
     });
     expect(items).toHaveLength(1);
     expect(items[0]).toMatchObject({
       kind: 'record-issue',
       sourceRef: { recordingId: 'rec-1', recordingUrl: 'https://r/1' },
     });
+  });
+
+  it('truncates record-issue and legacy summaries to 500 chars', () => {
+    const longTitle = 'x'.repeat(600);
+
+    const recordItems = explodeReport({
+      ...base,
+      title: longTitle,
+      debugContext: {
+        recording: { recordingId: 'rec-1', recordingUrl: 'https://r/1' },
+      },
+    });
+    expect(recordItems[0]!.summary).toHaveLength(500);
+
+    const legacyItems = explodeReport({ ...base, title: longTitle });
+    expect(legacyItems[0]!.summary).toHaveLength(500);
   });
 
   it('falls back to a single legacy item', () => {
