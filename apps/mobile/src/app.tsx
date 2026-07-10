@@ -40,11 +40,11 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppMeta, AppService } from '@colanode/client/services';
 import { installColanodeShim } from '@colanode/mobile/data/install-shim';
 import { copyAssets } from '@colanode/mobile/lib/assets';
-import { RootNavigator } from '@colanode/mobile/navigation/root-navigator';
 import { MobileFileSystem } from '@colanode/mobile/services/file-system';
 import { MobileKyselyService } from '@colanode/mobile/services/kysely-service';
 import { MobilePathService } from '@colanode/mobile/services/path-service';
 import { MobilePushService } from '@colanode/mobile/services/push-service';
+import { SessionGate } from '@colanode/mobile/session/session-gate';
 import { buildNavigationTheme } from '@colanode/mobile/theme/navigation-theme';
 import { type Palette } from '@colanode/mobile/theme/palette';
 import { ThemeProvider, useTheme } from '@colanode/mobile/theme/theme-context';
@@ -288,7 +288,7 @@ const AppBootstrap = () => {
       <MobileErrorBoundary>
         <QueryClientProvider client={boot.queryClient}>
           <NavigationContainer theme={buildNavigationTheme(palette, isDark)}>
-            <RootNavigator />
+            <SessionGate />
           </NavigationContainer>
         </QueryClientProvider>
       </MobileErrorBoundary>
