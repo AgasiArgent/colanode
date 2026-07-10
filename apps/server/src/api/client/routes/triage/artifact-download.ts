@@ -37,13 +37,12 @@ export const triageArtifactDownloadRoute: FastifyPluginCallbackZod = (
         return reply.code(404).send();
       }
 
-      const { stream, contentType } = await storage.download(
-        artifact.storagePath
-      );
-      reply.header(
-        'content-type',
-        artifact.contentType || contentType || 'application/octet-stream'
-      );
+      const { stream } = await storage.download(artifact.storagePath);
+      // SECURITY: serve ONLY the content type validated against the allowlist
+      // at ingest (never html/svg), and forbid MIME sniffing: this route shares
+      // the app origin, so anything executable here would be stored XSS.
+      reply.header('content-type', artifact.contentType);
+      reply.header('x-content-type-options', 'nosniff');
       return reply.send(stream);
     },
   });

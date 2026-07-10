@@ -51,6 +51,7 @@ describe('GET /client/v1/triage/artifacts/:reportId/:artifactId', () => {
     });
     expect(res.statusCode).toBe(200);
     expect(res.headers['content-type']).toBe('image/png');
+    expect(res.headers['x-content-type-options']).toBe('nosniff');
     expect(res.rawPayload.equals(png)).toBe(true);
   });
 

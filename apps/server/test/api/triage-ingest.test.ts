@@ -112,6 +112,25 @@ describe('POST /client/v1/triage/ingest', () => {
     expect(row.status).toBe('new');
   });
 
+  it('rejects an executable artifact content type (stored-XSS guard)', async () => {
+    const token = await seedProject('ing-xss');
+    const { payload, headers } = buildMultipart({ title: 'evil' }, [
+      {
+        field: 'screenshot',
+        filename: 'evil.html',
+        contentType: 'text/html',
+        data: Buffer.from('<script>alert(1)</script>'),
+      },
+    ]);
+    const res = await app.inject({
+      method: 'POST',
+      url: '/client/v1/triage/ingest',
+      payload,
+      headers: { ...headers, authorization: `Bearer ${token}` },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
   it('rejects a body without the report field', async () => {
     const token = await seedProject('ing-b');
     const { payload, headers } = buildMultipart({ title: 'ignored' }, []);

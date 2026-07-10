@@ -29,6 +29,15 @@ const ingestReportSchema = z.object({
 const ARTIFACT_KINDS = ['screenshot', 'video', 'console'] as const;
 type ArtifactKind = (typeof ARTIFACT_KINDS)[number];
 
+// SECURITY: artifacts are later served from the app origin (artifact-download).
+// Only non-executable content types may be stored — never html/svg/xml, or a
+// malicious "screenshot" becomes stored XSS on the Colanode origin.
+const ALLOWED_ARTIFACT_MIME: Record<ArtifactKind, readonly string[]> = {
+  screenshot: ['image/png', 'image/jpeg'],
+  video: ['video/webm', 'video/mp4'],
+  console: ['application/json', 'text/plain'],
+};
+
 const MIME_EXT: Record<string, string> = {
   'image/png': 'png',
   'image/jpeg': 'jpg',
@@ -74,6 +83,14 @@ export const triageIngestRoute: FastifyPluginCallbackZod = (
             part.file.resume();
             continue;
           }
+          const kind = part.fieldname as ArtifactKind;
+          if (!ALLOWED_ARTIFACT_MIME[kind].includes(part.mimetype)) {
+            part.file.resume();
+            return reply.code(400).send({
+              code: ApiErrorCode.BadRequest,
+              message: `Unsupported ${kind} content type: ${part.mimetype}`,
+            });
+          }
           const buffer = await part.toBuffer();
           const artifactId = randomUUID();
           const ext = MIME_EXT[part.mimetype] ?? 'bin';
@@ -81,7 +98,7 @@ export const triageIngestRoute: FastifyPluginCallbackZod = (
           await storage.upload(storagePath, buffer, part.mimetype);
           artifacts.push({
             id: artifactId,
-            kind: part.fieldname as ArtifactKind,
+            kind,
             contentType: part.mimetype,
             storagePath,
           });
