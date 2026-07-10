@@ -71,35 +71,35 @@
   body {
     @apply bg-background text-foreground;
   }
+}
 
-  :root {
-    /* Mycel motion contract (tokens/motion.css). Surfaces grow, never slide. */
-    --motion-micro-duration: 120ms;
-    --motion-micro-ease: ease-out;
-    --motion-panel-duration: 240ms;
-    --motion-panel-ease: cubic-bezier(0.22, 1, 0.36, 1);
-    --motion-spore-period: 2.6s;
-    --motion-spore-ripple: 600ms;
+:root {
+  /* Mycel motion contract (tokens/motion.css). Surfaces grow, never slide. */
+  --motion-micro-duration: 120ms;
+  --motion-micro-ease: ease-out;
+  --motion-panel-duration: 240ms;
+  --motion-panel-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-spore-period: 2.6s;
+  --motion-spore-ripple: 600ms;
+}
+
+/* Signature sync animation — applied to the 9px spore dot */
+@keyframes spore-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 45%, transparent);
   }
-
-  /* Signature sync animation — applied to the 9px spore dot */
-  @keyframes spore-pulse {
-    0%,
-    100% {
-      box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 45%, transparent);
-    }
-    50% {
-      box-shadow: 0 0 0 7px transparent;
-    }
+  50% {
+    box-shadow: 0 0 0 7px transparent;
   }
+}
 
-  @keyframes spore-ripple {
-    0% {
-      box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 55%, transparent);
-    }
-    100% {
-      box-shadow: 0 0 0 12px transparent;
-    }
+@keyframes spore-ripple {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 55%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 12px transparent;
   }
 }
 
