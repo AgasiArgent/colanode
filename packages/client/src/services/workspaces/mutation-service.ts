@@ -1,3 +1,4 @@
+import { eventBus } from '@colanode/client/lib/event-bus';
 import { mapMutation } from '@colanode/client/lib/mappers';
 import { WorkspaceService } from '@colanode/client/services/workspaces/workspace-service';
 import {
@@ -34,6 +35,8 @@ export class MutationService {
         delay: 500,
       }
     );
+
+    await this.publishQueueState();
   }
 
   public async sync(): Promise<void> {
@@ -47,7 +50,26 @@ export class MutationService {
       await this.revertInvalidMutations();
     } catch (error) {
       debug(`Error syncing mutations: ${error}`);
+    } finally {
+      await this.publishQueueState();
     }
+  }
+
+  private async publishQueueState(): Promise<void> {
+    const row = await this.workspace.database
+      .selectFrom('mutations')
+      .select((eb) => eb.fn.countAll<number>().as('count'))
+      .executeTakeFirst();
+
+    eventBus.publish({
+      type: 'mutation.queue.changed',
+      workspace: {
+        workspaceId: this.workspace.workspaceId,
+        userId: this.workspace.userId,
+        accountId: this.workspace.accountId,
+      },
+      pendingCount: row?.count ?? 0,
+    });
   }
 
   private async sendMutations(): Promise<boolean> {
