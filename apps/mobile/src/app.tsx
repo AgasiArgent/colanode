@@ -1,10 +1,28 @@
+import {
+  BricolageGrotesque_700Bold,
+  BricolageGrotesque_800ExtraBold,
+} from '@expo-google-fonts/bricolage-grotesque';
+import {
+  Karla_400Regular,
+  Karla_500Medium,
+  Karla_600SemiBold,
+  Karla_700Bold,
+} from '@expo-google-fonts/karla';
+import {
+  SplineSansMono_400Regular,
+  SplineSansMono_500Medium,
+  SplineSansMono_600SemiBold,
+} from '@expo-google-fonts/spline-sans-mono';
 import { NavigationContainer } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { modelName } from 'expo-device';
+import { useFonts } from 'expo-font';
+import { StatusBar } from 'expo-status-bar';
 import {
   Component,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ErrorInfo,
@@ -27,52 +45,57 @@ import { MobileFileSystem } from '@colanode/mobile/services/file-system';
 import { MobileKyselyService } from '@colanode/mobile/services/kysely-service';
 import { MobilePathService } from '@colanode/mobile/services/path-service';
 import { MobilePushService } from '@colanode/mobile/services/push-service';
-import { tokens } from '@colanode/mobile/theme/tokens';
+import { buildNavigationTheme } from '@colanode/mobile/theme/navigation-theme';
+import { type Palette } from '@colanode/mobile/theme/palette';
+import { ThemeProvider, useTheme } from '@colanode/mobile/theme/theme-context';
+import { radius, spacing } from '@colanode/mobile/theme/tokens';
+import { typeScale } from '@colanode/mobile/theme/typography';
 import { buildQueryClient } from '@colanode/ui/lib/query';
 
-const styles = StyleSheet.create({
-  loading: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: tokens.colors.background,
-  },
-  errorContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-    padding: 24,
-    backgroundColor: tokens.colors.background,
-  },
-  errorTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: tokens.colors.textPrimary,
-    textAlign: 'center',
-  },
-  errorMessage: {
-    fontSize: 14,
-    color: tokens.colors.textSecondary,
-    textAlign: 'center',
-  },
-  errorRetryButton: {
-    marginTop: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: tokens.radius.sm,
-    backgroundColor: tokens.colors.accent,
-    minHeight: 48,
-    minWidth: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  errorRetryText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: tokens.colors.background,
-  },
-});
+const createStyles = (palette: Palette) =>
+  StyleSheet.create({
+    loading: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: palette.background,
+    },
+    errorContainer: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sm,
+      padding: spacing.lg,
+      backgroundColor: palette.background,
+    },
+    errorTitle: {
+      ...typeScale.h2,
+      color: palette.textPrimary,
+      textAlign: 'center',
+    },
+    errorMessage: {
+      ...typeScale.body,
+      color: palette.textSecondary,
+      textAlign: 'center',
+    },
+    errorRetryButton: {
+      marginTop: spacing.sm,
+      paddingHorizontal: spacing.md,
+      paddingVertical: 10,
+      borderRadius: radius.md,
+      backgroundColor: palette.accent,
+      minHeight: 48,
+      minWidth: 48,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    errorRetryText: {
+      ...typeScale.body,
+      fontFamily: typeScale.body.fontFamily,
+      fontWeight: '700',
+      color: palette.accentForeground,
+    },
+  });
 
 // React Native's `global`/`window` is not a DOM EventTarget, so it has no
 // `addEventListener('error' | 'unhandledrejection', ...)`. The native-side
@@ -100,6 +123,9 @@ const MobileErrorState = ({
   retryTestID,
   onRetry,
 }: MobileErrorStateProps) => {
+  const { palette } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
+
   return (
     <View testID={testID} style={styles.errorContainer}>
       <Text style={styles.errorTitle}>{title}</Text>
@@ -169,7 +195,27 @@ type BootState =
   | { phase: 'error'; message: string }
   | { phase: 'ready'; queryClient: QueryClient };
 
-export const App = () => {
+export const App = () => (
+  <ThemeProvider>
+    <AppBootstrap />
+  </ThemeProvider>
+);
+
+const AppBootstrap = () => {
+  const { palette, isDark } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
+  const [fontsLoaded] = useFonts({
+    BricolageGrotesque_700Bold,
+    BricolageGrotesque_800ExtraBold,
+    Karla_400Regular,
+    Karla_500Medium,
+    Karla_600SemiBold,
+    Karla_700Bold,
+    SplineSansMono_400Regular,
+    SplineSansMono_500Medium,
+    SplineSansMono_600SemiBold,
+  });
+
   const app = useRef<AppService | null>(null);
   const pushService = useRef(new MobilePushService()).current;
   const [boot, setBoot] = useState<BootState>({ phase: 'initializing' });
@@ -216,10 +262,10 @@ export const App = () => {
     initialize();
   }, [initialize]);
 
-  if (boot.phase === 'initializing') {
+  if (!fontsLoaded || boot.phase === 'initializing') {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator testID="app-loading-indicator" />
+        <ActivityIndicator testID="app-loading-indicator" color={palette.accent} />
       </View>
     );
   }
@@ -238,9 +284,10 @@ export const App = () => {
 
   return (
     <SafeAreaProvider>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <MobileErrorBoundary>
         <QueryClientProvider client={boot.queryClient}>
-          <NavigationContainer>
+          <NavigationContainer theme={buildNavigationTheme(palette, isDark)}>
             <RootNavigator />
           </NavigationContainer>
         </QueryClientProvider>
