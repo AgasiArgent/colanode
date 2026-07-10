@@ -59,7 +59,21 @@ export const triageOpsReportExplodeRoute: FastifyPluginCallbackZod = (
       });
 
       const inserted = await database.transaction().execute(async (trx) => {
-        const rows = await trx
+        // Claim the report atomically: only the transaction that flips
+        // new→exploded inserts items. A concurrent explode updates 0 rows and
+        // returns null (TOCTOU-safe — no duplicate items).
+        const claimed = await trx
+          .updateTable('triage_reports')
+          .set({ status: 'exploded' })
+          .where('id', '=', reportId)
+          .where('status', '=', 'new')
+          .executeTakeFirst();
+
+        if (claimed.numUpdatedRows === 0n) {
+          return null;
+        }
+
+        return trx
           .insertInto('triage_items')
           .values(
             drafts.map((draft) => ({
@@ -72,15 +86,17 @@ export const triageOpsReportExplodeRoute: FastifyPluginCallbackZod = (
           )
           .returningAll()
           .execute();
-
-        await trx
-          .updateTable('triage_reports')
-          .set({ status: 'exploded' })
-          .where('id', '=', reportId)
-          .execute();
-
-        return rows;
       });
+
+      if (inserted === null) {
+        // Lost the race — the winner exploded it; return the persisted items.
+        const existing = await database
+          .selectFrom('triage_items')
+          .selectAll()
+          .where('report_id', '=', reportId)
+          .execute();
+        return { items: existing.map(mapItem) };
+      }
 
       return { items: inserted.map(mapItem) };
     },

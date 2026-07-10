@@ -1,4 +1,5 @@
 import { FastifyPluginCallbackZod } from 'fastify-type-provider-zod';
+import { sql } from 'kysely';
 import { z } from 'zod/v4';
 
 import { ApiErrorCode, apiErrorOutputSchema } from '@colanode/core';
@@ -50,19 +51,6 @@ export const triageOpsItemPatchRoute: FastifyPluginCallbackZod = (
       const { itemId } = request.params;
       const body = request.body;
 
-      const item = await database
-        .selectFrom('triage_items')
-        .select(['audit'])
-        .where('id', '=', itemId)
-        .executeTakeFirst();
-
-      if (!item) {
-        return reply.code(404).send({
-          code: ApiErrorCode.BadRequest,
-          message: 'Item not found',
-        });
-      }
-
       const auditEntry = {
         at: new Date().toISOString(),
         actor: 'ops',
@@ -84,12 +72,20 @@ export const triageOpsItemPatchRoute: FastifyPluginCallbackZod = (
           ...(body.agentNote !== undefined
             ? { agent_note: body.agentNote }
             : {}),
-          audit: JSON.stringify([...item.audit, auditEntry]),
+          // append at the SQL layer so concurrent patches never drop an entry
+          audit: sql`audit || ${JSON.stringify([auditEntry])}::jsonb`,
           updated_at: new Date(),
         })
         .where('id', '=', itemId)
         .returningAll()
-        .executeTakeFirstOrThrow();
+        .executeTakeFirst();
+
+      if (!updated) {
+        return reply.code(404).send({
+          code: ApiErrorCode.BadRequest,
+          message: 'Item not found',
+        });
+      }
 
       return mapItem(updated);
     },

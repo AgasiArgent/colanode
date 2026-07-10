@@ -60,9 +60,17 @@ export const triageIngestRoute: FastifyPluginCallbackZod = (
         200: z.object({ id: z.string() }),
         400: apiErrorOutputSchema,
         401: apiErrorOutputSchema,
+        403: apiErrorOutputSchema,
       },
     },
     handler: async (request, reply) => {
+      if (request.triageProject.kill_switch) {
+        return reply.code(403).send({
+          code: ApiErrorCode.Forbidden,
+          message: 'Triage capture is disabled for this project',
+        });
+      }
+
       if (!request.isMultipart()) {
         return reply.code(400).send({
           code: ApiErrorCode.BadRequest,

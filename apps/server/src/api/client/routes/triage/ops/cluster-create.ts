@@ -1,4 +1,5 @@
 import { FastifyPluginCallbackZod } from 'fastify-type-provider-zod';
+import { sql } from 'kysely';
 import { z } from 'zod/v4';
 
 import { ApiErrorCode, apiErrorOutputSchema } from '@colanode/core';
@@ -31,7 +32,7 @@ export const triageOpsClusterCreateRoute: FastifyPluginCallbackZod = (
 
       const items = await database
         .selectFrom('triage_items')
-        .select(['id', 'project_id', 'audit'])
+        .select(['id', 'project_id'])
         .where('id', 'in', itemIds)
         .execute();
 
@@ -56,25 +57,25 @@ export const triageOpsClusterCreateRoute: FastifyPluginCallbackZod = (
           .returning('id')
           .executeTakeFirstOrThrow();
 
-        for (const item of items) {
-          await trx
-            .updateTable('triage_items')
-            .set({
-              cluster_id: cluster.id,
-              status: 'clustered',
-              audit: JSON.stringify([
-                ...item.audit,
-                {
-                  at: new Date().toISOString(),
-                  actor: 'ops',
-                  changes: { clusterId: cluster.id, reason },
-                },
-              ]),
-              updated_at: new Date(),
-            })
-            .where('id', '=', item.id)
-            .execute();
-        }
+        const auditEntry = JSON.stringify([
+          {
+            at: new Date().toISOString(),
+            actor: 'ops',
+            changes: { clusterId: cluster.id, reason },
+          },
+        ]);
+
+        await trx
+          .updateTable('triage_items')
+          .set({
+            cluster_id: cluster.id,
+            status: 'clustered',
+            // append at the SQL layer to preserve any concurrent audit entries
+            audit: sql`audit || ${auditEntry}::jsonb`,
+            updated_at: new Date(),
+          })
+          .where('id', 'in', itemIds)
+          .execute();
 
         return cluster.id;
       });

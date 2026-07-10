@@ -1,6 +1,7 @@
 import { FastifyPluginCallbackZod } from 'fastify-type-provider-zod';
 import { z } from 'zod/v4';
 
+import { ApiErrorCode, apiErrorOutputSchema } from '@colanode/core';
 import { database } from '@colanode/server/data/database';
 
 import { opsProjectOutputSchema } from './projects-list';
@@ -24,9 +25,12 @@ export const triageOpsProjectUpsertRoute: FastifyPluginCallbackZod = (
     schema: {
       params: z.object({ projectId: z.string().min(1) }),
       body: projectUpsertSchema,
-      response: { 200: opsProjectOutputSchema },
+      response: {
+        200: opsProjectOutputSchema,
+        400: apiErrorOutputSchema,
+      },
     },
-    handler: async (request) => {
+    handler: async (request, reply) => {
       const { projectId } = request.params;
       const body = request.body;
 
@@ -35,6 +39,16 @@ export const triageOpsProjectUpsertRoute: FastifyPluginCallbackZod = (
         .select(['id'])
         .where('id', '=', projectId)
         .executeTakeFirst();
+
+      // A project authenticates by its ingest_token (UNIQUE, non-empty). A
+      // create without one would persist '' — un-authenticatable and prone to
+      // collide with the next tokenless create. Require it on creation.
+      if (!existing && !body.ingestToken) {
+        return reply.code(400).send({
+          code: ApiErrorCode.BadRequest,
+          message: 'ingestToken is required when creating a project',
+        });
+      }
 
       const row = existing
         ? await database
@@ -59,7 +73,7 @@ export const triageOpsProjectUpsertRoute: FastifyPluginCallbackZod = (
             .values({
               id: projectId,
               name: body.name,
-              ingest_token: body.ingestToken ?? '',
+              ingest_token: body.ingestToken as string,
               colanode: JSON.stringify(body.colanode ?? {}),
               admins: JSON.stringify(body.admins ?? []),
               kill_switch: body.killSwitch ?? false,

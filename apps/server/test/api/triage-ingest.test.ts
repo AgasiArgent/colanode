@@ -132,6 +132,23 @@ describe('POST /client/v1/triage/ingest', () => {
     expect(res.statusCode).toBe(400);
   });
 
+  it('blocks ingest when the project kill switch is on', async () => {
+    const token = await seedProject('ing-killed');
+    await database
+      .updateTable('triage_projects')
+      .set({ kill_switch: true })
+      .where('id', '=', 'ing-killed')
+      .execute();
+    const { payload, headers } = buildMultipart({ title: 'x' });
+    const res = await app.inject({
+      method: 'POST',
+      url: '/client/v1/triage/ingest',
+      payload,
+      headers: { ...headers, authorization: `Bearer ${token}` },
+    });
+    expect(res.statusCode).toBe(403);
+  });
+
   it('rejects a body without the report field', async () => {
     const token = await seedProject('ing-b');
     const { payload, headers } = buildMultipart({ title: 'ignored' }, []);

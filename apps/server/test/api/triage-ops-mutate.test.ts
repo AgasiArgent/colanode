@@ -46,6 +46,16 @@ describe('triage ops mutate routes', () => {
     expect(row.ingest_token).toBe('tok-mut-a-1234567890'); // untouched when omitted
   });
 
+  it('rejects creating a project without an ingest token', async () => {
+    const res = await app.inject({
+      method: 'PUT',
+      url: '/client/v1/triage/ops/projects/mut-tokenless',
+      headers: OPS,
+      payload: { name: 'No Token' },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
   it('explodes a report idempotently, patches an item, creates a cluster', async () => {
     await database
       .insertInto('triage_projects')
