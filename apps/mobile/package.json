@@ -13,7 +13,8 @@
     "dev:ui": "vite",
     "build:ui": "vite build",
     "eas-build-post-install": "npm run build:ui",
-    "compile": "tsc --noEmit"
+    "compile": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@react-navigation/bottom-tabs": "^7.18.8",
@@ -46,7 +47,8 @@
     "babel-preset-expo": "^54.0.10",
     "typescript": "~5.9.3",
     "vite": "^7.3.1",
-    "vite-plugin-singlefile": "^2.3.2"
+    "vite-plugin-singlefile": "^2.3.2",
+    "vitest": "^4.1.10"
   },
   "private": true
 }
