@@ -2,7 +2,7 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
-import { MobilePushState } from '@colanode/mobile/lib/types';
+export type MobilePushState = 'unsupported' | 'denied' | 'enabled' | 'disabled';
 
 // shortcut: "enabled" is tracked as a module-level flag instead of
 // persisted storage -- it resets on process restart, so a cold app
