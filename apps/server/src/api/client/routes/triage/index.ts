@@ -3,6 +3,7 @@ import { FastifyPluginCallback } from 'fastify';
 
 import { triageIngestAuthenticator } from '@colanode/server/api/client/plugins/triage-ingest-auth';
 
+import { triageArtifactDownloadRoute } from './artifact-download';
 import { triageIngestRoute } from './ingest-create';
 
 export const triageRoutes: FastifyPluginCallback = (instance, _, done) => {
@@ -13,6 +14,8 @@ export const triageRoutes: FastifyPluginCallback = (instance, _, done) => {
     subInstance.register(triageIngestAuthenticator);
     subInstance.register(triageIngestRoute);
   });
+
+  instance.register(triageArtifactDownloadRoute);
 
   done();
 };
