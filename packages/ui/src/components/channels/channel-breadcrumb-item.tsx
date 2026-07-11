@@ -1,5 +1,4 @@
 import { LocalChannelNode } from '@colanode/client/types';
-import { BreadcrumbItem } from '@colanode/ui/components/layouts/containers/breadcrumb-item';
 
 interface ChannelBreadcrumbItemProps {
   channel: LocalChannelNode;
@@ -9,10 +8,16 @@ export const ChannelBreadcrumbItem = ({
   channel,
 }: ChannelBreadcrumbItemProps) => {
   return (
-    <BreadcrumbItem
-      id={channel.id}
-      avatar={channel.avatar}
-      name={channel.name}
-    />
+    <div className="flex cursor-pointer items-center gap-1.5">
+      <span
+        aria-hidden="true"
+        className="font-mono text-sm font-medium text-primary"
+      >
+        #
+      </span>
+      <span className="font-display text-[15px] font-bold text-foreground">
+        {channel.name}
+      </span>
+    </div>
   );
 };

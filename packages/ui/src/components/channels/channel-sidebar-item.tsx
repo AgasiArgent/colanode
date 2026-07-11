@@ -41,12 +41,24 @@ export const ChannelSidebarItem = ({ channel }: ChannelSidebarItemProps) => {
               'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
           )}
         >
-          <Avatar
-            id={channel.id}
-            avatar={channel.avatar}
-            name={channel.name}
-            className="size-4 shrink-0"
-          />
+          {channel.avatar ? (
+            <Avatar
+              id={channel.id}
+              avatar={channel.avatar}
+              name={channel.name}
+              className="size-4 shrink-0"
+            />
+          ) : (
+            <span
+              aria-hidden="true"
+              className={cn(
+                'w-4 shrink-0 text-center font-mono text-sm leading-none',
+                isActive ? 'text-primary' : 'text-muted-foreground'
+              )}
+            >
+              #
+            </span>
+          )}
           <span
             className={cn(
               'line-clamp-1 w-full grow text-left',
