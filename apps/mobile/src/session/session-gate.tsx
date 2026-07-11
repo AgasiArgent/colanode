@@ -8,6 +8,7 @@ import {
   CurrentWorkspaceContext,
   type CurrentWorkspace,
 } from '@colanode/mobile/session/current-workspace-context';
+import { RadarProvider } from '@colanode/mobile/session/radar-context';
 import { resolveDefaultUserId } from '@colanode/mobile/session/resolve-workspace';
 import { WorkspaceCollectionsGate } from '@colanode/mobile/session/workspace-collections-gate';
 import { useTheme } from '@colanode/mobile/theme/theme-context';
@@ -114,7 +115,9 @@ export const SessionGate = () => {
   return (
     <WorkspaceCollectionsGate userId={session.workspace.userId}>
       <SessionProvider session={session}>
-        <RootNavigator />
+        <RadarProvider userId={session.workspace.userId}>
+          <RootNavigator />
+        </RadarProvider>
       </SessionProvider>
     </WorkspaceCollectionsGate>
   );
