@@ -10,6 +10,7 @@ describe('getThemeVariables', () => {
     expect(vars['--sidebar']).toBe('#EDECE3');
     expect(vars['--spore']).toBe('#A96B1B');
     expect(vars['--bubble-other-border']).toBe('#E0DED4');
+    expect(vars['--border-strong']).toBe('#B9C4BC');
   });
 
   it('returns the Mycel dark palette', () => {
@@ -19,6 +20,7 @@ describe('getThemeVariables', () => {
     expect(vars['--primary-foreground']).toBe('#0B120F');
     expect(vars['--rail']).toBe('#080D0B');
     expect(vars['--bubble-other-border']).toBe('transparent');
+    expect(vars['--border-strong']).toBe('#2E5A46');
   });
 
   it('keeps the shadcn hover wash neutral, not brand green', () => {

@@ -94,8 +94,10 @@ export const MessageReactionCounts = ({
               aria-pressed={hasReacted}
               aria-label={`${reaction.count} reaction${reaction.count === 1 ? '' : 's'}${hasReacted ? ', you reacted' : ''}`}
               className={cn(
-                'rouded flex flex-row items-center gap-2 p-1 shadow cursor-pointer text-sm text-muted-foreground hover:text-foreground bg-muted hover:bg-input',
-                hasReacted && 'font-bold'
+                'flex cursor-pointer flex-row items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs transition-colors',
+                hasReacted
+                  ? 'border-border-strong bg-primary-soft text-primary-soft-foreground'
+                  : 'border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground'
               )}
               onClick={() => {
                 handleReactionClick(reaction.reaction);
