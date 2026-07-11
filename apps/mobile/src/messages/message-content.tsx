@@ -22,6 +22,12 @@ const createStyles = (palette: Palette) =>
   });
 
 const openLink = (href: string) => {
+  // Message content is untrusted user input: only web links may leave the
+  // app. Anything else (tel:, sms:, app schemes) is a link-injection vector.
+  if (!/^https?:\/\//i.test(href)) {
+    Alert.alert('Link blocked', 'Only web links can be opened from messages.');
+    return;
+  }
   Linking.openURL(href).catch(() =>
     Alert.alert('Could not open link', href)
   );
