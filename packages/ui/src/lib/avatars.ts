@@ -28,22 +28,25 @@ export const getAvatarSizeClasses = (size?: AvatarSize) => {
   return 'size-9';
 };
 
-const colors = [
-  'rgb(248 113 113)',
-  'rgb(74 222 128)',
-  'rgb(96 165 250)',
-  'rgb(251 146 60)',
-  'rgb(244 114 182)',
-  'rgb(250 204 21)',
-  'rgb(129 140 248)',
-  'rgb(192 132 252)',
-  'rgb(45 212 191)',
-  'rgb(156 163 175)',
+export interface AvatarColor {
+  background: string;
+  foreground: string;
+}
+
+// Mycel muted avatar tones (from the reference screen): dark-soil background
+// with a pale tinted foreground. Deterministic per id, readable on both themes.
+const colors: AvatarColor[] = [
+  { background: '#2E4A3C', foreground: '#B9E4CD' }, // moss
+  { background: '#3C2E4A', foreground: '#D3B9E4' }, // plum
+  { background: '#4A3C2E', foreground: '#E4D3B9' }, // ochre
+  { background: '#2E404A', foreground: '#B9D6E4' }, // steel
+  { background: '#4A2E33', foreground: '#E4B9C0' }, // clay
+  { background: '#3E4A2E', foreground: '#D3E4B9' }, // lichen
 ];
 
-export const getColorForId = (id: string) => {
+export const getColorForId = (id: string): AvatarColor => {
   const index = Math.abs(hashCode(id)) % colors.length;
-  return colors[index];
+  return colors[index]!;
 };
 
 export const getDefaultNodeAvatar = (type: IdType): string | null => {
