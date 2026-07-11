@@ -69,18 +69,18 @@ export const MessageThreadIndicator = ({
         conversation.onOpenThread(message.id);
       }}
       className={cn(
-        'mt-1 inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-muted px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground'
+        'mt-1 inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-primary-soft px-2.5 py-1 text-xs text-primary-soft-foreground transition-colors hover:bg-primary-soft/80'
       )}
     >
       <MessagesSquare className="size-3.5" />
-      <span className={cn(hasUnseen && 'font-semibold text-foreground')}>
+      <span className={cn('font-medium', hasUnseen && 'font-bold')}>
         {replies.length} replies
       </span>
       {hasUnseen && (
-        <span className="size-1.5 rounded-full bg-blue-500" aria-label="unseen replies" />
+        <span className="size-1.5 rounded-full bg-spore" aria-label="unseen replies" />
       )}
       <span aria-hidden="true">·</span>
-      <span>{timeAgo(latestReply.createdAt)}</span>
+      <span className="font-mono text-[10px] opacity-80">{timeAgo(latestReply.createdAt)}</span>
     </button>
   );
 };
