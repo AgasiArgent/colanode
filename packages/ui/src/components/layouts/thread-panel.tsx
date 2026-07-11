@@ -19,7 +19,7 @@ export const ThreadPanel = () => {
     <Resizable
       as="aside"
       size={{ width: width ?? DEFAULT_WIDTH, height: '100%' }}
-      className="border-l border-border bg-background"
+      className="border-l border-border bg-sidebar"
       minWidth={320}
       maxWidth={640}
       enable={{
@@ -35,8 +35,8 @@ export const ThreadPanel = () => {
       onResize={(_, __, ref) => setWidth(ref.offsetWidth)}
     >
       <div className="flex h-full flex-col">
-        <div className="flex h-10 shrink-0 flex-row items-center justify-between border-b border-border px-3">
-          <p className="text-sm font-semibold">Thread</p>
+        <div className="flex h-12 shrink-0 flex-row items-center justify-between border-b border-border px-4">
+          <p className="font-display text-[15px] font-bold">Thread</p>
           <button
             type="button"
             aria-label="Close thread"
