@@ -49,7 +49,7 @@ export const SidebarMenu = ({ value, onChange }: SidebarMenuProps) => {
   const pendingUploads = pendingUploadsQuery.data?.count ?? 0;
 
   return (
-    <div className="flex flex-col h-full w-[65px] min-w-[65px] items-center">
+    <div className="flex flex-col h-full w-[65px] min-w-[65px] items-center bg-rail">
       <SidebarMenuHeader />
       <div className="flex flex-col gap-1 mt-2 w-full p-2 items-center grow">
         <SidebarMenuIcon

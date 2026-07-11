@@ -27,7 +27,7 @@ export const SidebarMenuIcon = ({
       aria-label={label}
       aria-current={isActive ? 'page' : undefined}
       className={cn(
-        'w-10 h-10 flex items-center justify-center cursor-pointer hover:bg-sidebar-accent rounded-md relative',
+        'size-11 flex items-center justify-center cursor-pointer hover:bg-sidebar-accent rounded-[14px] relative',
         className,
         isActive ? 'bg-sidebar-accent' : ''
       )}
@@ -36,7 +36,7 @@ export const SidebarMenuIcon = ({
       <Icon
         className={cn(
           'size-5',
-          isActive ? 'text-foreground' : 'text-muted-foreground'
+          isActive ? 'text-primary' : 'text-muted-foreground'
         )}
       />
       {unreadBadge && (
