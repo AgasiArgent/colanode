@@ -50,6 +50,7 @@ import { type Palette } from '@colanode/mobile/theme/palette';
 import { ThemeProvider, useTheme } from '@colanode/mobile/theme/theme-context';
 import { radius, spacing } from '@colanode/mobile/theme/tokens';
 import { typeScale } from '@colanode/mobile/theme/typography';
+import { collections } from '@colanode/ui/collections';
 import { buildQueryClient } from '@colanode/ui/lib/query';
 
 const createStyles = (palette: Palette) =>
@@ -245,6 +246,9 @@ const AppBootstrap = () => {
       // Order matters: buildQueryClient() subscribes to window.eventBus,
       // which the shim assigns.
       installColanodeShim(appService, pushService);
+      // Order matters: the collections constructor reads window.colanode /
+      // window.eventBus, so the shim must be installed first.
+      await collections.preload();
       setBoot({ phase: 'ready', queryClient: buildQueryClient() });
     } catch (error) {
       console.error('[Mobile] App initialization failed', error);
