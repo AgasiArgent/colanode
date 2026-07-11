@@ -1,5 +1,6 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 
+import { formatBytes } from '@colanode/core/lib/files.js';
 import { LocalFileNode } from '@colanode/client/types';
 import { FileIcon } from '@colanode/ui/components/files/file-icon';
 import { FilePreview } from '@colanode/ui/components/files/file-preview';
@@ -41,15 +42,17 @@ export const FileBlock = ({ id }: FileBlockProps) => {
       params={{ modalNodeId: id }}
     >
       {canPreview ? (
-        <div className="flex h-72 max-h-72 max-w-lg w-full cursor-pointer overflow-hidden rounded-md p-2 hover:bg-muted/50 items-center justify-center">
+        <div className="flex h-72 max-h-72 w-full max-w-lg cursor-pointer items-center justify-center overflow-hidden rounded-[14px] border border-border p-2 hover:bg-muted/50">
           <FilePreview file={file} />
         </div>
       ) : (
-        <div className="flex flex-row gap-4 items-center w-full cursor-pointer overflow-hidden rounded-md p-2 pl-0 hover:bg-accent">
+        <div className="flex w-full max-w-md cursor-pointer flex-row items-center gap-3 overflow-hidden rounded-[14px] border border-border bg-card p-3 hover:bg-accent">
           <FileIcon mimeType={file.mimeType} className="size-10" />
-          <div className="flex flex-col gap-1">
-            <div className="text-sm font-medium">{file.name}</div>
-            <div className="text-xs text-muted-foreground">{file.mimeType}</div>
+          <div className="flex min-w-0 flex-col gap-1">
+            <div className="truncate text-sm font-medium">{file.name}</div>
+            <div className="font-mono text-[11px] text-muted-foreground">
+              {file.mimeType} · {formatBytes(file.size)}
+            </div>
           </div>
         </div>
       )}
