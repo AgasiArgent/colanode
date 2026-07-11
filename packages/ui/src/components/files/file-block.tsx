@@ -1,7 +1,7 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 
-import { formatBytes } from '@colanode/core/lib/files.js';
 import { LocalFileNode } from '@colanode/client/types';
+import { formatBytes } from '@colanode/core/lib/files.js';
 import { FileIcon } from '@colanode/ui/components/files/file-icon';
 import { FilePreview } from '@colanode/ui/components/files/file-preview';
 import { Link } from '@colanode/ui/components/ui/link';

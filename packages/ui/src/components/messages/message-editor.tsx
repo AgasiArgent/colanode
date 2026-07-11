@@ -118,6 +118,10 @@ export const MessageEditor = forwardRef<
       },
       autofocus: 'end',
     },
+    // shortcut: `placeholder` is deliberately NOT a dep — useEditor deps
+    // recreate the editor and would wipe an in-progress draft on a channel
+    // rename. The placeholder refreshes on remount (key={conversation.id});
+    // a non-destructive live update can set the extension option in PR 3.
     [props.conversationId]
   );
 
