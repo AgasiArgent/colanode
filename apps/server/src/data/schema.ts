@@ -369,6 +369,108 @@ export type SelectNotificationMute = Selectable<NotificationMuteTable>;
 export type CreateNotificationMute = Insertable<NotificationMuteTable>;
 export type UpdateNotificationMute = Updateable<NotificationMuteTable>;
 
+export interface TriageProjectColanode {
+  workspaceId?: string;
+}
+
+export interface TriageArtifactRef {
+  id: string;
+  kind: 'screenshot' | 'video' | 'console';
+  contentType: string;
+  storagePath: string;
+}
+
+export interface TriageAuditEntry {
+  at: string;
+  actor: string;
+  changes: Record<string, unknown>;
+}
+
+interface TriageProjectTable {
+  id: ColumnType<string, string, never>;
+  name: ColumnType<string, string, string>;
+  ingest_token: ColumnType<string, string, string>;
+  colanode: JSONColumnType<
+    TriageProjectColanode,
+    string | undefined,
+    string | undefined
+  >;
+  admins: JSONColumnType<string[], string | undefined, string | undefined>;
+  kill_switch: ColumnType<boolean, boolean | undefined, boolean>;
+  created_at: ColumnType<Date, Date | undefined, never>;
+  updated_at: ColumnType<Date | null, Date | null | undefined, Date | null>;
+}
+
+export type SelectTriageProject = Selectable<TriageProjectTable>;
+export type CreateTriageProject = Insertable<TriageProjectTable>;
+export type UpdateTriageProject = Updateable<TriageProjectTable>;
+
+interface TriageReportTable {
+  id: ColumnType<string, string | undefined, never>;
+  project_id: ColumnType<string, string, never>;
+  source_adapter: ColumnType<string, string | undefined, never>;
+  reporter_id: ColumnType<string | null, string | null | undefined, never>;
+  reporter_name: ColumnType<string, string | undefined, never>;
+  title: ColumnType<string, string | undefined, never>;
+  did: ColumnType<string, string | undefined, never>;
+  expected: ColumnType<string, string | undefined, never>;
+  got: ColumnType<string, string | undefined, never>;
+  page_url: ColumnType<string, string | undefined, never>;
+  page_title: ColumnType<string, string | undefined, never>;
+  pins: JSONColumnType<unknown[], string | undefined, never>;
+  debug_context: JSONColumnType<
+    Record<string, unknown>,
+    string | undefined,
+    never
+  >;
+  artifacts: JSONColumnType<TriageArtifactRef[], string | undefined, never>;
+  status: ColumnType<string, string | undefined, string>;
+  created_at: ColumnType<Date, Date | undefined, never>;
+}
+
+export type SelectTriageReport = Selectable<TriageReportTable>;
+export type CreateTriageReport = Insertable<TriageReportTable>;
+export type UpdateTriageReport = Updateable<TriageReportTable>;
+
+interface TriageClusterTable {
+  id: ColumnType<string, string | undefined, never>;
+  project_id: ColumnType<string, string, never>;
+  root_hypothesis: ColumnType<string, string | undefined, string>;
+  item_count: ColumnType<number, number | undefined, number>;
+  status: ColumnType<string, string | undefined, string>;
+  board_record_id: ColumnType<string | null, string | null | undefined, string | null>;
+  chat_card_id: ColumnType<string | null, string | null | undefined, string | null>;
+  created_at: ColumnType<Date, Date | undefined, never>;
+  updated_at: ColumnType<Date | null, Date | null | undefined, Date | null>;
+}
+
+export type SelectTriageCluster = Selectable<TriageClusterTable>;
+export type CreateTriageCluster = Insertable<TriageClusterTable>;
+export type UpdateTriageCluster = Updateable<TriageClusterTable>;
+
+interface TriageItemTable {
+  id: ColumnType<string, string | undefined, never>;
+  report_id: ColumnType<string, string, never>;
+  project_id: ColumnType<string, string, never>;
+  kind: ColumnType<string, string, never>;
+  summary: ColumnType<string, string | undefined, string>;
+  source_ref: JSONColumnType<Record<string, unknown>, string | undefined, string>;
+  triage: ColumnType<string | null, string | null | undefined, string | null>;
+  triage_reason: ColumnType<string, string | undefined, string>;
+  confidence: ColumnType<number | null, number | null | undefined, number | null>;
+  cluster_id: ColumnType<string | null, string | null | undefined, string | null>;
+  decision: ColumnType<string | null, string | null | undefined, string | null>;
+  agent_note: ColumnType<string, string | undefined, string>;
+  status: ColumnType<string, string | undefined, string>;
+  audit: JSONColumnType<TriageAuditEntry[], string | undefined, string>;
+  created_at: ColumnType<Date, Date | undefined, never>;
+  updated_at: ColumnType<Date | null, Date | null | undefined, Date | null>;
+}
+
+export type SelectTriageItem = Selectable<TriageItemTable>;
+export type CreateTriageItem = Insertable<TriageItemTable>;
+export type UpdateTriageItem = Updateable<TriageItemTable>;
+
 export interface DatabaseSchema {
   accounts: AccountTable;
   devices: DeviceTable;
@@ -391,4 +493,8 @@ export interface DatabaseSchema {
   push_subscriptions: PushSubscriptionTable;
   apns_subscriptions: ApnsSubscriptionTable;
   notification_mutes: NotificationMuteTable;
+  triage_projects: TriageProjectTable;
+  triage_reports: TriageReportTable;
+  triage_clusters: TriageClusterTable;
+  triage_items: TriageItemTable;
 }
