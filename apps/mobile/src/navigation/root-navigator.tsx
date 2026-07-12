@@ -9,9 +9,11 @@ import {
 import { SettingsNavigator } from '@colanode/mobile/navigation/settings-navigator';
 import { InboxScreen } from '@colanode/mobile/screens/inbox/inbox-screen';
 import { SpacesScreen } from '@colanode/mobile/screens/spaces/spaces-screen';
+import { useCurrentWorkspace } from '@colanode/mobile/session/current-workspace-context';
 import { useRadar } from '@colanode/mobile/session/radar-context';
 import { useTheme } from '@colanode/mobile/theme/theme-context';
 import { fonts, typeScale } from '@colanode/mobile/theme/typography';
+import { useLiveQuery } from '@colanode/ui/hooks/use-live-query';
 
 // Per-tab native stacks arrive with the first inner screens (M2 auth flows,
 // M3 conversation screen) — a tabs-only skeleton is the M1 scope.
@@ -34,10 +36,24 @@ const tabIcons: Record<keyof RootTabParamList, keyof typeof Ionicons.glyphMap> =
 
 export const RootNavigator = () => {
   const { palette } = useTheme();
+  const { workspace } = useCurrentWorkspace();
   const radar = useRadar();
   const chatsUnread = radar.getChatsState();
   const channelsUnread = radar.getChannelsState();
   const chatsBadge = chatsUnread.unreadCount + channelsUnread.unreadCount;
+
+  const unreadCountQuery = useLiveQuery({
+    type: 'notification.unread-count',
+    userId: workspace.userId,
+  });
+  const inboxBadge = unreadCountQuery.data ?? 0;
+
+  const badgeStyle = {
+    backgroundColor: palette.spore,
+    color: palette.background,
+    fontFamily: fonts.monoMedium,
+    fontSize: 11,
+  };
 
   return (
     <Tab.Navigator
@@ -67,16 +83,18 @@ export const RootNavigator = () => {
         options={{
           headerShown: false,
           tabBarBadge: chatsBadge > 0 ? chatsBadge : undefined,
-          tabBarBadgeStyle: {
-            backgroundColor: palette.spore,
-            color: palette.background,
-            fontFamily: fonts.monoMedium,
-            fontSize: 11,
-          },
+          tabBarBadgeStyle: badgeStyle,
         }}
       />
       <Tab.Screen name="Spaces" component={SpacesScreen} />
-      <Tab.Screen name="Inbox" component={InboxScreen} />
+      <Tab.Screen
+        name="Inbox"
+        component={InboxScreen}
+        options={{
+          tabBarBadge: inboxBadge > 0 ? inboxBadge : undefined,
+          tabBarBadgeStyle: badgeStyle,
+        }}
+      />
       <Tab.Screen
         name="Settings"
         component={SettingsNavigator}
