@@ -76,7 +76,7 @@ self.addEventListener('push', (event: PushEvent) => {
       body: payload.body ?? '',
       data: { url: payload.url ?? '/' },
       tag: payload.rootId,
-      icon: '/assets/colanode-logo-192.jpg',
+      icon: '/mycel-logo-192.png',
     })
   );
 });
