@@ -10,6 +10,7 @@ import {
 } from 'react';
 import {
   ActivityIndicator,
+  Linking,
   Platform,
   Pressable,
   StyleSheet,
@@ -18,12 +19,14 @@ import {
 } from 'react-native';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 import type {
+  ShouldStartLoadRequest,
   WebViewErrorEvent,
   WebViewHttpErrorEvent,
 } from 'react-native-webview/lib/WebViewTypes';
 import superjson from 'superjson';
 
 import { eventBus } from '@colanode/client/lib';
+import { MutationErrorCode } from '@colanode/client/mutations';
 import type { LocalNode } from '@colanode/client/types';
 import type {
   ConsoleMessage,
@@ -42,6 +45,16 @@ import { typeScale } from '@colanode/mobile/theme/typography';
 // that bridge, and mount the shared TipTap editor. Cold, this can take a few
 // seconds; budget 30s before surfacing a retry (mirrors the pre-M1 init budget).
 const EDITOR_READY_TIMEOUT_MS = 30000;
+
+// Writes the island may execute. The island renders collaborator-authored
+// document content inside a WebView that holds the data bridge, so the bridge
+// must not expose the whole mediator for mutations — reads are local data the
+// user already has, writes are allowlisted. Extend deliberately per feature.
+const ALLOWED_MUTATIONS = new Set<string>([
+  'document.update',
+  'node.interaction.seen',
+  'node.interaction.opened',
+]);
 
 export interface IslandHostHandle {
   sendCommand: (command: EditorCommand) => void;
@@ -185,9 +198,13 @@ export const IslandHost = forwardRef<IslandHostHandle, IslandHostProps>(
 
     const handleMessage = useCallback(
       async (e: WebViewMessageEvent) => {
-        const message = superjson.parse<IslandToNativeMessage>(
-          e.nativeEvent.data
-        );
+        let message: IslandToNativeMessage;
+        try {
+          message = superjson.parse<IslandToNativeMessage>(e.nativeEvent.data);
+        } catch (error) {
+          console.error('[Island] unparseable bridge message dropped', error);
+          return;
+        }
 
         switch (message.type) {
           case 'init':
@@ -202,6 +219,21 @@ export const IslandHost = forwardRef<IslandHostHandle, IslandHostProps>(
             });
             break;
           case 'mutation': {
+            if (!ALLOWED_MUTATIONS.has(message.input.type)) {
+              console.warn('[Island] blocked mutation', message.input.type);
+              postMessage({
+                type: 'mutation_result',
+                mutationId: message.mutationId,
+                result: {
+                  success: false,
+                  error: {
+                    code: MutationErrorCode.Unknown,
+                    message: `${message.input.type} is not available in the editor.`,
+                  },
+                },
+              });
+              break;
+            }
             const result = await window.colanode.executeMutation(message.input);
             postMessage({
               type: 'mutation_result',
@@ -271,6 +303,31 @@ export const IslandHost = forwardRef<IslandHostHandle, IslandHostProps>(
       []
     );
 
+    // The island must never navigate away from its bundled file: it renders
+    // collaborator-authored content while holding local-file access and the
+    // data bridge, so a content link navigating the WebView would be an
+    // exfiltration primitive. Web links open in the system browser instead.
+    const handleShouldStartLoad = useCallback(
+      (request: ShouldStartLoadRequest): boolean => {
+        const url = request.url;
+        if (
+          url.startsWith('about:') ||
+          (uri !== null && (url === uri || url.startsWith(baseDir ?? uri)))
+        ) {
+          return true;
+        }
+        if (/^https?:\/\//i.test(url)) {
+          Linking.openURL(url).catch((error) =>
+            console.warn('[Island] could not open link', url, error)
+          );
+        } else {
+          console.warn('[Island] blocked navigation to', url);
+        }
+        return false;
+      },
+      [uri, baseDir]
+    );
+
     const retry = useCallback(() => {
       editorReadyRef.current = false;
       setEditorReady(false);
@@ -325,14 +382,14 @@ export const IslandHost = forwardRef<IslandHostHandle, IslandHostProps>(
           ref={webViewRef}
           style={styles.webview}
           source={{ uri }}
-          originWhitelist={['*']}
+          originWhitelist={['file://*', 'about:*']}
           allowFileAccess
-          allowFileAccessFromFileURLs
           allowingReadAccessToURL={
             Platform.OS === 'ios' ? (baseDir ?? uri) : undefined
           }
           javaScriptEnabled
           setSupportMultipleWindows={false}
+          onShouldStartLoadWithRequest={handleShouldStartLoad}
           onMessage={handleMessage}
           onError={handleWebViewError}
           onHttpError={handleWebViewHttpError}
