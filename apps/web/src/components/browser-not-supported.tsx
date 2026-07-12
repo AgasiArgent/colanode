@@ -8,10 +8,10 @@ export const BrowserNotSupported = () => {
         <h2 className="text-4xl text-foreground">Browser not supported</h2>
         <p className="text-sm text-muted-foreground">
           Unfortunately, your browser does not support the Origin Private File
-          System (OPFS) feature that Colanode requires to function properly.
+          System (OPFS) feature that Mycel requires to function properly.
         </p>
         <p className="text-sm text-muted-foreground">
-          If you're self-hosting Colanode make sure you are accessing the web
+          If you're self-hosting Mycel make sure you are accessing the web
           version through a secure 'https' way, because some browsers require
           HTTPS to use the features required.
         </p>

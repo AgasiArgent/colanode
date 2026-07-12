@@ -1,6 +1,6 @@
 {
-  "short_name": "Colanode",
-  "name": "Colanode",
+  "short_name": "Mycel",
+  "name": "Mycel",
   "icons": [
     {
       "src": "favicon.ico",
@@ -26,6 +26,6 @@
   "theme_color": "#000000",
   "background_color": "#ffffff",
   "orientation": "any",
-  "description": "Colanode Web Application",
+  "description": "Mycel Web Application",
   "prefer_related_applications": false
 }
