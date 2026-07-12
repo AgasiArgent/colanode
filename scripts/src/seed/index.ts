@@ -3,7 +3,14 @@ import path from 'path';
 
 import ky from 'ky';
 
-import { ApiHeader, LoginSuccessOutput } from '@colanode/core';
+import {
+  AccountUpdateOutput,
+  ApiHeader,
+  LoginOutput,
+  LoginSuccessOutput,
+  UsersCreateOutput,
+  WorkspaceOutput,
+} from '@colanode/core';
 
 import { NodeGenerator } from './node-generator';
 import { FakerAccount, User } from './types';
@@ -45,7 +52,7 @@ const uploadAvatar = async (
 const createAccount = async (
   account: FakerAccount
 ): Promise<LoginSuccessOutput> => {
-  const url = `${SERVER_DOMAIN}/client/v1/accounts/emails/register`;
+  const url = `${SERVER_DOMAIN}/client/v1/auth/email/register`;
   const response = await ky
     .post(url, {
       json: {
@@ -54,7 +61,7 @@ const createAccount = async (
         password: account.password,
       },
     })
-    .json<LoginSuccessOutput>();
+    .json<LoginOutput>();
 
   if (response.type !== 'success') {
     throw new Error('Failed to create account');
@@ -64,9 +71,9 @@ const createAccount = async (
   const avatarId = await uploadAvatar(response.token, avatarPath);
   response.account.avatar = avatarId;
 
-  const updateAccountUrl = `${SERVER_DOMAIN}/client/v1/accounts/${response.account.id}`;
+  const updateAccountUrl = `${SERVER_DOMAIN}/client/v1/accounts/me`;
   await ky
-    .put(updateAccountUrl, {
+    .patch(updateAccountUrl, {
       json: {
         name: account.name,
         avatar: avatarId,
@@ -75,7 +82,7 @@ const createAccount = async (
         Authorization: `Bearer ${response.token}`,
       },
     })
-    .json<LoginSuccessOutput>();
+    .json<AccountUpdateOutput>();
 
   return response;
 };
@@ -100,7 +107,7 @@ const createMainAccountAndWorkspace = async (
   // update workspace name and description here
   const updateWorkspaceUrl = `${SERVER_DOMAIN}/client/v1/workspaces/${workspace.id}`;
   await ky
-    .put(updateWorkspaceUrl, {
+    .patch(updateWorkspaceUrl, {
       json: {
         name: workspace.name,
         description: workspace.description,
@@ -110,7 +117,7 @@ const createMainAccountAndWorkspace = async (
         Authorization: `Bearer ${login.token}`,
       },
     })
-    .json<LoginSuccessOutput>();
+    .json<WorkspaceOutput>();
 
   return login;
 };
@@ -128,14 +135,16 @@ const inviteAccountsToWorkspace = async (
   await ky
     .post(url, {
       json: {
-        emails: otherFakerAccounts.map((account) => account.email),
-        role: 'admin',
+        users: otherFakerAccounts.map((account) => ({
+          email: account.email,
+          role: 'admin',
+        })),
       },
       headers: {
         Authorization: `Bearer ${mainAccount.token}`,
       },
     })
-    .json<LoginSuccessOutput>();
+    .json<UsersCreateOutput>();
 };
 
 const sendMutations = async (user: User, workspaceId: string) => {
