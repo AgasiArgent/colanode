@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { PageScreen } from '@colanode/mobile/screens/spaces/page-screen';
 import { SpaceScreen } from '@colanode/mobile/screens/spaces/space-screen';
 import { SpacesScreen } from '@colanode/mobile/screens/spaces/spaces-screen';
 import { useTheme } from '@colanode/mobile/theme/theme-context';
@@ -8,6 +9,7 @@ import { typeScale } from '@colanode/mobile/theme/typography';
 export type SpacesStackParamList = {
   SpacesHome: undefined;
   Space: { nodeId: string; title: string };
+  Page: { nodeId: string; title: string };
 };
 
 const Stack = createNativeStackNavigator<SpacesStackParamList>();
@@ -37,6 +39,11 @@ export const SpacesNavigator = () => {
       <Stack.Screen
         name="Space"
         component={SpaceScreen}
+        options={({ route }) => ({ title: route.params.title })}
+      />
+      <Stack.Screen
+        name="Page"
+        component={PageScreen}
         options={({ route }) => ({ title: route.params.title })}
       />
     </Stack.Navigator>

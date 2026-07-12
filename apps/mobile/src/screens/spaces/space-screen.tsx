@@ -77,7 +77,7 @@ const createStyles = (palette: Palette) =>
 
 type Props = NativeStackScreenProps<SpacesStackParamList, 'Space'>;
 
-export const SpaceScreen = ({ route }: Props) => {
+export const SpaceScreen = ({ route, navigation }: Props) => {
   const { nodeId } = route.params;
   const { collections } = useCurrentWorkspace();
   const { palette } = useTheme();
@@ -117,6 +117,13 @@ export const SpaceScreen = ({ route }: Props) => {
       tabNavigation.navigate('Chats', {
         screen: 'Conversation',
         params: { nodeId: node.id, title: nodeName(node) },
+      });
+      return;
+    }
+    if (node.type === 'page') {
+      navigation.navigate('Page', {
+        nodeId: node.id,
+        title: nodeName(node),
       });
       return;
     }
