@@ -11,7 +11,6 @@ import { MetadataUpdateMutationHandler } from './apps/metadata-update';
 import { TabCreateMutationHandler } from './apps/tab-create';
 import { TabDeleteMutationHandler } from './apps/tab-delete';
 import { TabUpdateMutationHandler } from './apps/tab-update';
-import { BugReportCreateMutationHandler } from './bug-report/bug-report-create';
 import { EmailLoginMutationHandler } from './auth/email-login';
 import { EmailPasswordResetCompleteMutationHandler } from './auth/email-password-reset-complete';
 import { EmailPasswordResetInitMutationHandler } from './auth/email-password-reset-init';
@@ -107,6 +106,5 @@ export const buildMutationHandlerMap = (
     'pushSubscription.delete': new PushSubscriptionDeleteMutationHandler(app),
     'apnsSubscription.create': new ApnsSubscriptionCreateMutationHandler(app),
     'apnsSubscription.delete': new ApnsSubscriptionDeleteMutationHandler(app),
-    'bugReport.create': new BugReportCreateMutationHandler(app),
   };
 };
