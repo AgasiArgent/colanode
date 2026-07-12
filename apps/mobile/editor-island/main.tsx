@@ -18,6 +18,7 @@ import type {
 } from '@colanode/mobile/island/island-messages';
 import { collections } from '@colanode/ui/collections';
 import { Document } from '@colanode/ui/components/documents/document';
+import { TooltipProvider } from '@colanode/ui/components/ui/tooltip';
 import { WorkspaceContext } from '@colanode/ui/contexts/workspace';
 import { buildQueryClient } from '@colanode/ui/lib/query';
 // Loads the editor command augmentations (`toggleBold`, `toggleHeading1`, …),
@@ -188,26 +189,32 @@ const mount = async (message: Extract<NativeToIslandMessage, { type: 'init_resul
   const root = createRoot(document.getElementById('root')!);
   root.render(
     <QueryClientProvider client={queryClient}>
-      <WorkspaceContext.Provider
-        value={{
-          userId: message.userId,
-          accountId: message.accountId,
-          workspaceId: message.workspaceId,
-          role: message.role,
-          collections: collections.workspace(message.userId),
-        }}
-      >
-        <Document
-          node={message.node}
-          canEdit
-          // eslint-disable-next-line jsx-a11y/no-autofocus -- primary field focused when the page opens for editing
-          autoFocus="start"
-          onEditorCreate={(editor) => {
-            activeEditor = editor;
-            postMessage({ type: 'editor_ready' });
+      {/* The table node view (editor/views/table.tsx) renders Radix tooltips;
+          without this provider any document containing a table throws at mount
+          — the same class of failure as the missing QueryClient. The web app
+          mounts it once in components/app/app.tsx. */}
+      <TooltipProvider>
+        <WorkspaceContext.Provider
+          value={{
+            userId: message.userId,
+            accountId: message.accountId,
+            workspaceId: message.workspaceId,
+            role: message.role,
+            collections: collections.workspace(message.userId),
           }}
-        />
-      </WorkspaceContext.Provider>
+        >
+          <Document
+            node={message.node}
+            canEdit
+            // eslint-disable-next-line jsx-a11y/no-autofocus -- primary field focused when the page opens for editing
+            autoFocus="start"
+            onEditorCreate={(editor) => {
+              activeEditor = editor;
+              postMessage({ type: 'editor_ready' });
+            }}
+          />
+        </WorkspaceContext.Provider>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 };
