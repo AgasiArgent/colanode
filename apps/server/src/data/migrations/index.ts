@@ -36,6 +36,7 @@ import { createNotificationsTable } from './00033-create-notifications-table';
 import { createPushSubscriptionsTable } from './00034-create-push-subscriptions-table';
 import { createNotificationMutesTable } from './00035-create-notification-mutes-table';
 import { createApnsSubscriptionsTable } from './00036-create-apns-subscriptions-table';
+import { createTriageTables } from './00038-create-triage-tables';
 
 export const databaseMigrations: Record<string, Migration> = {
   '00001_create_accounts_table': createAccountsTable,
@@ -78,4 +79,5 @@ export const databaseMigrations: Record<string, Migration> = {
   '00034_create_push_subscriptions_table': createPushSubscriptionsTable,
   '00035_create_notification_mutes_table': createNotificationMutesTable,
   '00036_create_apns_subscriptions_table': createApnsSubscriptionsTable,
+  '00038_create_triage_tables': createTriageTables,
 };
