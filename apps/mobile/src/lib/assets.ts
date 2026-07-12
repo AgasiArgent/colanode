@@ -5,10 +5,15 @@ import { PathService } from '@colanode/client/services';
 
 import emojisDatabaseAsset from '../../assets/emojis.db';
 import iconsDatabaseAsset from '../../assets/icons.db';
+// Single-file editor-island bundle produced by `npm run build:editor`. Consumed
+// by the WebView host (src/island/island-host.tsx) via expo-asset. Gitignored
+// output, regenerated on install via `eas-build-post-install`.
+import editorHtmlAsset from '../../assets/editor/index.html';
 
 export {
   emojisDatabaseAsset,
   iconsDatabaseAsset,
+  editorHtmlAsset,
 };
 
 export const copyAssets = async (paths: PathService) => {
