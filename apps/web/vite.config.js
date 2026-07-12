@@ -10,12 +10,6 @@ export default defineConfig({
     host: true,
     allowedHosts: ['.ts.net'],
   },
-  build: {
-    // Ships prod source maps so bippy can symbolicate component file:line in
-    // production builds for the pinpoint bug-report widget (Phase 1 decision:
-    // approved despite the extra prod asset size).
-    sourcemap: true,
-  },
   test: {
     globals: true,
     environment: 'jsdom',
@@ -45,21 +39,6 @@ export default defineConfig({
       {
         find: '@colanode/ui',
         replacement: resolve(__dirname, '../../packages/ui/src'),
-      },
-      // @agent-native/pinpoint lazily import()s @agent-native/core (and subpaths
-      // like @agent-native/core/client) only on its built-in "send to agent
-      // chat" path, which the bug-report feature's own sendToAgent bridge
-      // replaces. A plain string alias only matches the bare specifier and
-      // concatenates any subpath onto the stub file path (stub.ts/client →
-      // ENOTDIR), hard-failing `vite build`. Use a regex that maps the bare
-      // specifier AND any subpath to the same stub so the bundler can resolve
-      // every dynamic-import target without pulling in the framework.
-      {
-        find: /^@agent-native\/core(\/.*)?$/,
-        replacement: resolve(
-          __dirname,
-          '../../packages/ui/src/features/bug-report/agentNativeCoreStub.ts'
-        ),
       },
     ],
   },

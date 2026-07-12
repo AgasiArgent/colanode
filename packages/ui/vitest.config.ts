@@ -7,10 +7,8 @@ import { defineConfig } from 'vitest/config';
 // rather than the package `exports` map, matching apps/web/vite.config.js.
 export default defineConfig({
   test: {
-    // The bug-report feature (pinpoint widget) touches window/document
-    // directly (debugContext interceptors, element capture, testing-library
-    // render). Node was the implicit default here before; jsdom is a strict
-    // superset for the existing node-only lib tests.
+    // jsdom gives window/document for component tests; it's a strict
+    // superset of node so the existing node-only lib tests still pass.
     environment: 'jsdom',
     setupFiles: ['./test/setup-dom.ts'],
   },
