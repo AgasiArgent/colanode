@@ -3,6 +3,7 @@
 import '@colanode/ui/styles/globals.css';
 
 import type { Editor } from '@tiptap/core';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { createRoot } from 'react-dom/client';
 import superjson from 'superjson';
 
@@ -18,6 +19,7 @@ import type {
 import { collections } from '@colanode/ui/collections';
 import { Document } from '@colanode/ui/components/documents/document';
 import { WorkspaceContext } from '@colanode/ui/contexts/workspace';
+import { buildQueryClient } from '@colanode/ui/lib/query';
 // Loads the editor command augmentations (`toggleBold`, `toggleHeading1`, …),
 // declared in `declare module '@tiptap/core'` blocks inside the extension
 // modules. Mobile's tsc resolves @colanode/ui through its built .d.ts, which
@@ -176,28 +178,37 @@ const mount = async (message: Extract<NativeToIslandMessage, { type: 'init_resul
 
   await collections.preload();
 
+  // `Document` runs its live queries through TanStack Query (the same hooks the
+  // web app uses), so the island needs the very same QueryClient the web shell
+  // builds in `components/app/app.tsx` — it wires `window.eventBus` query
+  // results into the cache and unsubscribes queries on eviction. Without this
+  // provider the island dies at mount with "No QueryClient set".
+  const queryClient = buildQueryClient();
+
   const root = createRoot(document.getElementById('root')!);
   root.render(
-    <WorkspaceContext.Provider
-      value={{
-        userId: message.userId,
-        accountId: message.accountId,
-        workspaceId: message.workspaceId,
-        role: message.role,
-        collections: collections.workspace(message.userId),
-      }}
-    >
-      <Document
-        node={message.node}
-        canEdit
-        // eslint-disable-next-line jsx-a11y/no-autofocus -- primary field focused when the page opens for editing
-        autoFocus="start"
-        onEditorCreate={(editor) => {
-          activeEditor = editor;
-          postMessage({ type: 'editor_ready' });
+    <QueryClientProvider client={queryClient}>
+      <WorkspaceContext.Provider
+        value={{
+          userId: message.userId,
+          accountId: message.accountId,
+          workspaceId: message.workspaceId,
+          role: message.role,
+          collections: collections.workspace(message.userId),
         }}
-      />
-    </WorkspaceContext.Provider>
+      >
+        <Document
+          node={message.node}
+          canEdit
+          // eslint-disable-next-line jsx-a11y/no-autofocus -- primary field focused when the page opens for editing
+          autoFocus="start"
+          onEditorCreate={(editor) => {
+            activeEditor = editor;
+            postMessage({ type: 'editor_ready' });
+          }}
+        />
+      </WorkspaceContext.Provider>
+    </QueryClientProvider>
   );
 };
 
