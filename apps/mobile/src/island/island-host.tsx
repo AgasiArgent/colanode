@@ -307,13 +307,18 @@ export const IslandHost = forwardRef<IslandHostHandle, IslandHostProps>(
     // collaborator-authored content while holding local-file access and the
     // data bridge, so a content link navigating the WebView would be an
     // exfiltration primitive. Web links open in the system browser instead.
+    //
+    // The allowlist is EXACT-MATCH, not a directory prefix: the island is a
+    // single-file bundle with nothing legitimate to navigate to, and a prefix
+    // test on the bundle directory would admit traversal (`<baseDir>/../…`)
+    // and sibling-file reads.
     const handleShouldStartLoad = useCallback(
       (request: ShouldStartLoadRequest): boolean => {
         const url = request.url;
-        if (
-          url.startsWith('about:') ||
-          (uri !== null && (url === uri || url.startsWith(baseDir ?? uri)))
-        ) {
+        if (url === 'about:blank' || url === 'about:srcdoc') {
+          return true;
+        }
+        if (uri !== null && url === uri) {
           return true;
         }
         if (/^https?:\/\//i.test(url)) {
@@ -325,7 +330,7 @@ export const IslandHost = forwardRef<IslandHostHandle, IslandHostProps>(
         }
         return false;
       },
-      [uri, baseDir]
+      [uri]
     );
 
     const retry = useCallback(() => {
