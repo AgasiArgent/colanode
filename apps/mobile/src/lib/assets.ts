@@ -5,10 +5,8 @@ import { PathService } from '@colanode/client/services';
 
 import emojisDatabaseAsset from '../../assets/emojis.db';
 import iconsDatabaseAsset from '../../assets/icons.db';
-import indexHtmlAsset from '../../assets/ui/index.html';
 
 export {
-  indexHtmlAsset,
   emojisDatabaseAsset,
   iconsDatabaseAsset,
 };
