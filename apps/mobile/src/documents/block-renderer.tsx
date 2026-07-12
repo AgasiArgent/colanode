@@ -161,6 +161,8 @@ const TableCell = ({ cell, styles }: { cell: JSONContent; styles: Styles }) => {
   );
 };
 
+// shortcut: colspan/rowspan ignored — cells render as a plain flat grid.
+// Upgrade to honor cell spans if real tables demand it.
 const TableView = ({ table }: { table: JSONContent }) => {
   const { palette } = useTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -255,6 +257,8 @@ export const BlockRenderer = ({
         </View>
       );
     case 'codeBlock':
+      // shortcut: no syntax highlighting — renders raw concatenated text.
+      // Add a tokenizer/highlighter later if wanted.
       return (
         <View style={styles.codeBlock}>
           <Text style={styles.codeText}>{textOf(block)}</Text>
