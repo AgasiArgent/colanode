@@ -13,6 +13,7 @@ import { postgresConfigSchema } from './postgres';
 import { pushConfigSchema } from './push';
 import { redisConfigSchema } from './redis';
 import { storageConfigSchema } from './storage';
+import { triageConfigSchema } from './triage';
 import {
   resolveConfigReference,
   resolveOptionalConfigReference,
@@ -46,6 +47,7 @@ const configSchema = z.object({
   workspace: workspaceConfigSchema,
   push: pushConfigSchema,
   apns: apnsConfigSchema,
+  triage: triageConfigSchema,
 });
 
 export type Configuration = z.infer<typeof configSchema>;
