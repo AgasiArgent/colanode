@@ -89,12 +89,12 @@ export const CalendarViewGrid = ({ field }: CalendarViewGridProps) => {
         ),
         button_previous: cn(
           buttonVariants({ variant: 'ghost' }),
-          'size-(--cell-size) aria-disabled:opacity-50 p-0 select-none size-7',
+          'size-(--cell-size) aria-disabled:opacity-50 p-0 select-none size-7 text-foreground',
           defaultClassNames.button_previous
         ),
         button_next: cn(
           buttonVariants({ variant: 'ghost' }),
-          'size-(--cell-size) aria-disabled:opacity-50 p-0 select-none size-7',
+          'size-(--cell-size) aria-disabled:opacity-50 p-0 select-none size-7 text-foreground',
           defaultClassNames.button_next
         ),
         month_caption: cn(
@@ -106,7 +106,7 @@ export const CalendarViewGrid = ({ field }: CalendarViewGridProps) => {
           defaultClassNames.dropdowns
         ),
         dropdown_root: cn(
-          'relative has-focus:border-ring border border-input shadow-xs has-focus:ring-ring/50 has-focus:ring-[3px] rounded-md',
+          'relative has-focus:border-ring border border-input has-focus:ring-ring/50 has-focus:ring-[3px] rounded-md',
           defaultClassNames.dropdown_root
         ),
         dropdown: cn('absolute inset-0 opacity-0', defaultClassNames.dropdown),

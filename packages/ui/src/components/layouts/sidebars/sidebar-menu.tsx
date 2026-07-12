@@ -1,7 +1,6 @@
 import { count, inArray, useLiveQuery } from '@tanstack/react-db';
 import { Bell, LayoutGrid, MessageCircle, Settings } from 'lucide-react';
 
-import { useLiveQuery as useColanodeLiveQuery } from '@colanode/ui/hooks/use-live-query';
 
 import { SidebarMenuType, UploadStatus } from '@colanode/client/types';
 import { SidebarMenuFooter } from '@colanode/ui/components/layouts/sidebars/sidebar-menu-footer';
@@ -9,6 +8,7 @@ import { SidebarMenuHeader } from '@colanode/ui/components/layouts/sidebars/side
 import { SidebarMenuIcon } from '@colanode/ui/components/layouts/sidebars/sidebar-menu-icon';
 import { useRadar } from '@colanode/ui/contexts/radar';
 import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { useLiveQuery as useColanodeLiveQuery } from '@colanode/ui/hooks/use-live-query';
 
 interface SidebarMenuProps {
   value: SidebarMenuType;

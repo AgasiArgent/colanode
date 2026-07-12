@@ -22,7 +22,7 @@ export const WorkspaceUserInvite = () => {
         Write the email addresses of the people you want to invite
       </p>
       <div className="flex flex-row items-center gap-1">
-        <div className="flex h-9 w-full flex-row gap-2 rounded-md border border-input bg-background p-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground">
+        <div className="flex h-10 w-full flex-row gap-2 rounded-md border border-input bg-card px-3.5 py-1 text-sm transition-colors placeholder:text-muted-foreground">
           {emails.map((email) => (
             <p
               key={email}

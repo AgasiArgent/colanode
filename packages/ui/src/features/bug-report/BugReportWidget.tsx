@@ -7,8 +7,8 @@ import {
   createElementCapture,
   withElementCapture,
 } from './elementCapture';
-import { createBippyPinEnricher } from './pinSource';
 import { createPinSender } from './pinSender';
+import { createBippyPinEnricher } from './pinSource';
 import { submitBugReport, type BugNote } from './submitBugReport';
 
 /**
