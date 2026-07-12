@@ -29,9 +29,31 @@ export const markStyle = (
       case 'underline':
         underline = true;
         break;
+      // The @tiptap/extension-strike mark is named `strike` (verified via
+      // editor.isActive('strike')); `strikethrough` is accepted as an alias so
+      // either naming renders correctly.
       case 'strike':
+      case 'strikethrough':
         strike = true;
         break;
+      case 'color': {
+        // Pass-through: the color mark stores a color value in attrs.color
+        // (web maps it to a Tailwind text class). Applied directly to RN color.
+        const color = mark.attrs?.color;
+        if (typeof color === 'string') {
+          style.color = color;
+        }
+        break;
+      }
+      case 'highlight': {
+        // Pass-through: the highlight mark stores its value in attrs.highlight
+        // (web maps it to a Tailwind bg class). Applied directly to RN bg.
+        const highlight = mark.attrs?.highlight;
+        if (typeof highlight === 'string') {
+          style.backgroundColor = highlight;
+        }
+        break;
+      }
       case 'code':
         style.fontFamily = fonts.mono;
         style.backgroundColor = palette.surface;

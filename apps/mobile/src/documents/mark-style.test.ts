@@ -36,6 +36,23 @@ describe('markStyle', () => {
     expect(style.textDecorationLine).toBe('underline line-through');
   });
 
+  it('treats strikethrough as strike', () => {
+    const { style } = markStyle([{ type: 'strikethrough' }], lightPalette);
+    expect(style.textDecorationLine).toBe('line-through');
+  });
+
+  it('passes through color and highlight attrs', () => {
+    const { style } = markStyle(
+      [
+        { type: 'color', attrs: { color: '#ff0000' } },
+        { type: 'highlight', attrs: { highlight: '#ffff00' } },
+      ],
+      lightPalette
+    );
+    expect(style.color).toBe('#ff0000');
+    expect(style.backgroundColor).toBe('#ffff00');
+  });
+
   it('returns empty style for no marks', () => {
     expect(markStyle(undefined, lightPalette)).toEqual({ style: {} });
   });
