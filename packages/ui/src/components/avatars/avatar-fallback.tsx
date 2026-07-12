@@ -13,11 +13,11 @@ export const AvatarFallback = (props: AvatarProps) => {
   return (
     <span
       className={cn(
-        'inline-flex items-center justify-center overflow-hidden rounded text-white shadow',
+        'inline-flex items-center justify-center overflow-hidden rounded',
         getAvatarSizeClasses(size),
         className
       )}
-      style={{ backgroundColor: color }}
+      style={{ backgroundColor: color.background, color: color.foreground }}
     >
       <span className="font-medium">{char}</span>
     </span>

@@ -1,3 +1,4 @@
+import { eq, useLiveQuery } from '@tanstack/react-db';
 import { JSONContent } from '@tiptap/core';
 import { Plus, Search, Send, Upload } from 'lucide-react';
 import {
@@ -37,6 +38,26 @@ export const MessageCreate = forwardRef<MessageCreateRefProps>((_, ref) => {
   const conversation = useConversation();
 
   const { mutate, isPending } = useMutation();
+
+  const conversationNodeQuery = useLiveQuery(
+    (q) =>
+      q
+        .from({ nodes: workspace.collections.nodes })
+        .where(({ nodes }) => eq(nodes.id, conversation.id))
+        .findOne(),
+    [workspace.userId, conversation.id]
+  );
+
+  const conversationNode = conversationNodeQuery.data;
+  const channelName =
+    conversationNode?.type === 'channel'
+      ? (conversationNode.name ?? null)
+      : null;
+  const placeholder = conversation.isThread
+    ? 'Reply in thread'
+    : channelName
+      ? `Message #${channelName}`
+      : 'Write a message';
 
   const messageEditorRef = useRef<MessageEditorRefProps>(null);
   const [content, setContent] = useState<JSONContent | null>(null);
@@ -122,12 +143,12 @@ export const MessageCreate = forwardRef<MessageCreateRefProps>((_, ref) => {
           onCancel={() => setReplyTo(null)}
         />
       )}
-      <div className="flex min-h-0 flex-row items-center rounded bg-muted p-2 pl-0">
-        <div className="flex w-10 items-center justify-center">
+      <div className="flex min-h-0 flex-row items-center gap-2 rounded-lg border border-border bg-card px-3 py-2">
+        <div className="flex size-8 shrink-0 items-center justify-center">
           <DropdownMenu>
             <DropdownMenuTrigger
               disabled={isPending || !conversation.canCreateMessage}
-              className="cursor-pointer hover:bg-accent"
+              className="flex size-8 cursor-pointer items-center justify-center rounded-md text-primary hover:bg-accent"
               aria-label="Add attachment"
             >
               <span>
@@ -160,6 +181,7 @@ export const MessageCreate = forwardRef<MessageCreateRefProps>((_, ref) => {
               workspaceId={workspace.workspaceId}
               conversationId={conversation.id}
               rootId={conversation.rootId}
+              placeholder={placeholder}
               onChange={setContent}
               onSubmit={handleSubmit}
             />
@@ -170,7 +192,10 @@ export const MessageCreate = forwardRef<MessageCreateRefProps>((_, ref) => {
             </p>
           )}
         </div>
-        <div className="flex flex-row gap-2">
+        <div className="flex flex-row items-center gap-2">
+          <span className="hidden select-none font-mono text-[11px] text-muted-foreground/70 sm:inline">
+            ⏎ send
+          </span>
           {isPending ? (
             <Spinner size={20} />
           ) : (
@@ -181,7 +206,7 @@ export const MessageCreate = forwardRef<MessageCreateRefProps>((_, ref) => {
               aria-disabled={!(conversation.canCreateMessage && hasContent)}
               className={`${
                 conversation.canCreateMessage && hasContent
-                  ? 'cursor-pointer text-blue-600'
+                  ? 'cursor-pointer text-primary'
                   : 'cursor-default text-muted-foreground'
               }`}
               onClick={handleSubmit}

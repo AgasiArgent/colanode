@@ -16,7 +16,7 @@ export const ServerAvatar = ({ url, name, className }: ServerAvatarProps) => {
           'inline-flex items-center justify-center overflow-hidden rounded text-white shadow',
           className
         )}
-        style={{ backgroundColor: color }}
+        style={{ backgroundColor: color.background }}
       >
         <span className="font-medium">{name[0]?.toLocaleUpperCase()}</span>
       </div>
