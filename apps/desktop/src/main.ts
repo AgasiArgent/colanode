@@ -48,7 +48,7 @@ let appBadge: AppBadge | null = null;
 
 const debug = createDebugger('desktop:main');
 
-electronApp.setName('Colanode');
+electronApp.setName('Mycel');
 electronApp.setAppUserModelId('com.colanode.desktop');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
