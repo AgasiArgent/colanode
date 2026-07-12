@@ -40,6 +40,7 @@ export default async function globalSetup() {
         directory: path.join(os.tmpdir(), 'colanode-test-storage'),
       },
     },
+    triage: { serviceToken: 'test-ops-token' },
   };
 
   await writeFile(CONFIG_PATH, JSON.stringify(testConfig));
