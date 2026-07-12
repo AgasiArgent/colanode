@@ -1,4 +1,4 @@
-import { FocusPosition } from '@tiptap/core';
+import { Editor, FocusPosition } from '@tiptap/core';
 
 import { LocalNode } from '@colanode/client/types';
 import { DocumentEditor } from '@colanode/ui/components/documents/document-editor';
@@ -9,9 +9,15 @@ interface DocumentProps {
   node: LocalNode;
   canEdit: boolean;
   autoFocus?: FocusPosition;
+  onEditorCreate?: (editor: Editor) => void;
 }
 
-export const Document = ({ node, canEdit, autoFocus }: DocumentProps) => {
+export const Document = ({
+  node,
+  canEdit,
+  autoFocus,
+  onEditorCreate,
+}: DocumentProps) => {
   const workspace = useWorkspace();
 
   const documentStateQuery = useLiveQuery({
@@ -42,6 +48,7 @@ export const Document = ({ node, canEdit, autoFocus }: DocumentProps) => {
       canEdit={canEdit}
       // eslint-disable-next-line jsx-a11y/no-autofocus -- intentional: primary field (document title/content) focused when the containing page/record is opened
       autoFocus={autoFocus}
+      onEditorCreate={onEditorCreate}
     />
   );
 };

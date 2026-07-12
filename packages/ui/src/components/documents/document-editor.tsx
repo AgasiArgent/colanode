@@ -1,5 +1,6 @@
 import '@colanode/ui/styles/editor.css';
 
+import { Editor } from '@tiptap/core';
 import {
   EditorContent,
   FocusPosition,
@@ -94,6 +95,10 @@ interface DocumentEditorProps {
   updates: DocumentUpdate[];
   canEdit: boolean;
   autoFocus?: FocusPosition;
+  // Optional hook exposing the TipTap editor instance once it is created. Used
+  // by the mobile editor island to drive the editor from a native toolbar; the
+  // web/desktop callers never pass it, so their behaviour is unchanged.
+  onEditorCreate?: (editor: Editor) => void;
 }
 
 const buildYDoc = (
@@ -191,6 +196,7 @@ export const DocumentEditor = ({
   updates,
   canEdit,
   autoFocus,
+  onEditorCreate,
 }: DocumentEditorProps) => {
   const workspace = useWorkspace();
 
@@ -379,6 +385,9 @@ export const DocumentEditor = ({
       editable: canEdit,
       shouldRerenderOnTransaction: false,
       autofocus: autoFocus,
+      onCreate: ({ editor }) => {
+        onEditorCreate?.(editor);
+      },
       onUpdate: async ({ editor, transaction }) => {
         if (transaction.docChanged) {
           hasPendingChanges.current = true;
