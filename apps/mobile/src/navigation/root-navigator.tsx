@@ -7,8 +7,8 @@ import {
   type ChatsStackParamList,
 } from '@colanode/mobile/navigation/chats-navigator';
 import { SettingsNavigator } from '@colanode/mobile/navigation/settings-navigator';
+import { SpacesNavigator } from '@colanode/mobile/navigation/spaces-navigator';
 import { InboxScreen } from '@colanode/mobile/screens/inbox/inbox-screen';
-import { SpacesScreen } from '@colanode/mobile/screens/spaces/spaces-screen';
 import { useCurrentWorkspace } from '@colanode/mobile/session/current-workspace-context';
 import { useRadar } from '@colanode/mobile/session/radar-context';
 import { useTheme } from '@colanode/mobile/theme/theme-context';
@@ -86,7 +86,11 @@ export const RootNavigator = () => {
           tabBarBadgeStyle: badgeStyle,
         }}
       />
-      <Tab.Screen name="Spaces" component={SpacesScreen} />
+      <Tab.Screen
+        name="Spaces"
+        component={SpacesNavigator}
+        options={{ headerShown: false }}
+      />
       <Tab.Screen
         name="Inbox"
         component={InboxScreen}
