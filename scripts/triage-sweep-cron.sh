@@ -23,5 +23,5 @@ esac
 
 cd "$REPO" || exit 1
 claude -p "Use the triage-sweep skill to run one sweep." \
-  --dangerously-skip-permissions 2>&1 | tee -a "$LOG"
+  --allowedTools "Bash(curl:*)" 2>&1 | tee -a "$LOG"
 exit "${PIPESTATUS[0]}"
