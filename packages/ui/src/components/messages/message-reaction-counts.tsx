@@ -96,7 +96,7 @@ export const MessageReactionCounts = ({
               className={cn(
                 'flex cursor-pointer flex-row items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs transition-colors',
                 hasReacted
-                  ? 'border-border-strong bg-primary-soft text-primary-soft-foreground'
+                  ? 'border-border-strong bg-primary-soft text-primary-soft-foreground hover:bg-primary-soft/80'
                   : 'border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground'
               )}
               onClick={() => {
