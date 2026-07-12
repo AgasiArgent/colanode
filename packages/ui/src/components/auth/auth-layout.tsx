@@ -19,7 +19,7 @@ export const AuthLayout = () => {
             <div className="logo-draw-animation">
               <ColanodeLogo className="size-16 lg:size-50" />
             </div>
-            <p className="font-satoshi text-3xl tracking-tight">
+            <p className="font-display text-3xl tracking-tight">
               Your all-in-one <br /> collaboration platform
             </p>
           </div>

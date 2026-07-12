@@ -21,7 +21,7 @@ export const UnreadBadge = ({
     return (
       <span
         className={cn(
-          'rounded-md px-1.5 py-0.5 text-xs bg-red-400 text-white',
+          'rounded-md px-1.5 py-0.5 text-xs font-medium bg-spore text-spore-foreground',
           className
         )}
       >
@@ -30,5 +30,5 @@ export const UnreadBadge = ({
     );
   }
 
-  return <span className={cn('size-2 rounded-full bg-red-500', className)} />;
+  return <span className={cn('size-2 rounded-full bg-spore', className)} />;
 };

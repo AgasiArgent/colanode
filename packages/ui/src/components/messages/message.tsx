@@ -139,7 +139,9 @@ export const Message = ({ message, previousMessage }: MessageProps) => {
             {message.referenceId && (
               <MessageReference messageId={message.referenceId} />
             )}
-            <MessageContent message={message} />
+            <div className="w-fit max-w-full rounded-[4px_16px_16px_16px] border border-bubble-other-border bg-bubble-other px-3.5 py-2.5 text-bubble-other-foreground">
+              <MessageContent message={message} />
+            </div>
             <MessageReactionCounts message={message} />
             <MessageThreadIndicator message={message} />
             {message.taskId && <MessageTaskBadge taskId={message.taskId} />}

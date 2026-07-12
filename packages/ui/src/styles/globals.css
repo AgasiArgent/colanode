@@ -6,10 +6,13 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: 'Karla', system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-mono: 'Spline Sans Mono', ui-monospace, monospace;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -41,6 +44,24 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-soft-foreground: var(--primary-soft-foreground);
+  --color-spore: var(--spore);
+  --color-spore-foreground: var(--spore-foreground);
+  --color-spore-soft: var(--spore-soft);
+  --color-spore-soft-foreground: var(--spore-soft-foreground);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-soft-foreground: var(--success-soft-foreground);
+  --color-bubble-own: var(--bubble-own);
+  --color-bubble-own-foreground: var(--bubble-own-foreground);
+  --color-bubble-other: var(--bubble-other);
+  --color-bubble-other-foreground: var(--bubble-other-foreground);
+  --color-bubble-other-border: var(--bubble-other-border);
+  --color-rail: var(--rail);
+  --shadow-e1: var(--elevation-1);
+  --shadow-e2: var(--elevation-2);
+  --shadow-e3: var(--elevation-3);
 }
 
 @layer base {
@@ -49,6 +70,36 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+:root {
+  /* Mycel motion contract (tokens/motion.css). Surfaces grow, never slide. */
+  --motion-micro-duration: 120ms;
+  --motion-micro-ease: ease-out;
+  --motion-panel-duration: 240ms;
+  --motion-panel-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-spore-period: 2.6s;
+  --motion-spore-ripple: 600ms;
+}
+
+/* Signature sync animation — applied to the 9px spore dot */
+@keyframes spore-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 45%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 7px transparent;
+  }
+}
+
+@keyframes spore-ripple {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 55%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 12px transparent;
   }
 }
 

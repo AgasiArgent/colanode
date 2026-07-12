@@ -345,6 +345,12 @@ export type NotificationMuteUpdatedEvent = {
   nodeId: string;
 };
 
+export type MutationQueueChangedEvent = {
+  type: 'mutation.queue.changed';
+  workspace: WorkspaceEventData;
+  pendingCount: number;
+};
+
 export type Event =
   | UserCreatedEvent
   | UserUpdatedEvent
@@ -401,4 +407,5 @@ export type Event =
   | TabDeletedEvent
   | NotificationCreatedEvent
   | NotificationReadEvent
-  | NotificationMuteUpdatedEvent;
+  | NotificationMuteUpdatedEvent
+  | MutationQueueChangedEvent;

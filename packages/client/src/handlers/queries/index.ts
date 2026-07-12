@@ -26,6 +26,7 @@ import { IconSearchQueryHandler } from './icons/icon-search';
 import { IconSvgGetQueryHandler } from './icons/icon-svg-get';
 import { NodeInteractionGetQueryHandler } from './interactions/node-interaction-get';
 import { RadarDataGetQueryHandler } from './interactions/radar-data-get';
+import { MutationPendingCountQueryHandler } from './mutations/mutation-pending-count';
 import { NodeListQueryHandler } from './nodes/node-list';
 import { NodeReactionsListQueryHandler } from './nodes/node-reaction-list';
 import { NotificationListQueryHandler } from './notifications/notification-list';
@@ -79,5 +80,6 @@ export const buildQueryHandlerMap = (app: AppService): QueryHandlerMap => {
     'notification.list': new NotificationListQueryHandler(app),
     'notification-mute.get': new NotificationMuteGetQueryHandler(app),
     'notification.unread-count': new NotificationUnreadCountQueryHandler(app),
+    'mutation.pending-count': new MutationPendingCountQueryHandler(app),
   };
 };

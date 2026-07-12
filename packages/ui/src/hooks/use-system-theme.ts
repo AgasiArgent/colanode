@@ -4,7 +4,7 @@ import { ThemeMode } from '@colanode/client/types';
 
 export const useSystemTheme = (): ThemeMode => {
   if (typeof window === 'undefined' || !window.matchMedia) {
-    return 'light';
+    return 'dark';
   }
 
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');

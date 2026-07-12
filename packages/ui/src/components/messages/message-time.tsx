@@ -14,7 +14,7 @@ export const MessageTime = ({ message }: MessageTimeProps) => {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className="ml-2 text-xs text-muted-foreground">
+        <span className="ml-2 font-mono text-[11px] text-muted-foreground/70">
           {timeAgo(message.createdAt)}
         </span>
       </TooltipTrigger>
