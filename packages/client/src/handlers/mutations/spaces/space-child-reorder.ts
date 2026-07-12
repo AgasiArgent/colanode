@@ -93,7 +93,9 @@ export class SpaceChildReorderMutationHandler
       return null;
     }
 
-    const sortedById = children.toSorted((a, b) => compareString(a.id, b.id));
+    // Hermes (React Native) lacks ES2023 Array.prototype.toSorted — this
+    // handler runs natively in the mobile app's mediator.
+    const sortedById = [...children].sort((a, b) => compareString(a.id, b.id));
     const indexes: NodeFractionalIndex[] = [];
     const childrenSettings = attributes.children ?? {};
     let lastIndex: string | null = null;
