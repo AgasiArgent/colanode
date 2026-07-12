@@ -1,7 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { type NavigatorScreenParams } from '@react-navigation/native';
 
-import { ChatsNavigator } from '@colanode/mobile/navigation/chats-navigator';
+import {
+  ChatsNavigator,
+  type ChatsStackParamList,
+} from '@colanode/mobile/navigation/chats-navigator';
 import { SettingsNavigator } from '@colanode/mobile/navigation/settings-navigator';
 import { InboxScreen } from '@colanode/mobile/screens/inbox/inbox-screen';
 import { SpacesScreen } from '@colanode/mobile/screens/spaces/spaces-screen';
@@ -12,7 +16,7 @@ import { fonts, typeScale } from '@colanode/mobile/theme/typography';
 // Per-tab native stacks arrive with the first inner screens (M2 auth flows,
 // M3 conversation screen) — a tabs-only skeleton is the M1 scope.
 export type RootTabParamList = {
-  Chats: undefined;
+  Chats: NavigatorScreenParams<ChatsStackParamList> | undefined;
   Spaces: undefined;
   Inbox: undefined;
   Settings: undefined;
