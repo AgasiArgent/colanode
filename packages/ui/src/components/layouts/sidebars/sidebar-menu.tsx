@@ -1,7 +1,6 @@
 import { count, inArray, useLiveQuery } from '@tanstack/react-db';
 import { Bell, LayoutGrid, MessageCircle, Settings } from 'lucide-react';
 
-import { useLiveQuery as useColanodeLiveQuery } from '@colanode/ui/hooks/use-live-query';
 
 import { SidebarMenuType, UploadStatus } from '@colanode/client/types';
 import { SidebarMenuFooter } from '@colanode/ui/components/layouts/sidebars/sidebar-menu-footer';
@@ -9,6 +8,7 @@ import { SidebarMenuHeader } from '@colanode/ui/components/layouts/sidebars/side
 import { SidebarMenuIcon } from '@colanode/ui/components/layouts/sidebars/sidebar-menu-icon';
 import { useRadar } from '@colanode/ui/contexts/radar';
 import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { useLiveQuery as useColanodeLiveQuery } from '@colanode/ui/hooks/use-live-query';
 
 interface SidebarMenuProps {
   value: SidebarMenuType;
@@ -49,7 +49,7 @@ export const SidebarMenu = ({ value, onChange }: SidebarMenuProps) => {
   const pendingUploads = pendingUploadsQuery.data?.count ?? 0;
 
   return (
-    <div className="flex flex-col h-full w-[65px] min-w-[65px] items-center">
+    <div className="flex flex-col h-full w-[65px] min-w-[65px] items-center bg-rail">
       <SidebarMenuHeader />
       <div className="flex flex-col gap-1 mt-2 w-full p-2 items-center grow">
         <SidebarMenuIcon

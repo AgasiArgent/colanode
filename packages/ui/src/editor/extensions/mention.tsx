@@ -140,7 +140,7 @@ const CommandList = ({
           id="mention-command"
           role="listbox"
           data-testid="editor-mention-menu"
-          className="z-50 min-w-32 w-80 rounded-md border bg-popover text-popover-foreground p-1 shadow-md animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 overflow-hidden"
+          className="z-50 min-w-32 w-80 rounded-lg border bg-popover text-popover-foreground p-1 shadow-e2 animate-in fade-in-0 zoom-in-[0.98] duration-[var(--motion-panel-duration)] ease-[var(--motion-panel-ease)] overflow-hidden"
         >
           <ScrollArea className="h-80">
             <ScrollViewport ref={scrollContainer}>

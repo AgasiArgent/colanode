@@ -37,6 +37,7 @@ interface MessageEditorProps {
   workspaceId: string;
   conversationId: string;
   rootId: string;
+  placeholder?: string;
   onChange?: (content: JSONContent) => void;
   onSubmit: () => void;
 }
@@ -51,6 +52,8 @@ export const MessageEditor = forwardRef<
   MessageEditorRefProps,
   MessageEditorProps
 >((props, ref) => {
+  const { placeholder } = props;
+
   const editor = useEditor(
     {
       extensions: [
@@ -62,7 +65,7 @@ export const MessageEditor = forwardRef<
         CodeBlockNode,
         TabKeymapExtension,
         PlaceholderExtension.configure({
-          message: 'Write a message',
+          message: placeholder ?? 'Write a message',
         }),
         DividerNode,
         TrailingNode,
@@ -115,6 +118,10 @@ export const MessageEditor = forwardRef<
       },
       autofocus: 'end',
     },
+    // shortcut: `placeholder` is deliberately NOT a dep — useEditor deps
+    // recreate the editor and would wipe an in-progress draft on a channel
+    // rename. The placeholder refreshes on remount (key={conversation.id});
+    // a non-destructive live update can set the extension option in PR 3.
     [props.conversationId]
   );
 
