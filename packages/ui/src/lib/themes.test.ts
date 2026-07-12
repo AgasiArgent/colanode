@@ -11,6 +11,11 @@ describe('getThemeVariables', () => {
     expect(vars['--spore']).toBe('#A96B1B');
     expect(vars['--bubble-other-border']).toBe('#E0DED4');
     expect(vars['--border-strong']).toBe('#B9C4BC');
+    expect(vars['--primary-hover']).toBe('#1E8F64');
+    expect(vars['--primary-active']).toBe('#115C40');
+    expect(vars['--destructive-foreground']).toBe('#FBFAF5');
+    expect(vars['--destructive-hover']).toBe('#CB5A47');
+    expect(vars['--destructive-active']).toBe('#93382A');
   });
 
   it('returns the Mycel dark palette', () => {
@@ -21,6 +26,11 @@ describe('getThemeVariables', () => {
     expect(vars['--rail']).toBe('#080D0B');
     expect(vars['--bubble-other-border']).toBe('transparent');
     expect(vars['--border-strong']).toBe('#2E5A46');
+    expect(vars['--primary-hover']).toBe('#6FE3B3');
+    expect(vars['--primary-active']).toBe('#3FBF8A');
+    expect(vars['--destructive-foreground']).toBe('#0B120F');
+    expect(vars['--destructive-hover']).toBe('#E8907F');
+    expect(vars['--destructive-active']).toBe('#C4604F');
   });
 
   it('keeps the shadcn hover wash neutral, not brand green', () => {
