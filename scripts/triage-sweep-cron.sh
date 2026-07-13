@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 # Triage sweep entrypoint for lenovo cron (every 3h).
 # Env file must define: TRIAGE_OPS_URL, TRIAGE_OPS_TOKEN, BUG_LOOP_ENABLED.
+#
+# Security: the sweep reads tester-submitted text (report titles, pin comments) —
+# untrusted input that could carry a prompt injection. It therefore runs WITHOUT
+# --dangerously-skip-permissions and is granted exactly ONE tool: triage-ops.sh,
+# which owns the ops-API URL and token. The agent gets no raw shell and no curl, so
+# an injected report cannot run commands, reach another host, or exfiltrate. The
+# token is never exported into the agent's environment — triage-ops.sh reads it.
 set -u
 
 REPO="${TRIAGE_REPO:-$HOME/workspace/colanode}"
@@ -8,10 +15,11 @@ ENV_FILE="${TRIAGE_ENV_FILE:-$HOME/.config/triage/env}"
 LOG="${TRIAGE_LOG:-$HOME/.config/triage/sweep.log}"
 
 mkdir -p "$(dirname "$LOG")"
-set -a
+
+# Sourced WITHOUT `set -a`, so nothing here (notably TRIAGE_OPS_TOKEN) is exported
+# into the environment inherited by the claude subprocess.
 # shellcheck disable=SC1090
 [ -f "$ENV_FILE" ] && . "$ENV_FILE"
-set +a
 
 case "${BUG_LOOP_ENABLED:-}" in
   1 | true | yes | on) ;;
@@ -22,6 +30,11 @@ case "${BUG_LOOP_ENABLED:-}" in
 esac
 
 cd "$REPO" || exit 1
+
+# Only the env-file PATH is exported (not a secret); triage-ops.sh reads the URL and
+# token from it at call time.
+export TRIAGE_ENV_FILE="$ENV_FILE"
+
 claude -p "Use the triage-sweep skill to run one sweep." \
-  --dangerously-skip-permissions 2>&1 | tee -a "$LOG"
+  --allowedTools 'Bash(./scripts/triage-ops.sh:*)' 2>&1 | tee -a "$LOG"
 exit "${PIPESTATUS[0]}"
