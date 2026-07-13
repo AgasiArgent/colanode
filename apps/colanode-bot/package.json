@@ -10,7 +10,8 @@
     "start": "tsx src/index.ts",
     "provision": "tsx src/provision.ts",
     "lint": "eslint --ext .ts src",
-    "test": "vitest run"
+    "test": "vitest run",
+    "triage:project": "tsx src/triage-project.ts"
   },
   "dependencies": {
     "@colanode/agent-tools": "*",

@@ -3,10 +3,22 @@ import { z } from 'zod/v4';
 
 import { database } from '@colanode/server/data/database';
 
+// The bot's projection map: where a project lands in Colanode, plus the
+// generated ids it must reuse to address the fields/options it created.
+// Every key is optional so a partially-projected project round-trips.
+export const opsProjectColanodeSchema = z.object({
+  workspaceId: z.string().optional(),
+  spaceId: z.string().optional(),
+  databaseId: z.string().optional(),
+  channelId: z.string().optional(),
+  fields: z.record(z.string(), z.string()).optional(),
+  decisionOptions: z.record(z.string(), z.string()).optional(),
+});
+
 export const opsProjectOutputSchema = z.object({
   id: z.string(),
   name: z.string(),
-  colanode: z.object({ workspaceId: z.string().optional() }),
+  colanode: opsProjectColanodeSchema,
   admins: z.array(z.string()),
   killSwitch: z.boolean(),
 });

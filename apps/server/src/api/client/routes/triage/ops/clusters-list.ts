@@ -2,7 +2,10 @@ import { FastifyPluginCallbackZod } from 'fastify-type-provider-zod';
 import { z } from 'zod/v4';
 
 import { database } from '@colanode/server/data/database';
-import { SelectTriageItem } from '@colanode/server/data/schema';
+import {
+  SelectTriageCluster,
+  SelectTriageItem,
+} from '@colanode/server/data/schema';
 
 export const opsItemOutputSchema = z.object({
   id: z.string(),
@@ -36,7 +39,7 @@ export const mapItem = (row: SelectTriageItem) => ({
   status: row.status,
 });
 
-const opsClusterOutputSchema = z.object({
+export const opsClusterOutputSchema = z.object({
   id: z.string(),
   projectId: z.string(),
   rootHypothesis: z.string(),
@@ -44,7 +47,23 @@ const opsClusterOutputSchema = z.object({
   status: z.string(),
   boardRecordId: z.string().nullable(),
   chatCardId: z.string().nullable(),
+  decision: z.string().nullable(),
   items: z.array(opsItemOutputSchema),
+});
+
+export const mapCluster = (
+  row: SelectTriageCluster,
+  items: SelectTriageItem[]
+) => ({
+  id: row.id,
+  projectId: row.project_id,
+  rootHypothesis: row.root_hypothesis,
+  itemCount: row.item_count,
+  status: row.status,
+  boardRecordId: row.board_record_id,
+  chatCardId: row.chat_card_id,
+  decision: row.decision,
+  items: items.map(mapItem),
 });
 
 export const triageOpsClustersListRoute: FastifyPluginCallbackZod = (
@@ -87,18 +106,12 @@ export const triageOpsClustersListRoute: FastifyPluginCallbackZod = (
           : [];
 
       return {
-        clusters: clusters.map((cluster) => ({
-          id: cluster.id,
-          projectId: cluster.project_id,
-          rootHypothesis: cluster.root_hypothesis,
-          itemCount: cluster.item_count,
-          status: cluster.status,
-          boardRecordId: cluster.board_record_id,
-          chatCardId: cluster.chat_card_id,
-          items: items
-            .filter((item) => item.cluster_id === cluster.id)
-            .map(mapItem),
-        })),
+        clusters: clusters.map((cluster) =>
+          mapCluster(
+            cluster,
+            items.filter((item) => item.cluster_id === cluster.id)
+          )
+        ),
       };
     },
   });

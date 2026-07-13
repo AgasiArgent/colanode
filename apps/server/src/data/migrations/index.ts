@@ -38,6 +38,7 @@ import { createNotificationMutesTable } from './00035-create-notification-mutes-
 import { createApnsSubscriptionsTable } from './00036-create-apns-subscriptions-table';
 import { normalizeAccountEmails } from './00037-normalize-account-emails';
 import { createTriageTables } from './00038-create-triage-tables';
+import { addTriageClusterDecisionColumns } from './00039-add-triage-cluster-decision-columns';
 
 export const databaseMigrations: Record<string, Migration> = {
   '00001_create_accounts_table': createAccountsTable,
@@ -82,4 +83,5 @@ export const databaseMigrations: Record<string, Migration> = {
   '00036_create_apns_subscriptions_table': createApnsSubscriptionsTable,
   '00037_normalize_account_emails': normalizeAccountEmails,
   '00038_create_triage_tables': createTriageTables,
+  '00039_add_triage_cluster_decision_columns': addTriageClusterDecisionColumns,
 };

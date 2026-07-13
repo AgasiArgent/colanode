@@ -3,6 +3,7 @@ import { FastifyPluginCallback } from 'fastify';
 import { triageOpsAuthenticator } from '@colanode/server/api/client/plugins/triage-ops-auth';
 
 import { triageOpsClusterCreateRoute } from './cluster-create';
+import { triageOpsClusterPatchRoute } from './cluster-patch';
 import { triageOpsClustersListRoute } from './clusters-list';
 import { triageOpsItemPatchRoute } from './item-patch';
 import { triageOpsProjectUpsertRoute } from './project-upsert';
@@ -19,5 +20,6 @@ export const triageOpsRoutes: FastifyPluginCallback = (instance, _, done) => {
   instance.register(triageOpsReportExplodeRoute);
   instance.register(triageOpsItemPatchRoute);
   instance.register(triageOpsClusterCreateRoute);
+  instance.register(triageOpsClusterPatchRoute);
   done();
 };

@@ -369,8 +369,19 @@ export type SelectNotificationMute = Selectable<NotificationMuteTable>;
 export type CreateNotificationMute = Insertable<NotificationMuteTable>;
 export type UpdateNotificationMute = Updateable<NotificationMuteTable>;
 
+// The projection map a bot needs to write a cluster into Colanode. Record field
+// values are keyed by generated field ids, so the ids have to be persisted here
+// or a later run cannot address the fields it created. Every key is optional —
+// a project may be only partially projected.
 export interface TriageProjectColanode {
   workspaceId?: string;
+  spaceId?: string;
+  databaseId?: string;
+  channelId?: string;
+  /** logical field name -> colanode field id */
+  fields?: Record<string, string>;
+  /** decision -> select option id */
+  decisionOptions?: Record<string, string>;
 }
 
 export interface TriageArtifactRef {
@@ -440,6 +451,8 @@ interface TriageClusterTable {
   status: ColumnType<string, string | undefined, string>;
   board_record_id: ColumnType<string | null, string | null | undefined, string | null>;
   chat_card_id: ColumnType<string | null, string | null | undefined, string | null>;
+  decision: ColumnType<string | null, string | null | undefined, string | null>;
+  audit: JSONColumnType<TriageAuditEntry[], string | undefined, string>;
   created_at: ColumnType<Date, Date | undefined, never>;
   updated_at: ColumnType<Date | null, Date | null | undefined, Date | null>;
 }

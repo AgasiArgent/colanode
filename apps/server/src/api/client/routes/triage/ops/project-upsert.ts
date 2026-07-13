@@ -4,12 +4,15 @@ import { z } from 'zod/v4';
 import { ApiErrorCode, apiErrorOutputSchema } from '@colanode/core';
 import { database } from '@colanode/server/data/database';
 
-import { opsProjectOutputSchema } from './projects-list';
+import {
+  opsProjectColanodeSchema,
+  opsProjectOutputSchema,
+} from './projects-list';
 
 const projectUpsertSchema = z.object({
   name: z.string().min(1),
   ingestToken: z.string().min(16).optional(),
-  colanode: z.object({ workspaceId: z.string().optional() }).optional(),
+  colanode: opsProjectColanodeSchema.optional(),
   admins: z.array(z.string()).optional(),
   killSwitch: z.boolean().optional(),
 });

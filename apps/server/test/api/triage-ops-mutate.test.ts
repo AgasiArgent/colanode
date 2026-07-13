@@ -159,6 +159,128 @@ describe('triage ops mutate routes', () => {
     expect(res.statusCode).toBe(400);
   });
 
+  it('round-trips the full colanode projection map on PUT /projects/:projectId', async () => {
+    const colanode = {
+      workspaceId: 'ws-1',
+      spaceId: 'sp-1',
+      databaseId: 'db-1',
+      channelId: 'ch-1',
+      fields: { title: 'fld-title', severity: 'fld-sev' },
+      decisionOptions: { 'approved-for-fix': 'opt-fix', backlog: 'opt-backlog' },
+    };
+
+    const res = await app.inject({
+      method: 'PUT',
+      url: '/client/v1/triage/ops/projects/mut-colanode',
+      headers: OPS,
+      payload: {
+        name: 'Mut Colanode',
+        ingestToken: 'tok-mut-colanode-1234567890',
+        colanode,
+      },
+    });
+    expect(res.statusCode).toBe(200);
+    expect((res.json() as { colanode: unknown }).colanode).toEqual(colanode);
+
+    const list = await app.inject({
+      method: 'GET',
+      url: '/client/v1/triage/ops/projects',
+      headers: OPS,
+    });
+    const listed = (
+      list.json() as { projects: Array<{ id: string; colanode: unknown }> }
+    ).projects.find((p) => p.id === 'mut-colanode')!;
+    expect(listed.colanode).toEqual(colanode);
+  });
+
+  it('patches a cluster with its board record id and appends an audit entry', async () => {
+    await database
+      .insertInto('triage_projects')
+      .values({ id: 'mut-d', name: 'Mut D', ingest_token: 'tok-mut-d' })
+      .onConflict((oc) => oc.column('id').doNothing())
+      .execute();
+    const cluster = await database
+      .insertInto('triage_clusters')
+      .values({ project_id: 'mut-d', root_hypothesis: 'broken save button' })
+      .returningAll()
+      .executeTakeFirstOrThrow();
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/client/v1/triage/ops/clusters/${cluster.id}`,
+      headers: OPS,
+      payload: { boardRecordId: 'rec-123', chatCardId: 'msg-456' },
+    });
+    expect(res.statusCode).toBe(200);
+    const body = res.json() as {
+      id: string;
+      boardRecordId: string;
+      chatCardId: string;
+      items: unknown[];
+    };
+    expect(body.id).toBe(cluster.id);
+    expect(body.boardRecordId).toBe('rec-123');
+    expect(body.chatCardId).toBe('msg-456');
+    expect(body.items).toEqual([]);
+
+    const afterFirst = await database
+      .selectFrom('triage_clusters')
+      .selectAll()
+      .where('id', '=', cluster.id)
+      .executeTakeFirstOrThrow();
+    expect(afterFirst.board_record_id).toBe('rec-123');
+    expect(afterFirst.audit).toHaveLength(1);
+    expect(afterFirst.audit[0]!.actor).toBe('ops');
+
+    // a partial re-patch leaves untouched columns alone and grows the audit
+    const second = await app.inject({
+      method: 'PATCH',
+      url: `/client/v1/triage/ops/clusters/${cluster.id}`,
+      headers: OPS,
+      payload: { status: 'decided', decision: 'approved-for-fix' },
+    });
+    expect(second.statusCode).toBe(200);
+
+    const afterSecond = await database
+      .selectFrom('triage_clusters')
+      .selectAll()
+      .where('id', '=', cluster.id)
+      .executeTakeFirstOrThrow();
+    expect(afterSecond.board_record_id).toBe('rec-123'); // untouched
+    expect(afterSecond.chat_card_id).toBe('msg-456'); // untouched
+    expect(afterSecond.status).toBe('decided');
+    expect(afterSecond.decision).toBe('approved-for-fix');
+    expect(afterSecond.audit).toHaveLength(2);
+  });
+
+  it('returns 404 when patching an unknown cluster', async () => {
+    const res = await app.inject({
+      method: 'PATCH',
+      url: '/client/v1/triage/ops/clusters/00000000-0000-4000-8000-000000000042',
+      headers: OPS,
+      payload: { boardRecordId: 'rec-nope' },
+    });
+    expect(res.statusCode).toBe(404);
+    expect((res.json() as { code: string }).code).toBeTruthy();
+  });
+
+  it('rejects a cluster patch without a valid service token', async () => {
+    const missing = await app.inject({
+      method: 'PATCH',
+      url: '/client/v1/triage/ops/clusters/00000000-0000-4000-8000-000000000042',
+      payload: { boardRecordId: 'rec-nope' },
+    });
+    expect(missing.statusCode).toBe(401);
+
+    const bad = await app.inject({
+      method: 'PATCH',
+      url: '/client/v1/triage/ops/clusters/00000000-0000-4000-8000-000000000042',
+      headers: { authorization: 'Bearer definitely-not-the-token' },
+      payload: { boardRecordId: 'rec-nope' },
+    });
+    expect(bad.statusCode).toBe(401);
+  });
+
   it('disables the ops-API when no service token is configured', async () => {
     // config.triage.serviceToken is set to 'test-ops-token' in the test config,
     // so this asserts the enabled path returns 401 (not 404) on a bad token —

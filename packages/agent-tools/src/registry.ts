@@ -1,6 +1,9 @@
 import { createChannelTool } from '@colanode/agent-tools/create-channel';
+import { createDatabaseTool } from '@colanode/agent-tools/create-database';
+import { createDatabaseViewTool } from '@colanode/agent-tools/create-database-view';
 import { createPageTool } from '@colanode/agent-tools/create-page';
 import { createRecordTool } from '@colanode/agent-tools/create-record';
+import { createSpaceTool } from '@colanode/agent-tools/create-space';
 import { getDocumentTool } from '@colanode/agent-tools/get-document';
 import { listNodesTool } from '@colanode/agent-tools/list-nodes';
 import { listWorkspacesTool } from '@colanode/agent-tools/list-workspaces';
@@ -11,6 +14,7 @@ import {
 } from '@colanode/agent-tools/reactions';
 import { searchRecordsTool } from '@colanode/agent-tools/search-records';
 import { updatePageTool } from '@colanode/agent-tools/update-page';
+import { updateRecordTool } from '@colanode/agent-tools/update-record';
 import {
   MutationInput,
   SuccessMutationResult,
@@ -47,8 +51,12 @@ export const tools: Tool[] = [
   searchRecordsTool,
   createPageTool,
   updatePageTool,
+  createSpaceTool,
   createChannelTool,
+  createDatabaseTool,
+  createDatabaseViewTool,
   createRecordTool,
+  updateRecordTool,
   postMessageTool,
   addReactionTool,
   removeReactionTool,

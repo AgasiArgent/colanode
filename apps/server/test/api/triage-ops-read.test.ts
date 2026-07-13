@@ -76,4 +76,56 @@ describe('triage ops read routes', () => {
     expect(res.statusCode).toBe(200);
     expect((res.json() as { clusters: unknown[] }).clusters).toEqual([]);
   });
+
+  it('carries each cluster its items', async () => {
+    await database
+      .insertInto('triage_projects')
+      .values({ id: 'ops-b', name: 'Ops B', ingest_token: 'tok-ops-b' })
+      .onConflict((oc) => oc.column('id').doNothing())
+      .execute();
+    const report = await database
+      .insertInto('triage_reports')
+      .values({ project_id: 'ops-b', title: 'r-b' })
+      .returningAll()
+      .executeTakeFirstOrThrow();
+    const cluster = await database
+      .insertInto('triage_clusters')
+      .values({ project_id: 'ops-b', root_hypothesis: 'shared handler' })
+      .returningAll()
+      .executeTakeFirstOrThrow();
+    await database
+      .insertInto('triage_items')
+      .values({
+        report_id: report.id,
+        project_id: 'ops-b',
+        kind: 'pin',
+        summary: 'save button dead',
+        source_ref: JSON.stringify({ pinIndex: 0 }),
+        cluster_id: cluster.id,
+      })
+      .execute();
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/client/v1/triage/ops/clusters?projectId=ops-b',
+      headers: OPS,
+    });
+    expect(res.statusCode).toBe(200);
+    const { clusters } = res.json() as {
+      clusters: Array<{
+        id: string;
+        items: Array<{
+          summary: string;
+          reportId: string;
+          sourceRef: Record<string, unknown>;
+        }>;
+      }>;
+    };
+    expect(clusters).toHaveLength(1);
+    expect(clusters[0]!.id).toBe(cluster.id);
+    expect(clusters[0]!.items).toHaveLength(1);
+    expect(clusters[0]!.items[0]!.summary).toBe('save button dead');
+    expect(clusters[0]!.items[0]!.reportId).toBe(report.id);
+    expect(clusters[0]!.items[0]!.sourceRef).toEqual({ pinIndex: 0 });
+  });
 });
