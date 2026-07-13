@@ -6,6 +6,7 @@ import { triageOpsClusterCreateRoute } from './cluster-create';
 import { triageOpsClusterPatchRoute } from './cluster-patch';
 import { triageOpsClustersListRoute } from './clusters-list';
 import { triageOpsItemPatchRoute } from './item-patch';
+import { triageOpsItemsListRoute } from './items-list';
 import { triageOpsProjectUpsertRoute } from './project-upsert';
 import { triageOpsProjectsListRoute } from './projects-list';
 import { triageOpsReportExplodeRoute } from './report-explode';
@@ -15,6 +16,7 @@ export const triageOpsRoutes: FastifyPluginCallback = (instance, _, done) => {
   instance.register(triageOpsAuthenticator);
   instance.register(triageOpsProjectsListRoute);
   instance.register(triageOpsReportsListRoute);
+  instance.register(triageOpsItemsListRoute);
   instance.register(triageOpsClustersListRoute);
   instance.register(triageOpsProjectUpsertRoute);
   instance.register(triageOpsReportExplodeRoute);

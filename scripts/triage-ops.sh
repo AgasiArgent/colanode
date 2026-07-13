@@ -9,6 +9,8 @@
 # Usage:
 #   triage-ops.sh projects
 #   triage-ops.sh reports <projectId>
+#   triage-ops.sh untriaged <projectId>     # items awaiting triage (RESUME path)
+#   triage-ops.sh unclustered <projectId>   # triaged items awaiting clustering
 #   triage-ops.sh explode <reportId>
 #   triage-ops.sh patch-item <itemId> <json>
 #   triage-ops.sh create-cluster <json>
@@ -55,6 +57,18 @@ case "$cmd" in
     require_id "${2:-}"
     api GET "/reports?status=new&limit=50&projectId=$2"
     ;;
+  # Items, not reports, are the unit of work: explode flips a report to
+  # `exploded` immediately, so a run that died mid-way would strand its items
+  # forever if the sweep only ever looked at new reports. These two verbs are
+  # the resume path.
+  untriaged)
+    require_id "${2:-}"
+    api GET "/items?status=new&limit=100&projectId=$2"
+    ;;
+  unclustered)
+    require_id "${2:-}"
+    api GET "/items?status=triaged&unclustered=true&limit=100&projectId=$2"
+    ;;
   explode)
     require_id "${2:-}"
     api POST "/reports/$2/explode"
@@ -70,7 +84,7 @@ case "$cmd" in
     ;;
   *)
     echo "triage-ops: unknown command: ${cmd:-<none>}" >&2
-    echo "usage: projects | reports <projectId> | explode <reportId> | patch-item <itemId> <json> | create-cluster <json>" >&2
+    echo "usage: projects | reports <projectId> | untriaged <projectId> | unclustered <projectId> | explode <reportId> | patch-item <itemId> <json> | create-cluster <json>" >&2
     exit 2
     ;;
 esac
