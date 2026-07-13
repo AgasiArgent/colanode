@@ -10,16 +10,24 @@
 # token is never exported into the agent's environment — triage-ops.sh reads it.
 set -u
 
-REPO="${TRIAGE_REPO:-$HOME/workspace/colanode}"
 ENV_FILE="${TRIAGE_ENV_FILE:-$HOME/.config/triage/env}"
+
+# Sourced WITHOUT `set -a`, so nothing here (notably TRIAGE_OPS_TOKEN) is exported
+# into the environment inherited by the claude subprocess. Sourced BEFORE REPO/LOG
+# are resolved, so the env file can set TRIAGE_REPO / TRIAGE_LOG.
+# shellcheck disable=SC1090
+[ -f "$ENV_FILE" ] && . "$ENV_FILE"
+
+# The sweep must run from a checkout PINNED to a revision that carries this
+# script, scripts/triage-ops.sh and the triage-sweep skill — never from a working
+# checkout whose branch moves under us.
+REPO="${TRIAGE_REPO:-$HOME/workspace/colanode}"
 LOG="${TRIAGE_LOG:-$HOME/.config/triage/sweep.log}"
 
 mkdir -p "$(dirname "$LOG")"
 
-# Sourced WITHOUT `set -a`, so nothing here (notably TRIAGE_OPS_TOKEN) is exported
-# into the environment inherited by the claude subprocess.
-# shellcheck disable=SC1090
-[ -f "$ENV_FILE" ] && . "$ENV_FILE"
+# cron provides a minimal PATH; the claude CLI lives in ~/.local/bin.
+export PATH="$HOME/.local/bin:$PATH"
 
 case "${BUG_LOOP_ENABLED:-}" in
   1 | true | yes | on) ;;
