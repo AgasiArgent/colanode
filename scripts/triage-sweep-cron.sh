@@ -43,6 +43,7 @@ cd "$REPO" || exit 1
 # token from it at call time.
 export TRIAGE_ENV_FILE="$ENV_FILE"
 
+# </dev/null: the sweep takes no stdin; without it the CLI stalls 3s waiting for it.
 claude -p "Use the triage-sweep skill to run one sweep." \
-  --allowedTools 'Bash(./scripts/triage-ops.sh:*)' 2>&1 | tee -a "$LOG"
+  --allowedTools 'Bash(./scripts/triage-ops.sh:*)' </dev/null 2>&1 | tee -a "$LOG"
 exit "${PIPESTATUS[0]}"
