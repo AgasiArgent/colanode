@@ -411,6 +411,13 @@ export const runTriageProjection = async (): Promise<void> => {
   }
 
   for (const project of active) {
+    if (project.linear?.enabled) {
+      console.log(
+        `triage-project: ${project.id} is Linear-projected — skipping Colanode board (no second human surface)`
+      );
+      continue;
+    }
+
     const needsProvision = !project.colanode?.databaseId;
     const { colanode, userId } = needsProvision
       ? await provisionProject(app, ops, project, account.id)

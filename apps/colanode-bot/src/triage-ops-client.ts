@@ -12,6 +12,7 @@ export type TriageProject = {
   name: string;
   colanode: TriageProjectColanode;
   admins: string[];
+  linear?: { enabled?: boolean };
   killSwitch: boolean;
 };
 
