@@ -6,6 +6,7 @@ import { database } from '@colanode/server/data/database';
 
 import {
   opsProjectColanodeSchema,
+  opsProjectLinearSchema,
   opsProjectOutputSchema,
 } from './projects-list';
 
@@ -14,6 +15,7 @@ const projectUpsertSchema = z.object({
   ingestToken: z.string().min(16).optional(),
   colanode: opsProjectColanodeSchema.optional(),
   admins: z.array(z.string()).optional(),
+  linear: opsProjectLinearSchema.optional(),
   killSwitch: z.boolean().optional(),
 });
 
@@ -63,6 +65,9 @@ export const triageOpsProjectUpsertRoute: FastifyPluginCallbackZod = (
                 ? { colanode: JSON.stringify(body.colanode) }
                 : {}),
               ...(body.admins ? { admins: JSON.stringify(body.admins) } : {}),
+              ...(body.linear
+                ? { linear: JSON.stringify(body.linear) }
+                : {}),
               ...(body.killSwitch !== undefined
                 ? { kill_switch: body.killSwitch }
                 : {}),
@@ -79,6 +84,7 @@ export const triageOpsProjectUpsertRoute: FastifyPluginCallbackZod = (
               ingest_token: body.ingestToken as string,
               colanode: JSON.stringify(body.colanode ?? {}),
               admins: JSON.stringify(body.admins ?? []),
+              linear: JSON.stringify(body.linear ?? {}),
               kill_switch: body.killSwitch ?? false,
             })
             .returningAll()

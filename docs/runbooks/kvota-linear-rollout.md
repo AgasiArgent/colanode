@@ -91,11 +91,12 @@ curl -sS -H "Authorization: Bearer $TRIAGE_OPS_TOKEN" "$TRIAGE_OPS_URL/projects"
   | jq '.projects[] | select(.id == "kvota") | .linear'
 ```
 
-> If `linear` comes back `{}`, the deployed server's project-upsert does not
-> yet accept the `linear` body field (Zod strips unknown keys — the PUT
-> silently drops it). Fix the route (add `linear` to the upsert schema and
-> handler) rather than working around it; as a stopgap during rollout only,
-> set it directly and re-verify via the GET:
+> If `linear` comes back `{}`, the deployed server predates this branch's
+> project-upsert (older versions lacked `linear` in the upsert schema, so Zod
+> stripped it — the PUT silently dropped the field). Run the Step 3 deploy
+> first, then re-run this PUT and re-verify the round-trip. As an emergency
+> stopgap only (requires migration 00040 to be applied), set it directly and
+> re-verify via the GET:
 >
 > ```bash
 > ssh dd 'docker exec supabase-db psql -U postgres -d colanode -c \

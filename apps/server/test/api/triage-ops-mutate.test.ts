@@ -249,6 +249,51 @@ describe('triage ops mutate routes', () => {
     expect(listed.colanode).toEqual(colanode);
   });
 
+  it('round-trips the linear mapping and flips enabled on PUT /projects/:projectId', async () => {
+    const linear = {
+      enabled: false,
+      teamId: 'team-kvo',
+      teamKey: 'KVO',
+      cutoverAt: '2026-07-16T00:00:00Z',
+      labels: { bug: 'lbl-bug', feature: 'lbl-feature' },
+    };
+
+    const create = await app.inject({
+      method: 'PUT',
+      url: '/client/v1/triage/ops/projects/mut-linear',
+      headers: OPS,
+      payload: {
+        name: 'Mut Linear',
+        ingestToken: 'tok-mut-linear-1234567890',
+        linear,
+      },
+    });
+    expect(create.statusCode).toBe(200);
+    expect((create.json() as { linear: unknown }).linear).toEqual(linear);
+
+    // The rollout flip: re-send the mapping with enabled true (PUT replaces
+    // the whole linear object), leaving the ingest token untouched.
+    const flip = await app.inject({
+      method: 'PUT',
+      url: '/client/v1/triage/ops/projects/mut-linear',
+      headers: OPS,
+      payload: { name: 'Mut Linear', linear: { ...linear, enabled: true } },
+    });
+    expect(flip.statusCode).toBe(200);
+    expect((flip.json() as { linear: unknown }).linear).toEqual({
+      ...linear,
+      enabled: true,
+    });
+
+    const row = await database
+      .selectFrom('triage_projects')
+      .selectAll()
+      .where('id', '=', 'mut-linear')
+      .executeTakeFirstOrThrow();
+    expect(row.linear).toEqual({ ...linear, enabled: true });
+    expect(row.ingest_token).toBe('tok-mut-linear-1234567890');
+  });
+
   it('patches a cluster with its board record id and appends an audit entry', async () => {
     await database
       .insertInto('triage_projects')
