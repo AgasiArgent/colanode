@@ -281,6 +281,65 @@ describe('triage ops mutate routes', () => {
     expect(bad.statusCode).toBe(401);
   });
 
+  it('creates a cluster with possibly-related relations', async () => {
+    // seed: project + one existing cluster + one triaged item
+    await database
+      .insertInto('triage_projects')
+      .values({ id: 'rel-p', name: 'Rel', ingest_token: 'tok-rel-123456' })
+      .onConflict((oc) => oc.column('id').doNothing())
+      .execute();
+    const existing = await database
+      .insertInto('triage_clusters')
+      .values({ project_id: 'rel-p', root_hypothesis: 'candidate' })
+      .returning('id')
+      .executeTakeFirstOrThrow();
+    const report = await database
+      .insertInto('triage_reports')
+      .values({ project_id: 'rel-p', status: 'exploded' })
+      .returning('id')
+      .executeTakeFirstOrThrow();
+    const item = await database
+      .insertInto('triage_items')
+      .values({
+        project_id: 'rel-p',
+        report_id: report.id,
+        kind: 'pin',
+        status: 'triaged',
+        triage: 'bug',
+      })
+      .returning('id')
+      .executeTakeFirstOrThrow();
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/client/v1/triage/ops/clusters',
+      headers: OPS,
+      payload: {
+        projectId: 'rel-p',
+        rootHypothesis: 'similar symptom, different trigger',
+        itemIds: [item.id],
+        reason: 'overlaps calc screen but trigger differs',
+        relatedClusterIds: [existing.id],
+        confidence: 0.6,
+      },
+    });
+    expect(res.statusCode).toBe(200);
+    const clusterId = (res.json() as { id: string }).id;
+
+    const rel = await database
+      .selectFrom('triage_cluster_relations')
+      .selectAll()
+      .where((eb) =>
+        eb.or([
+          eb('cluster_a_id', '=', clusterId),
+          eb('cluster_b_id', '=', clusterId),
+        ])
+      )
+      .executeTakeFirstOrThrow();
+    expect(rel.state).toBe('active');
+    expect([rel.cluster_a_id, rel.cluster_b_id]).toContain(existing.id);
+  });
+
   it('disables the ops-API when no service token is configured', async () => {
     // config.triage.serviceToken is set to 'test-ops-token' in the test config,
     // so this asserts the enabled path returns 401 (not 404) on a bad token —

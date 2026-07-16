@@ -10,6 +10,8 @@ const clusterCreateSchema = z.object({
   rootHypothesis: z.string().min(1),
   itemIds: z.array(z.guid()).min(1),
   reason: z.string().default(''),
+  relatedClusterIds: z.array(z.guid()).max(5).default([]),
+  confidence: z.number().min(0).max(1).optional(),
 });
 
 export const triageOpsClusterCreateRoute: FastifyPluginCallbackZod = (
@@ -46,6 +48,24 @@ export const triageOpsClusterCreateRoute: FastifyPluginCallbackZod = (
         });
       }
 
+      const { relatedClusterIds, confidence } = request.body;
+      if (relatedClusterIds.length > 0) {
+        const related = await database
+          .selectFrom('triage_clusters')
+          .select(['id', 'project_id'])
+          .where('id', 'in', relatedClusterIds)
+          .execute();
+        if (
+          related.length !== relatedClusterIds.length ||
+          related.some((c) => c.project_id !== projectId)
+        ) {
+          return reply.code(400).send({
+            code: ApiErrorCode.BadRequest,
+            message: 'relatedClusterIds must all exist and belong to the project',
+          });
+        }
+      }
+
       const clusterId = await database.transaction().execute(async (trx) => {
         const cluster = await trx
           .insertInto('triage_clusters')
@@ -76,6 +96,24 @@ export const triageOpsClusterCreateRoute: FastifyPluginCallbackZod = (
           })
           .where('id', 'in', itemIds)
           .execute();
+
+        for (const relatedId of relatedClusterIds) {
+          const [a, b] = [cluster.id, relatedId].sort();
+          await trx
+            .insertInto('triage_cluster_relations')
+            .values({
+              project_id: projectId,
+              cluster_a_id: a!,
+              cluster_b_id: b!,
+              reason,
+              confidence: confidence ?? null,
+              actor: 'ops',
+            })
+            .onConflict((oc) =>
+              oc.columns(['cluster_a_id', 'cluster_b_id']).doNothing()
+            )
+            .execute();
+        }
 
         return cluster.id;
       });
