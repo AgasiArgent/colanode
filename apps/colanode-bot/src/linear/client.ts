@@ -142,7 +142,9 @@ export class LinearApi {
     } catch (error) {
       if (
         error instanceof Error &&
-        /already exists|duplicate/i.test(error.message)
+        // Empirically (2026-07-16 probe): Linear rejects a repeated create
+        // with "conflict on insert of Issue".
+        /already exists|duplicate|conflict on insert/i.test(error.message)
       ) {
         const created = await this.issueById(input.id);
         if (created) {

@@ -45,7 +45,7 @@ describe('LinearApi', () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(gql({ issue: null }))
-      .mockResolvedValueOnce(gqlErrors(['an issue with this id already exists']))
+      .mockResolvedValueOnce(gqlErrors(['conflict on insert of Issue']))
       .mockResolvedValueOnce(
         gql({
           issue: {
