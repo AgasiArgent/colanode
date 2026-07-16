@@ -53,6 +53,32 @@ describe('triage ops read routes', () => {
     expect(res.body).not.toContain('tok-ops-a');
   });
 
+  it('exposes linear projection state without leaking ingest tokens', async () => {
+    await database
+      .insertInto('triage_projects')
+      .values({
+        id: 'ops-linear',
+        name: 'Ops Linear',
+        ingest_token: 'tok-ops-linear',
+        linear: JSON.stringify({ enabled: true }),
+      })
+      .onConflict((oc) => oc.column('id').doNothing())
+      .execute();
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/client/v1/triage/ops/projects',
+      headers: OPS,
+    });
+    expect(res.statusCode).toBe(200);
+    const { projects } = res.json() as {
+      projects: Array<Record<string, unknown>>;
+    };
+    const project = projects.find((p) => p.id === 'ops-linear')!;
+    expect(project.linear).toEqual({ enabled: true });
+    expect(res.body).not.toContain('tok-ops-linear');
+  });
+
   it('lists new reports for a project', async () => {
     const res = await app.inject({
       method: 'GET',

@@ -15,11 +15,22 @@ export const opsProjectColanodeSchema = z.object({
   decisionOptions: z.record(z.string(), z.string()).optional(),
 });
 
+// The Linear projection mapping — identifiers only. The API key lives in the
+// projector's environment and is never stored, so nothing here is secret.
+export const opsProjectLinearSchema = z.object({
+  enabled: z.boolean().optional(),
+  teamId: z.string().optional(),
+  teamKey: z.string().optional(),
+  cutoverAt: z.string().optional(),
+  labels: z.record(z.string(), z.string()).optional(),
+});
+
 export const opsProjectOutputSchema = z.object({
   id: z.string(),
   name: z.string(),
   colanode: opsProjectColanodeSchema,
   admins: z.array(z.string()),
+  linear: opsProjectLinearSchema,
   killSwitch: z.boolean(),
 });
 
@@ -39,7 +50,7 @@ export const triageOpsProjectsListRoute: FastifyPluginCallbackZod = (
     handler: async () => {
       const rows = await database
         .selectFrom('triage_projects')
-        .select(['id', 'name', 'colanode', 'admins', 'kill_switch'])
+        .select(['id', 'name', 'colanode', 'admins', 'linear', 'kill_switch'])
         .orderBy('id')
         .execute();
 
@@ -49,6 +60,7 @@ export const triageOpsProjectsListRoute: FastifyPluginCallbackZod = (
           name: row.name,
           colanode: row.colanode,
           admins: row.admins,
+          linear: row.linear,
           killSwitch: row.kill_switch,
         })),
       };

@@ -89,6 +89,7 @@ export const triageOpsProjectUpsertRoute: FastifyPluginCallbackZod = (
         name: row.name,
         colanode: row.colanode,
         admins: row.admins,
+        linear: row.linear,
         killSwitch: row.kill_switch,
       };
     },
