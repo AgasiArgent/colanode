@@ -9,6 +9,9 @@ import { triageOpsClustersCandidatesRoute } from './clusters-candidates';
 import { triageOpsClustersListRoute } from './clusters-list';
 import { triageOpsItemPatchRoute } from './item-patch';
 import { triageOpsItemsListRoute } from './items-list';
+import { triageOpsLinearQueueRoute } from './linear-queue';
+import { triageOpsLinearReconcileRoute } from './linear-reconcile';
+import { triageOpsLinearRecordRoute } from './linear-record';
 import { triageOpsProjectUpsertRoute } from './project-upsert';
 import { triageOpsProjectsListRoute } from './projects-list';
 import { triageOpsReportExplodeRoute } from './report-explode';
@@ -27,5 +30,8 @@ export const triageOpsRoutes: FastifyPluginCallback = (instance, _, done) => {
   instance.register(triageOpsClusterCreateRoute);
   instance.register(triageOpsClusterPatchRoute);
   instance.register(triageOpsClusterAttachRoute);
+  instance.register(triageOpsLinearQueueRoute);
+  instance.register(triageOpsLinearRecordRoute);
+  instance.register(triageOpsLinearReconcileRoute);
   done();
 };
