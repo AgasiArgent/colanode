@@ -117,6 +117,13 @@ describe('triage ops mutate routes', () => {
     expect(patched.audit).toHaveLength(1);
     expect(patched.audit[0]!.actor).toBe('ops');
 
+    // cluster-create only accepts triaged, unclustered items
+    await database
+      .updateTable('triage_items')
+      .set({ status: 'triaged', triage: 'bug' })
+      .where('id', '=', items1[1]!.id)
+      .execute();
+
     const cluster = await app.inject({
       method: 'POST',
       url: '/client/v1/triage/ops/clusters',
@@ -157,6 +164,55 @@ describe('triage ops mutate routes', () => {
       },
     });
     expect(res.statusCode).toBe(400);
+  });
+
+  it('rejects a cluster that would steal an already-clustered item', async () => {
+    await database
+      .insertInto('triage_projects')
+      .values({ id: 'mut-s', name: 'Mut S', ingest_token: 'tok-mut-s' })
+      .onConflict((oc) => oc.column('id').doNothing())
+      .execute();
+    const owner = await database
+      .insertInto('triage_clusters')
+      .values({ project_id: 'mut-s', root_hypothesis: 'owner', item_count: 1 })
+      .returning('id')
+      .executeTakeFirstOrThrow();
+    const report = await database
+      .insertInto('triage_reports')
+      .values({ project_id: 'mut-s', status: 'exploded' })
+      .returning('id')
+      .executeTakeFirstOrThrow();
+    const clustered = await database
+      .insertInto('triage_items')
+      .values({
+        project_id: 'mut-s',
+        report_id: report.id,
+        kind: 'pin',
+        status: 'clustered',
+        cluster_id: owner.id,
+      })
+      .returning('id')
+      .executeTakeFirstOrThrow();
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/client/v1/triage/ops/clusters',
+      headers: OPS,
+      payload: {
+        projectId: 'mut-s',
+        rootHypothesis: 'thief',
+        itemIds: [clustered.id],
+      },
+    });
+    expect(res.statusCode).toBe(400);
+
+    const item = await database
+      .selectFrom('triage_items')
+      .select(['cluster_id', 'status'])
+      .where('id', '=', clustered.id)
+      .executeTakeFirstOrThrow();
+    expect(item.cluster_id).toBe(owner.id);
+    expect(item.status).toBe('clustered');
   });
 
   it('round-trips the full colanode projection map on PUT /projects/:projectId', async () => {
@@ -319,7 +375,9 @@ describe('triage ops mutate routes', () => {
         rootHypothesis: 'similar symptom, different trigger',
         itemIds: [item.id],
         reason: 'overlaps calc screen but trigger differs',
-        relatedClusterIds: [existing.id],
+        // uppercase GUID is schema-valid; the route must normalize case so
+        // the (a, b) pair ordering matches the DB's uuid byte-order CHECK
+        relatedClusterIds: [existing.id.toUpperCase()],
         confidence: 0.6,
       },
     });
