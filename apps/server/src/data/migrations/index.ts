@@ -39,6 +39,7 @@ import { createApnsSubscriptionsTable } from './00036-create-apns-subscriptions-
 import { normalizeAccountEmails } from './00037-normalize-account-emails';
 import { createTriageTables } from './00038-create-triage-tables';
 import { addTriageClusterDecisionColumns } from './00039-add-triage-cluster-decision-columns';
+import { addTriageLinearProjection } from './00040-add-triage-linear-projection';
 
 export const databaseMigrations: Record<string, Migration> = {
   '00001_create_accounts_table': createAccountsTable,
@@ -84,4 +85,5 @@ export const databaseMigrations: Record<string, Migration> = {
   '00037_normalize_account_emails': normalizeAccountEmails,
   '00038_create_triage_tables': createTriageTables,
   '00039_add_triage_cluster_decision_columns': addTriageClusterDecisionColumns,
+  '00040_add_triage_linear_projection': addTriageLinearProjection,
 };
