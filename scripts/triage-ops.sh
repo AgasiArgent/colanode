@@ -14,6 +14,8 @@
 #   triage-ops.sh explode <reportId>
 #   triage-ops.sh patch-item <itemId> <json>
 #   triage-ops.sh create-cluster <json>
+#   triage-ops.sh candidates <projectId> [cursor]   # existing-cluster candidates for grouping
+#   triage-ops.sh attach-cluster <clusterId> <json>  # attach items to an existing cluster
 set -euo pipefail
 
 ENV_FILE="${TRIAGE_ENV_FILE:-$HOME/.config/triage/env}"
@@ -82,9 +84,23 @@ case "$cmd" in
     require_json "${2:-}"
     api POST "/clusters" "$2"
     ;;
+  candidates)
+    require_id "${2:-}"
+    if [ -n "${3:-}" ]; then
+      require_id "$3"
+      api GET "/clusters/candidates?projectId=$2&limit=20&cursor=$3"
+    else
+      api GET "/clusters/candidates?projectId=$2&limit=20"
+    fi
+    ;;
+  attach-cluster)
+    require_id "${2:-}"
+    require_json "${3:-}"
+    api POST "/clusters/$2/attach" "$3"
+    ;;
   *)
     echo "triage-ops: unknown command: ${cmd:-<none>}" >&2
-    echo "usage: projects | reports <projectId> | untriaged <projectId> | unclustered <projectId> | explode <reportId> | patch-item <itemId> <json> | create-cluster <json>" >&2
+    echo "usage: projects | reports <projectId> | untriaged <projectId> | unclustered <projectId> | explode <reportId> | patch-item <itemId> <json> | create-cluster <json> | candidates <projectId> [cursor] | attach-cluster <clusterId> <json>" >&2
     exit 2
     ;;
 esac

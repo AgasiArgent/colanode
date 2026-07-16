@@ -407,6 +407,11 @@ interface TriageProjectTable {
     string | undefined
   >;
   admins: JSONColumnType<string[], string | undefined, string | undefined>;
+  linear: JSONColumnType<
+    TriageProjectLinear,
+    string | undefined,
+    string | undefined
+  >;
   kill_switch: ColumnType<boolean, boolean | undefined, boolean>;
   created_at: ColumnType<Date, Date | undefined, never>;
   updated_at: ColumnType<Date | null, Date | null | undefined, Date | null>;
@@ -484,6 +489,75 @@ export type SelectTriageItem = Selectable<TriageItemTable>;
 export type CreateTriageItem = Insertable<TriageItemTable>;
 export type UpdateTriageItem = Updateable<TriageItemTable>;
 
+// Optional Linear projection mapping for a project. Identifiers only — the
+// API key lives in the projector's environment, never in the database.
+export interface TriageProjectLinear {
+  enabled?: boolean;
+  teamId?: string;
+  teamKey?: string;
+  /** ISO timestamp; clusters created before it are never auto-projected */
+  cutoverAt?: string;
+  /** triage class -> Linear label id */
+  labels?: Record<string, string>;
+}
+
+interface TriageClusterRelationTable {
+  id: ColumnType<string, string | undefined, never>;
+  project_id: ColumnType<string, string, never>;
+  cluster_a_id: ColumnType<string, string, never>;
+  cluster_b_id: ColumnType<string, string, never>;
+  kind: ColumnType<string, string | undefined, never>;
+  state: ColumnType<string, string | undefined, string>;
+  confidence: ColumnType<number | null, number | null | undefined, never>;
+  reason: ColumnType<string, string | undefined, never>;
+  actor: ColumnType<string, string | undefined, never>;
+  dismissed_by: ColumnType<string | null, string | null | undefined, string | null>;
+  dismissed_reason: ColumnType<string | null, string | null | undefined, string | null>;
+  created_at: ColumnType<Date, Date | undefined, never>;
+  updated_at: ColumnType<Date | null, Date | null | undefined, Date | null>;
+}
+
+export type SelectTriageClusterRelation = Selectable<TriageClusterRelationTable>;
+export type CreateTriageClusterRelation = Insertable<TriageClusterRelationTable>;
+export type UpdateTriageClusterRelation = Updateable<TriageClusterRelationTable>;
+
+interface TriageLinearIssueTable {
+  cluster_id: ColumnType<string, string, never>;
+  issue_id: ColumnType<string, string, string>;
+  identifier: ColumnType<string, string | undefined, string>;
+  url: ColumnType<string, string | undefined, string>;
+  state_name: ColumnType<string, string | undefined, string>;
+  state_type: ColumnType<string, string | undefined, string>;
+  canonical_cluster_id: ColumnType<string | null, string | null | undefined, string | null>;
+  duplicate_of_external: ColumnType<string | null, string | null | undefined, string | null>;
+  artifact_assets: JSONColumnType<
+    Record<string, string>,
+    string | undefined,
+    string
+  >;
+  linear_updated_at: ColumnType<Date | null, Date | null | undefined, Date | null>;
+  projected_at: ColumnType<Date | null, Date | null | undefined, Date | null>;
+  error_code: ColumnType<string | null, string | null | undefined, string | null>;
+  error_message: ColumnType<string | null, string | null | undefined, string | null>;
+  created_at: ColumnType<Date, Date | undefined, never>;
+  updated_at: ColumnType<Date | null, Date | null | undefined, Date | null>;
+}
+
+export type SelectTriageLinearIssue = Selectable<TriageLinearIssueTable>;
+export type CreateTriageLinearIssue = Insertable<TriageLinearIssueTable>;
+export type UpdateTriageLinearIssue = Updateable<TriageLinearIssueTable>;
+
+interface TriageLinearSyncStateTable {
+  project_id: ColumnType<string, string, never>;
+  cursor_ts: ColumnType<Date | null, Date | null | undefined, Date | null>;
+  last_success_at: ColumnType<Date | null, Date | null | undefined, Date | null>;
+  updated_at: ColumnType<Date | null, Date | null | undefined, Date | null>;
+}
+
+export type SelectTriageLinearSyncState = Selectable<TriageLinearSyncStateTable>;
+export type CreateTriageLinearSyncState = Insertable<TriageLinearSyncStateTable>;
+export type UpdateTriageLinearSyncState = Updateable<TriageLinearSyncStateTable>;
+
 export interface DatabaseSchema {
   accounts: AccountTable;
   devices: DeviceTable;
@@ -510,4 +584,7 @@ export interface DatabaseSchema {
   triage_reports: TriageReportTable;
   triage_clusters: TriageClusterTable;
   triage_items: TriageItemTable;
+  triage_cluster_relations: TriageClusterRelationTable;
+  triage_linear_issues: TriageLinearIssueTable;
+  triage_linear_sync_state: TriageLinearSyncStateTable;
 }

@@ -10,6 +10,8 @@ const clusterCreateSchema = z.object({
   rootHypothesis: z.string().min(1),
   itemIds: z.array(z.guid()).min(1),
   reason: z.string().default(''),
+  relatedClusterIds: z.array(z.guid()).max(5).default([]),
+  confidence: z.number().min(0).max(1).optional(),
 });
 
 export const triageOpsClusterCreateRoute: FastifyPluginCallbackZod = (
@@ -32,18 +34,42 @@ export const triageOpsClusterCreateRoute: FastifyPluginCallbackZod = (
 
       const items = await database
         .selectFrom('triage_items')
-        .select(['id', 'project_id'])
+        .select(['id', 'project_id', 'status', 'cluster_id'])
         .where('id', 'in', itemIds)
         .execute();
 
       if (
         items.length !== itemIds.length ||
-        items.some((item) => item.project_id !== projectId)
+        items.some(
+          (item) =>
+            item.project_id !== projectId ||
+            item.status !== 'triaged' ||
+            item.cluster_id !== null
+        )
       ) {
         return reply.code(400).send({
           code: ApiErrorCode.BadRequest,
-          message: 'itemIds must all exist and belong to the project',
+          message:
+            'itemIds must all exist, belong to the project, be triaged and unclustered',
         });
+      }
+
+      const { relatedClusterIds, confidence } = request.body;
+      if (relatedClusterIds.length > 0) {
+        const related = await database
+          .selectFrom('triage_clusters')
+          .select(['id', 'project_id'])
+          .where('id', 'in', relatedClusterIds)
+          .execute();
+        if (
+          related.length !== relatedClusterIds.length ||
+          related.some((c) => c.project_id !== projectId)
+        ) {
+          return reply.code(400).send({
+            code: ApiErrorCode.BadRequest,
+            message: 'relatedClusterIds must all exist and belong to the project',
+          });
+        }
       }
 
       const clusterId = await database.transaction().execute(async (trx) => {
@@ -65,7 +91,10 @@ export const triageOpsClusterCreateRoute: FastifyPluginCallbackZod = (
           },
         ]);
 
-        await trx
+        // Guarded update: recheck state inside the transaction so a
+        // concurrent attach/create cannot steal items already clustered
+        // elsewhere (which would leave that cluster's item_count stale).
+        const updated = await trx
           .updateTable('triage_items')
           .set({
             cluster_id: cluster.id,
@@ -75,7 +104,35 @@ export const triageOpsClusterCreateRoute: FastifyPluginCallbackZod = (
             updated_at: new Date(),
           })
           .where('id', 'in', itemIds)
+          .where('status', '=', 'triaged')
+          .where('cluster_id', 'is', null)
+          .returning('id')
           .execute();
+        if (updated.length !== itemIds.length) {
+          throw new Error('concurrent cluster-create conflict');
+        }
+
+        for (const relatedId of relatedClusterIds) {
+          // normalize case before sorting: the DB CHECK compares uuid byte
+          // order, and JS string sort of an uppercase GUID diverges from it
+          const [a, b] = [cluster.id, relatedId]
+            .map((id) => id.toLowerCase())
+            .sort();
+          await trx
+            .insertInto('triage_cluster_relations')
+            .values({
+              project_id: projectId,
+              cluster_a_id: a!,
+              cluster_b_id: b!,
+              reason,
+              confidence: confidence ?? null,
+              actor: 'ops',
+            })
+            .onConflict((oc) =>
+              oc.columns(['cluster_a_id', 'cluster_b_id']).doNothing()
+            )
+            .execute();
+        }
 
         return cluster.id;
       });

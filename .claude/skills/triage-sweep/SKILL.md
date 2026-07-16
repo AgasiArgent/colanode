@@ -18,6 +18,8 @@ not improvise another route to the API.
 ./scripts/triage-ops.sh explode <reportId>
 ./scripts/triage-ops.sh patch-item <itemId> '<json>'
 ./scripts/triage-ops.sh create-cluster '<json>'
+./scripts/triage-ops.sh candidates <projectId> [cursor]   # existing-cluster candidates
+./scripts/triage-ops.sh attach-cluster <clusterId> '<json>'
 ```
 
 ## Hard rules
@@ -64,14 +66,44 @@ just exploded — always drain the queues.
 
 5. **Cluster queue** — per project: `./scripts/triage-ops.sh unclustered <projectId>`
    (triaged items not yet in a cluster — again including any left by an earlier run).
-   Group those whose root cause you judge identical (across reports too — two testers,
-   one bug → one cluster). Singleton clusters are fine and expected. For every group:
+   First group items that are obviously the same report/run. Then, for each group,
+   read existing-cluster candidates (paginate until `nextCursor` is null):
    ```
-   ./scripts/triage-ops.sh create-cluster \
-     '{"projectId":"<id>","rootHypothesis":"<one sentence>","itemIds":["..."],"reason":"<why same root>"}'
+   ./scripts/triage-ops.sh candidates <projectId> [cursor]
    ```
+   Candidates are compact summaries: lifecycle, root hypothesis, classes, item
+   samples. If that is not enough evidence for a safe merge, do NOT fetch more
+   data — choose possibly-related or new.
 
-6. **Summary** — print one line per project:
+6. **Decide — exactly one of three outcomes per group:**
+   - **same** — ONLY when ALL hold: the candidate's `lifecycle` is `active`; the
+     triggering action is the same; expected and observed behavior are materially
+     the same; at least one strong causal anchor matches (component/sourceFile,
+     error signature, or reproducible behavior — page equality alone is neither
+     sufficient nor required); nothing contradicts a shared cause; your confidence
+     is at least 0.90 AND you can state the concrete matching evidence. Then:
+     ```
+     ./scripts/triage-ops.sh attach-cluster <clusterId> \
+       '{"projectId":"<id>","itemIds":["..."],"confidence":0.93,"reason":"<concrete matching evidence>"}'
+     ```
+     If the server rejects the attach (terminal target, duplicate alias, stale
+     Linear sync), fall back to possibly-related — never retry the attach.
+   - **possibly-related** — symptom/component/workflow overlaps but a distinct
+     root cause remains plausible. This is the DEFAULT under uncertainty:
+     ```
+     ./scripts/triage-ops.sh create-cluster \
+       '{"projectId":"<id>","rootHypothesis":"<one sentence>","itemIds":["..."],"reason":"<why related>","relatedClusterIds":["<candidateId>"],"confidence":0.6}'
+     ```
+   - **new** — no candidate shares a credible cause: `create-cluster` without
+     `relatedClusterIds`.
+
+   A candidate with `lifecycle: "duplicate"` resolves to its `canonicalClusterId`
+   (judge against the canonical instead). A match to a `terminal` candidate is a
+   possible recurrence: create a separate cluster with
+   `relatedClusterIds: [<terminalId>]` and say "possible recurrence" in the reason.
+   Never attach to terminal or duplicate candidates.
+
+7. **Summary** — print one line per project:
    `<project>: <reports> exploded → <items> triaged → <clusters> clusters`, plus
    per-class counts. If every queue was empty, print `sweep: nothing new`. Stop.
    (Projection to the board/chat is a later phase — NOT yours.)
