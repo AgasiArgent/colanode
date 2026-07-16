@@ -11,7 +11,8 @@ const recordSchema = z.object({
   url: z.string().default(''),
   stateName: z.string().default(''),
   stateType: z.string().default(''),
-  artifactAssets: z.record(z.string(), z.string()).default({}),
+  // optional (no default) so an error record that omits it cannot wipe assets
+  artifactAssets: z.record(z.string(), z.string()).optional(),
   errorCode: z.string().optional(),
   errorMessage: z.string().optional(),
 });
@@ -33,18 +34,32 @@ export const triageOpsLinearRecordRoute: FastifyPluginCallbackZod = (
     },
     handler: async (request) => {
       const body = request.body;
+      const errorFields = {
+        error_code: body.errorCode ?? null,
+        error_message: body.errorMessage ?? null,
+      };
+      const assetFields =
+        body.artifactAssets === undefined
+          ? {}
+          : { artifact_assets: JSON.stringify(body.artifactAssets) };
       const fields = {
         issue_id: body.issueId,
         identifier: body.identifier,
         url: body.url,
         state_name: body.stateName,
         state_type: body.stateType,
-        artifact_assets: JSON.stringify(body.artifactAssets),
         // a failed projection keeps the cluster dirty for the next run
         ...(body.errorCode ? {} : { projected_at: new Date() }),
-        error_code: body.errorCode ?? null,
-        error_message: body.errorMessage ?? null,
+        ...assetFields,
+        ...errorFields,
       };
+      // An error record must not wipe previously recorded issue state — the
+      // projector relies on the stored identifier/url/assets to skip
+      // re-uploads and render related issues. On errorCode, update only the
+      // error columns plus any assets uploaded before the failure.
+      const updateFields = body.errorCode
+        ? { ...assetFields, ...errorFields }
+        : fields;
 
       await database
         .insertInto('triage_linear_issues')
@@ -52,7 +67,7 @@ export const triageOpsLinearRecordRoute: FastifyPluginCallbackZod = (
         .onConflict((oc) =>
           oc
             .column('cluster_id')
-            .doUpdateSet({ ...fields, updated_at: new Date() })
+            .doUpdateSet({ ...updateFields, updated_at: new Date() })
         )
         .execute();
 

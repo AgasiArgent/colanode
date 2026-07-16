@@ -95,6 +95,57 @@ describe('triage ops linear projection routes', () => {
     expect(body.clusters.find((c) => c.id === clusterId)).toBeUndefined();
   });
 
+  it('keeps recorded issue state when a later projection fails', async () => {
+    const cid = (
+      await database
+        .insertInto('triage_clusters')
+        .values({ project_id: 'lp', root_hypothesis: 'flaky', item_count: 1 })
+        .returning('id')
+        .executeTakeFirstOrThrow()
+    ).id;
+    const success = await app.inject({
+      method: 'PUT',
+      url: `/client/v1/triage/ops/linear/issues/${cid}`,
+      headers: OPS,
+      payload: {
+        issueId: 'iss-9',
+        identifier: 'KVO-19',
+        url: 'https://linear.app/x/issue/KVO-19',
+        stateName: 'Triage',
+        stateType: 'triage',
+        artifactAssets: { a1: 'https://uploads.linear.app/a1.png' },
+      },
+    });
+    expect(success.statusCode).toBe(200);
+
+    // Error record without assets (transient failure before uploads ran) —
+    // must not wipe the previously recorded issue state.
+    const failure = await app.inject({
+      method: 'PUT',
+      url: `/client/v1/triage/ops/linear/issues/${cid}`,
+      headers: OPS,
+      payload: {
+        issueId: '',
+        errorCode: 'projection-failed',
+        errorMessage: 'boom',
+      },
+    });
+    expect(failure.statusCode).toBe(200);
+
+    const row = await database
+      .selectFrom('triage_linear_issues')
+      .selectAll()
+      .where('cluster_id', '=', cid)
+      .executeTakeFirstOrThrow();
+    expect(row.issue_id).toBe('iss-9');
+    expect(row.identifier).toBe('KVO-19');
+    expect(row.artifact_assets).toEqual({
+      a1: 'https://uploads.linear.app/a1.png',
+    });
+    expect(row.error_code).toBe('projection-failed');
+    expect(row.projected_at).not.toBeNull();
+  });
+
   it('reconciles a duplicate decision into a local alias', async () => {
     const other = (
       await database

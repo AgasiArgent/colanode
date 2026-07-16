@@ -108,6 +108,51 @@ describe('runProjector', () => {
     );
   });
 
+  it('falls back to the cluster id when a failed attempt recorded issueId ""', async () => {
+    const deps = makeDeps([
+      makeCluster({
+        linear: {
+          issueId: '',
+          identifier: '',
+          url: '',
+          stateType: '',
+          artifactAssets: {},
+          projectedAt: null,
+        },
+      }),
+    ]);
+
+    await runProjector('post', deps);
+
+    expect(deps.linear.issueById).not.toHaveBeenCalled();
+    expect(deps.linear.ensureIssue).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'c-1' })
+    );
+  });
+
+  it('records uploaded asset urls when projection fails after uploads', async () => {
+    const cluster = makeCluster();
+    cluster.reports[0]!.artifacts = [
+      { id: 'a1', kind: 'screenshot', contentType: 'image/png' },
+    ];
+    const deps = makeDeps([cluster]);
+    vi.mocked(deps.ops.fetchArtifact).mockResolvedValue({
+      bytes: new Uint8Array(8),
+      contentType: 'image/png',
+    });
+    vi.mocked(deps.linear.ensureIssue).mockRejectedValue(new Error('boom'));
+
+    await runProjector('post', deps);
+
+    expect(deps.ops.recordIssue).toHaveBeenCalledWith(
+      'c-1',
+      expect.objectContaining({
+        errorCode: 'projection-failed',
+        artifactAssets: { a1: 'https://uploads.linear.app/a.png' },
+      })
+    );
+  });
+
   it('phase pre reconciles and never touches issues', async () => {
     const deps = makeDeps([makeCluster()]);
 

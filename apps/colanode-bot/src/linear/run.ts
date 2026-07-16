@@ -34,15 +34,18 @@ const extensionOf = (contentType: string): string =>
 
 /**
  * Uploads the cluster's screenshot artifacts that have no recorded asset URL
- * yet — `artifactAssets` reuses stored URLs, so each artifact uploads once.
+ * yet — `assets` starts from the stored URLs, so each artifact uploads once.
  * Oversized files (spec §8: 10 MB Free-plan cap) are skipped and stay out of
  * the map; the description builder renders the omission note for them.
+ * Mutates `assets` in place so URLs uploaded before a mid-run throw still
+ * reach the caller's error record — a returned map would be lost on throw
+ * and the next run would re-upload (duplicate files in Linear).
  */
 const uploadMissingArtifacts = async (
   cluster: QueueCluster,
+  assets: Record<string, string>,
   deps: ProjectorDeps
-): Promise<Record<string, string>> => {
-  const assets = { ...(cluster.linear?.artifactAssets ?? {}) };
+): Promise<void> => {
   for (const report of cluster.reports) {
     for (const artifact of report.artifacts) {
       if (artifact.kind !== 'screenshot' || assets[artifact.id]) {
@@ -62,7 +65,6 @@ const uploadMissingArtifacts = async (
       );
     }
   }
-  return assets;
 };
 
 /** Item triage values → configured Linear label ids (unknown values skip). */
@@ -82,11 +84,12 @@ const labelIdsOf = (
 
 const projectCluster = async (
   cluster: QueueCluster,
+  assets: Record<string, string>,
   linearConfig: ProjectLinearConfig,
   teamId: string,
   deps: ProjectorDeps
 ): Promise<{ created: boolean; relations: number }> => {
-  const assets = await uploadMissingArtifacts(cluster, deps);
+  await uploadMissingArtifacts(cluster, assets, deps);
   const machineBlock = buildMachineBlock(cluster, assets);
 
   // Re-fetch immediately before writing (spec §9): the merge always starts
@@ -108,7 +111,9 @@ const projectCluster = async (
     issue = await deps.linear.ensureIssue({
       // The client-supplied issue id IS the cluster id — deterministic, so a
       // retry after a lost `recordIssue` finds the same issue (lookup-first).
-      id: recordedIssueId ?? cluster.id,
+      // `||` not `??`: a failed first attempt records issueId '' and the
+      // queue serves it back — it must fall through to the cluster id.
+      id: recordedIssueId || cluster.id,
       teamId,
       title: cluster.rootHypothesis,
       description: mergeDescription(null, machineBlock),
@@ -186,9 +191,13 @@ export const runProjector = async (
         // not be projected.
         const queue = await deps.ops.getQueue(project.id);
         for (const cluster of queue.clusters) {
+          // Hoisted past the try so uploads that succeeded before a failure
+          // are still recorded — otherwise the next run re-uploads them.
+          const assets = { ...(cluster.linear?.artifactAssets ?? {}) };
           try {
             const result = await projectCluster(
               cluster,
+              assets,
               linearConfig,
               teamId,
               deps
@@ -205,8 +214,11 @@ export const runProjector = async (
             const code = /250|limit|payment/i.test(message)
               ? 'issue-cap-or-plan-limit'
               : 'projection-failed';
+            // On errorCode the ops route updates only error columns (+ the
+            // assets map) — previously recorded issue state stays intact.
             await deps.ops.recordIssue(cluster.id, {
               issueId: cluster.linear?.issueId ?? '',
+              artifactAssets: assets,
               errorCode: code,
               errorMessage: message.slice(0, 500),
             });
