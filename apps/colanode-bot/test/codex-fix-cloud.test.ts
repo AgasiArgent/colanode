@@ -142,4 +142,21 @@ describe('CloudTasks', () => {
       SAFE_VALUE: 'kept',
     });
   });
+
+  it('covers the current Cloud history beyond five pages', async () => {
+    const runner: CommandRunner = vi.fn();
+    for (let page = 1; page <= 6; page += 1) {
+      vi.mocked(runner).mockResolvedValueOnce(
+        success({
+          tasks: [wireTask(task(`task-${page}`))],
+          cursor: page < 6 ? `cursor-${page}` : null,
+        })
+      );
+    }
+
+    const tasks = await new CloudTasks(runner).list();
+
+    expect(tasks).toHaveLength(6);
+    expect(runner).toHaveBeenCalledTimes(6);
+  });
 });

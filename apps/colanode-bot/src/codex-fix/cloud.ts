@@ -8,7 +8,7 @@ type CloudTasksOptions = {
 };
 
 const DEFAULT_PAGE_LIMIT = 20;
-const DEFAULT_MAX_PAGES = 5;
+const DEFAULT_MAX_PAGES = 20;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
