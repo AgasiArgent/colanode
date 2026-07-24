@@ -7,7 +7,9 @@ export const MACHINE_END = '<!-- triage:machine:end -->';
 
 const shortIdOf = (report: QueueReport): string => {
   const shortId = report.debugContext.shortId;
-  return typeof shortId === 'string' && shortId.length > 0 ? shortId : report.id;
+  return typeof shortId === 'string' && shortId.length > 0
+    ? shortId
+    : report.id;
 };
 
 const impactSection = (cluster: QueueCluster): string[] => {
@@ -106,7 +108,11 @@ const relatedSection = (cluster: QueueCluster): string[] => {
   }
   const lines = ['## Possible related issues — review before coding', ''];
   for (const relation of active) {
-    lines.push(`${relation.otherIdentifier}`, `Why linked: ${relation.reason}`, '');
+    lines.push(
+      `${relation.otherIdentifier}`,
+      `Why linked: ${relation.reason}`,
+      ''
+    );
   }
   // Agent instruction verbatim from spec §8.
   lines.push(
@@ -120,7 +126,7 @@ const relatedSection = (cluster: QueueCluster): string[] => {
 const humanGateSection = (): string[] => [
   '## Next step (human gate)',
   '',
-  'Move to **Approved for fix** and mention @Codex to delegate.',
+  'Move to **Approved for fix**. Automation will delegate the issue to Codex and open a draft PR.',
 ];
 
 /**
@@ -167,6 +173,8 @@ export const mergeDescription = (
     return `${existing}\n\n${section}`;
   }
   return (
-    existing.slice(0, begin) + section + existing.slice(end + MACHINE_END.length)
+    existing.slice(0, begin) +
+    section +
+    existing.slice(end + MACHINE_END.length)
   );
 };

@@ -16,12 +16,45 @@ export type LinearIssueChange = {
   duplicateOfIssueId: string | null;
 };
 
+export type LinearComment = {
+  id: string;
+  body: string;
+  createdAt: string;
+};
+
+export type LinearFixIssue = {
+  id: string;
+  identifier: string;
+  title: string;
+  url: string;
+  stateName: string;
+  comments: LinearComment[];
+};
+
+export type LinearWorkflowState = {
+  id: string;
+  name: string;
+  type: string;
+};
+
 type IssueNode = {
   id: string;
   identifier: string;
   url: string;
   description: string | null;
   state: { name: string; type: string };
+};
+
+type FixIssueNode = {
+  id: string;
+  identifier: string;
+  title: string;
+  url: string;
+  state: { name: string; type: string };
+  comments: {
+    nodes: LinearComment[];
+    pageInfo: { hasNextPage: boolean };
+  };
 };
 
 type UpdatedIssueNode = {
@@ -40,6 +73,24 @@ const ISSUE_CREATE = `mutation IssueCreate($input: IssueCreateInput!) { issueCre
 const ISSUE_UPDATE = `mutation IssueUpdate($id: String!, $input: IssueUpdateInput!) { issueUpdate(id: $id, input: $input) { success } }`;
 const FILE_UPLOAD = `mutation FileUpload($contentType: String!, $filename: String!, $size: Int!) { fileUpload(contentType: $contentType, filename: $filename, size: $size) { success uploadFile { uploadUrl assetUrl headers { key value } } } }`;
 const RELATION_CREATE = `mutation RelationCreate($input: IssueRelationCreateInput!) { issueRelationCreate(input: $input) { success } }`;
+const ISSUES_BY_STATE = `query IssuesByState($teamId: ID!, $stateName: String!, $after: String) {
+  issues(filter: { team: { id: { eq: $teamId } }, state: { name: { eq: $stateName } } }, first: 50, after: $after) {
+    nodes {
+      id identifier title url state { name type }
+      comments(first: 50) {
+        nodes { id body createdAt }
+        pageInfo { hasNextPage }
+      }
+    }
+    pageInfo { hasNextPage endCursor }
+  }
+}`;
+const COMMENT_CREATE = `mutation CommentCreate($input: CommentCreateInput!) {
+  commentCreate(input: $input) { success comment { id body createdAt } }
+}`;
+const TEAM_STATES = `query TeamStates($teamId: String!) {
+  team(id: $teamId) { states { nodes { id name type } } }
+}`;
 const UPDATED_ISSUES = `query UpdatedIssues($teamId: ID!, $since: DateTimeOrDuration!, $after: String) {
   issues(filter: { team: { id: { eq: $teamId } }, updatedAt: { gt: $since } }, first: 50, after: $after) {
     nodes { id identifier updatedAt state { name type } relations { nodes { type relatedIssue { id } } } }
@@ -55,6 +106,23 @@ const toLinearIssue = (node: IssueNode): LinearIssue => ({
   stateType: node.state.type,
   description: node.description ?? '',
 });
+
+const toLinearFixIssue = (node: FixIssueNode): LinearFixIssue => {
+  if (node.comments.pageInfo.hasNextPage) {
+    throw new Error(
+      `Linear issue ${node.identifier} has more than 50 comments; refusing an incomplete idempotency check`
+    );
+  }
+
+  return {
+    id: node.id,
+    identifier: node.identifier,
+    title: node.title,
+    url: node.url,
+    stateName: node.state.name,
+    comments: node.comments.nodes,
+  };
+};
 
 /**
  * Typed client for the Linear GraphQL API. Holds the API key received from
@@ -162,6 +230,68 @@ export class LinearApi {
     });
   }
 
+  async issuesByState(
+    teamId: string,
+    stateName: string
+  ): Promise<LinearFixIssue[]> {
+    const issues: LinearFixIssue[] = [];
+    let after: string | null = null;
+
+    do {
+      const data: {
+        issues: {
+          nodes: FixIssueNode[];
+          pageInfo: { hasNextPage: boolean; endCursor: string | null };
+        };
+      } = await this.graphql(ISSUES_BY_STATE, {
+        teamId,
+        stateName,
+        after,
+      });
+
+      issues.push(...data.issues.nodes.map(toLinearFixIssue));
+      if (data.issues.pageInfo.hasNextPage && !data.issues.pageInfo.endCursor) {
+        throw new Error('Linear issues pagination returned no end cursor');
+      }
+      after = data.issues.pageInfo.hasNextPage
+        ? data.issues.pageInfo.endCursor
+        : null;
+    } while (after !== null);
+
+    return issues;
+  }
+
+  async createComment(issueId: string, body: string): Promise<LinearComment> {
+    const data = await this.graphql<{
+      commentCreate: {
+        success: boolean;
+        comment: LinearComment;
+      };
+    }>(COMMENT_CREATE, { input: { issueId, body } });
+
+    return data.commentCreate.comment;
+  }
+
+  async workflowStateByName(
+    teamId: string,
+    stateName: string
+  ): Promise<LinearWorkflowState | null> {
+    const data = await this.graphql<{
+      team: { states: { nodes: LinearWorkflowState[] } };
+    }>(TEAM_STATES, { teamId });
+
+    return (
+      data.team.states.nodes.find((state) => state.name === stateName) ?? null
+    );
+  }
+
+  async updateIssueState(id: string, stateId: string): Promise<void> {
+    await this.graphql<{ issueUpdate: { success: boolean } }>(ISSUE_UPDATE, {
+      id,
+      input: { stateId },
+    });
+  }
+
   /** Two-step upload: fileUpload mutation, then PUT to the pre-signed URL. */
   async uploadFile(
     bytes: Uint8Array,
@@ -202,10 +332,7 @@ export class LinearApi {
     return assetUrl;
   }
 
-  async createRelation(
-    issueId: string,
-    relatedIssueId: string
-  ): Promise<void> {
+  async createRelation(issueId: string, relatedIssueId: string): Promise<void> {
     try {
       await this.graphql<{ issueRelationCreate: { success: boolean } }>(
         RELATION_CREATE,
