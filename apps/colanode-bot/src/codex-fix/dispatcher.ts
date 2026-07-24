@@ -299,12 +299,13 @@ export const runCodexFixDispatcher = async (
         blocked += 1;
         continue;
       }
-      if (candidates.length === 1) {
-        task = candidates[0];
+      const candidate = candidates.length === 1 ? candidates[0] : undefined;
+      if (candidate) {
+        task = candidate;
         issueState = {
           ...issueState,
-          taskId: task.id,
-          taskUrl: task.url,
+          taskId: candidate.id,
+          taskUrl: candidate.url,
         };
         await persistIssue(issueState);
         bound += 1;

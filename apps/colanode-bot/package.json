@@ -12,7 +12,8 @@
     "lint": "eslint --ext .ts src",
     "test": "vitest run",
     "triage:project": "tsx src/triage-project.ts",
-    "triage:linear": "tsx src/linear/run.ts"
+    "triage:linear": "tsx src/linear/run.ts",
+    "triage:codex-fix": "tsx src/codex-fix/run.ts"
   },
   "dependencies": {
     "@colanode/agent-tools": "*",
