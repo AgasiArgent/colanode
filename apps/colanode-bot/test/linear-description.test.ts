@@ -15,7 +15,12 @@ const cluster: QueueCluster = {
   status: 'open',
   decision: null,
   items: [
-    { id: 'i1', summary: 'stale total', triage: 'bug', sourceRef: { page: '/calc' } },
+    {
+      id: 'i1',
+      summary: 'stale total',
+      triage: 'bug',
+      sourceRef: { page: '/calc' },
+    },
   ],
   reports: [
     {
@@ -32,18 +37,28 @@ const cluster: QueueCluster = {
     },
   ],
   relations: [
-    { otherClusterId: 'c-2', otherIdentifier: 'KVO-18', state: 'active', reason: 'same screen' },
+    {
+      otherClusterId: 'c-2',
+      otherIdentifier: 'KVO-18',
+      state: 'active',
+      reason: 'same screen',
+    },
   ],
   linear: null,
 };
 
 describe('description builder', () => {
   it('builds a machine block with screenshots and the related summary', () => {
-    const block = buildMachineBlock(cluster, { a1: 'https://uploads.linear.app/a1.png' });
-    expect(block).toContain('![screenshot FB-1](https://uploads.linear.app/a1.png)');
+    const block = buildMachineBlock(cluster, {
+      a1: 'https://uploads.linear.app/a1.png',
+    });
+    expect(block).toContain(
+      '![screenshot FB-1](https://uploads.linear.app/a1.png)'
+    );
     expect(block).toContain('KVO-18');
     expect(block).toContain('Approved for fix');
     expect(block).toContain('hypothesis');
+    expect(block).not.toMatch(/@codex/i);
   });
 
   it('merge preserves human text outside the markers', () => {
