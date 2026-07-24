@@ -1,4 +1,5 @@
 import { CloudTasks } from './cloud';
+import { RetryableDraftPrError } from './publisher';
 import { CloudTask, DispatcherStateV1, IssueDispatchState } from './types';
 import { LinearApi, LinearComment, LinearFixIssue } from '../linear/client';
 
@@ -349,6 +350,16 @@ export const runCodexFixDispatcher = async (
       pr = await deps.publisher.publish(issue, task);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
+      if (error instanceof RetryableDraftPrError) {
+        issueState = {
+          ...issueState,
+          outcome: 'pending',
+          lastError: message.slice(0, 500),
+        };
+        await persistIssue(issueState);
+        pending += 1;
+        continue;
+      }
       issueState = {
         ...issueState,
         outcome: 'failed',
@@ -365,6 +376,7 @@ export const runCodexFixDispatcher = async (
       branch: pr.branch,
       outcome: 'pr_opened',
       prUrl: pr.url,
+      lastError: undefined,
     };
     await persistIssue(issueState);
     await ensurePrCompletion(issue, issueState);

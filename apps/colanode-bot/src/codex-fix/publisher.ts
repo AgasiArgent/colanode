@@ -23,6 +23,13 @@ type ExistingPr = {
   isDraft: boolean;
 };
 
+export class RetryableDraftPrError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'RetryableDraftPrError';
+  }
+}
+
 const commandError = (label: string, result: CommandResult): Error => {
   const detail = (result.stderr.trim() || result.stdout.trim()).slice(0, 500);
   return new Error(
@@ -208,7 +215,9 @@ export class DraftPrPublisher {
       if (racedPr) {
         return racedPr.url;
       }
-      throw commandError('gh pr create', result);
+      throw new RetryableDraftPrError(
+        commandError('gh pr create', result).message
+      );
     }
     return validateGithubUrl(result.stdout.trim(), 'gh pr create');
   }

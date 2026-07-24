@@ -8,6 +8,7 @@ import {
   DispatcherDeps,
   runCodexFixDispatcher,
 } from '../src/codex-fix/dispatcher';
+import { RetryableDraftPrError } from '../src/codex-fix/publisher';
 import {
   CloudTask,
   DispatcherStateV1,
@@ -351,5 +352,48 @@ describe('runCodexFixDispatcher', () => {
         prUrl: 'https://github.com/AgasiArgent/kvota-onestack/pull/999',
       })
     );
+  });
+
+  it('keeps a pushed branch pending when PR creation needs a retry', async () => {
+    const issue = approved('KVO-109');
+    const task = cloudTask('KVO-109');
+    const harness = makeHarness(
+      [issue],
+      stateWith([issue.id], {
+        [issue.id]: {
+          ...pendingDispatch(issue.identifier),
+          taskId: task.id,
+          taskUrl: task.url,
+        },
+      }),
+      [task]
+    );
+    harness.publisher.publish.mockRejectedValueOnce(
+      new RetryableDraftPrError('temporary GitHub outage')
+    );
+
+    const first = await runCodexFixDispatcher(CONFIG, harness.deps);
+
+    expect(first.pending).toBe(1);
+    expect(first.failed).toBe(0);
+    expect(harness.getState()?.issues[issue.id]).toEqual(
+      expect.objectContaining({
+        outcome: 'pending',
+        lastError: 'temporary GitHub outage',
+      })
+    );
+    expect(harness.linear.createComment).not.toHaveBeenCalled();
+
+    const second = await runCodexFixDispatcher(CONFIG, harness.deps);
+
+    expect(second.published).toBe(1);
+    expect(harness.publisher.publish).toHaveBeenCalledTimes(2);
+    expect(harness.getState()?.issues[issue.id]).toEqual(
+      expect.objectContaining({
+        outcome: 'pr_opened',
+        prUrl: 'https://github.com/AgasiArgent/kvota-onestack/pull/999',
+      })
+    );
+    expect(harness.getState()?.issues[issue.id]?.lastError).toBeUndefined();
   });
 });

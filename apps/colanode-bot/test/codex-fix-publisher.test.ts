@@ -4,7 +4,11 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { DraftPrPublisher, branchNameFor } from '../src/codex-fix/publisher';
+import {
+  DraftPrPublisher,
+  RetryableDraftPrError,
+  branchNameFor,
+} from '../src/codex-fix/publisher';
 import {
   CloudTask,
   CommandResult,
@@ -144,6 +148,28 @@ describe('DraftPrPublisher', () => {
         'main',
       ])
     );
+    expect(
+      vi
+        .mocked(runner)
+        .mock.calls.some(([command, args]) =>
+          [command, ...args].join(' ').includes('cloud apply')
+        )
+    ).toBe(false);
+  });
+
+  it('marks a transient PR-create failure as retryable after push', async () => {
+    const runner: CommandRunner = vi
+      .fn()
+      .mockResolvedValueOnce(ok('[]'))
+      .mockResolvedValueOnce(ok('remote branch'))
+      .mockResolvedValueOnce(exit(1, 'temporary GitHub outage'))
+      .mockResolvedValueOnce(ok('[]'));
+    const publisher = await makePublisher(runner);
+
+    await expect(publisher.publish(ISSUE, TASK)).rejects.toBeInstanceOf(
+      RetryableDraftPrError
+    );
+    expect(runner).toHaveBeenCalledTimes(4);
     expect(
       vi
         .mocked(runner)
