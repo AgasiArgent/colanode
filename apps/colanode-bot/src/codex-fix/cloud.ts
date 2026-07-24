@@ -1,3 +1,4 @@
+import { sanitizedChildEnv } from './command-env';
 import { CloudTask, CommandRunner } from './types';
 
 type CloudTasksOptions = {
@@ -8,7 +9,6 @@ type CloudTasksOptions = {
 
 const DEFAULT_PAGE_LIMIT = 20;
 const DEFAULT_MAX_PAGES = 5;
-const SECRET_ENV_NAMES = ['LINEAR_API_KEY', 'TRIAGE_OPS_TOKEN'] as const;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -103,14 +103,6 @@ const parsePage = (
   };
 };
 
-const sanitizedEnv = (baseEnv: NodeJS.ProcessEnv): NodeJS.ProcessEnv => {
-  const env = { ...baseEnv };
-  for (const name of SECRET_ENV_NAMES) {
-    delete env[name];
-  }
-  return env;
-};
-
 export class CloudTasks {
   private readonly command: string;
   private readonly env: NodeJS.ProcessEnv;
@@ -121,7 +113,7 @@ export class CloudTasks {
     options: CloudTasksOptions = {}
   ) {
     this.command = options.command ?? 'codex';
-    this.env = sanitizedEnv(options.baseEnv ?? process.env);
+    this.env = sanitizedChildEnv(options.baseEnv ?? process.env);
     this.maxPages = options.maxPages ?? DEFAULT_MAX_PAGES;
   }
 
